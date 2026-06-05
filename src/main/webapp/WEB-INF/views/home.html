@@ -1,63 +1,107 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{common/layout :: head}">
-  <title>Home</title>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FemFit — Women's Fitness Club</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    :root { --rose:#C4687A; --rose-light:#F5E8EA; --rose-mid:#E8B4BC; --rose-dark:#7A3040; --rose-deep:#3D1520; --sand:#F7F3EE; --warm-white:#FDFAF7; --charcoal:#2C2420; --muted:#8A7A72; --border:#E8DDD8; --serif:'Cormorant Garamond',Georgia,serif; --sans:'DM Sans',sans-serif; }
+    html { scroll-behavior:smooth; }
+    body { font-family:var(--sans); background:var(--warm-white); color:var(--charcoal); font-size:15px; line-height:1.6; }
+    nav.main-nav { position:sticky; top:0; z-index:100; background:rgba(253,250,247,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 40px; height:64px; gap:8px; }
+    .logo { font-family:var(--serif); font-size:26px; font-weight:500; color:var(--rose-dark); letter-spacing:0.5px; margin-right:auto; text-decoration:none; }
+    .logo span { color:var(--rose); }
+    .nav-link { font-size:13px; color:var(--muted); padding:8px 16px; border-radius:30px; text-decoration:none; display:inline-block; transition:all 0.2s; font-family:var(--sans); }
+    .nav-link:hover { color:var(--charcoal); background:var(--sand); }
+    .nav-cta { margin-left:8px; padding:9px 22px; background:var(--rose); color:white; border:none; border-radius:30px; font-size:13px; font-weight:500; cursor:pointer; font-family:var(--sans); text-decoration:none; display:inline-block; transition:background 0.2s; }
+    .nav-cta:hover { background:var(--rose-dark); color:white; }
+    .lang-sw { display:flex; gap:2px; margin-left:12px; background:var(--sand); border-radius:20px; padding:3px; }
+    .lang-btn { font-size:11px; font-weight:500; padding:4px 10px; border-radius:16px; border:none; background:transparent; color:var(--muted); cursor:pointer; font-family:var(--sans); text-decoration:none; display:inline-block; }
+    .hero { min-height:88vh; display:grid; grid-template-columns:1fr 1fr; align-items:center; padding:80px 40px 60px; gap:60px; max-width:1200px; margin:0 auto; }
+    .hero-eyebrow { font-size:11px; font-weight:500; letter-spacing:3px; color:var(--rose); text-transform:uppercase; margin-bottom:20px; }
+    .hero-h1 { font-family:var(--serif); font-size:clamp(48px,6vw,72px); font-weight:400; line-height:1.1; color:var(--rose-deep); margin-bottom:24px; }
+    .hero-h1 em { font-style:italic; color:var(--rose); }
+    .hero-sub { font-size:16px; color:var(--muted); line-height:1.7; margin-bottom:36px; max-width:420px; }
+    .hero-btns { display:flex; gap:14px; flex-wrap:wrap; }
+    .btn-primary { padding:14px 32px; background:var(--rose); color:white; border:none; border-radius:30px; font-size:14px; font-weight:500; cursor:pointer; font-family:var(--sans); transition:all 0.2s; text-decoration:none; display:inline-block; }
+    .btn-primary:hover { background:var(--rose-dark); color:white; transform:translateY(-2px); }
+    .btn-outline { padding:13px 32px; background:transparent; color:var(--rose-dark); border:1.5px solid var(--rose-mid); border-radius:30px; font-size:14px; font-weight:400; cursor:pointer; font-family:var(--sans); transition:all 0.2s; text-decoration:none; display:inline-block; }
+    .btn-outline:hover { border-color:var(--rose); background:var(--rose-light); }
+    .hero-visual { position:relative; height:480px; display:flex; align-items:center; justify-content:center; }
+    .hero-card-big { position:absolute; width:280px; height:340px; background:var(--rose-light); border-radius:20px; border:1px solid var(--rose-mid); left:40px; top:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:24px; }
+    .hero-stat-card { position:absolute; top:30px; right:10px; background:var(--rose-dark); color:white; border-radius:16px; padding:16px 20px; width:160px; }
+    .hero-card-small { position:absolute; right:20px; bottom:40px; background:white; border:1px solid var(--border); border-radius:16px; padding:16px 20px; width:200px; box-shadow:0 4px 24px rgba(196,104,122,0.1); }
+    .floating-icon { width:56px; height:56px; background:var(--rose); border-radius:16px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+    .section { padding:80px 40px; max-width:1200px; margin:0 auto; }
+    .section-eyebrow { font-size:11px; font-weight:500; letter-spacing:3px; color:var(--rose); text-transform:uppercase; margin-bottom:12px; }
+    .section-title { font-family:var(--serif); font-size:clamp(28px,4vw,42px); font-weight:400; color:var(--rose-deep); margin-bottom:40px; line-height:1.2; }
+    .class-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .class-card { background:white; border:0.5px solid var(--border); border-radius:4px; padding:28px 20px 24px; cursor:pointer; transition:background 0.2s; text-align:center; display:flex; flex-direction:column; align-items:center; text-decoration:none; }
+    .class-card:hover { background:var(--rose-light); }
+    .class-line { width:24px; height:1px; background:var(--rose); margin-bottom:16px; }
+    .class-name { font-family:var(--serif); font-size:13px; font-weight:400; letter-spacing:3px; text-transform:uppercase; color:var(--charcoal); }
+    .class-count { font-size:11px; color:var(--muted); margin-top:8px; letter-spacing:0.5px; }
+    footer { background:var(--rose-deep); color:rgba(255,255,255,0.7); text-align:center; padding:32px 40px; font-size:13px; margin-top:80px; }
+    footer .footer-logo { font-family:var(--serif); font-size:22px; color:white; margin-bottom:8px; }
+    @media (max-width:900px) { .hero { grid-template-columns:1fr; } .hero-visual { display:none; } .class-grid { grid-template-columns:repeat(2,1fr); } nav.main-nav { padding:0 16px; } }
+  </style>
 </head>
 <body>
 <nav th:replace="~{common/layout :: nav}"></nav>
 
-<main>
-  <!-- HERO -->
-  <section style="background:#F5E8EA;padding:80px 0 60px;">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6">
-          <p style="font-size:11px;letter-spacing:3px;color:#C4687A;text-transform:uppercase;margin-bottom:16px;">Premium Women's Fitness</p>
-          <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(42px,6vw,68px);font-weight:400;color:#3D1520;line-height:1.1;margin-bottom:20px;">
-            Your strength.<br><em>Your space.</em>
-          </h1>
-          <p style="font-size:16px;color:#8A7A72;line-height:1.7;margin-bottom:32px;max-width:440px;">
-            A luxury fitness club designed exclusively for women — where wellness meets elegance.
-          </p>
-          <div class="d-flex gap-3">
-            <a th:href="@{/plans}" class="btn-rose" style="padding:13px 30px;border-radius:30px;font-size:14px;font-weight:500;background:#C4687A;color:white;text-decoration:none;" th:text="#{plans.title}">Choose a Plan</a>
-            <a th:href="@{/schedule}" style="padding:12px 30px;border-radius:30px;font-size:14px;color:#7A3040;border:1.5px solid #E8B4BC;text-decoration:none;" th:text="#{nav.schedule}">View Schedule</a>
-          </div>
-        </div>
-        <div class="col-lg-6 d-none d-lg-flex justify-content-end">
-          <div style="background:white;border-radius:20px;padding:28px;width:280px;box-shadow:0 8px 40px rgba(196,104,122,0.15);">
-            <div style="font-size:11px;color:#8A7A72;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Next class</div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#3D1520;margin-bottom:4px;">Morning Yoga</div>
-            <div style="font-size:13px;color:#8A7A72;margin-bottom:16px;">07:00 · Studio A · Elena M.</div>
-            <div style="height:1px;background:#E8DDD8;margin-bottom:16px;"></div>
-            <div style="font-size:28px;font-family:'Cormorant Garamond',serif;color:#C4687A;">2,400+</div>
-            <div style="font-size:12px;color:#8A7A72;">Active members</div>
-          </div>
-        </div>
+<div class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Premium Women's Fitness</div>
+    <h1 class="hero-h1">Your strength.<br><em>Your space.</em></h1>
+    <p class="hero-sub">A luxury fitness club designed exclusively for women — where wellness meets elegance.</p>
+    <div class="hero-btns">
+      <a th:href="@{/plans}" class="btn-primary" th:text="#{plans.title}">Choose a Plan</a>
+      <a th:href="@{/schedule}" class="btn-outline" th:text="#{nav.schedule}">Schedule</a>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-card-big">
+      <div class="floating-icon">🌸</div>
+      <div style="font-family:var(--serif);font-size:22px;font-weight:500;color:var(--rose-dark);">Morning Yoga</div>
+      <div style="font-size:13px;color:var(--muted);text-align:center;">07:00 · Studio A · Elena M.</div>
+      <div style="width:100%;height:1px;background:var(--rose-mid);margin:4px 0;"></div>
+      <div style="font-size:12px;color:var(--muted);">3 spots left</div>
+    </div>
+    <div class="hero-stat-card">
+      <div style="font-family:var(--serif);font-size:36px;font-weight:500;">2,400+</div>
+      <div style="font-size:11px;opacity:0.7;margin-top:2px;">Active members</div>
+    </div>
+    <div class="hero-card-small">
+      <div style="margin-bottom:8px;">
+        <div style="font-size:11px;color:var(--muted);">This month</div>
+        <div style="font-size:18px;font-weight:500;color:var(--charcoal);font-family:var(--serif);">14 visits</div>
+        <div style="height:4px;background:var(--rose-light);border-radius:2px;margin-top:6px;"><div style="width:70%;height:100%;background:var(--rose);border-radius:2px;"></div></div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);">Goal</div>
+        <div style="font-size:18px;font-weight:500;color:var(--charcoal);font-family:var(--serif);">20 visits</div>
+        <div style="height:4px;background:var(--rose-light);border-radius:2px;margin-top:6px;"><div style="width:40%;height:100%;background:var(--rose);border-radius:2px;"></div></div>
       </div>
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- OUR CLASSES -->
-  <section style="padding:70px 0;">
-    <div class="container">
-      <p style="font-size:11px;letter-spacing:3px;color:#C4687A;text-transform:uppercase;margin-bottom:10px;">What we offer</p>
-      <h2 style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:400;color:#3D1520;margin-bottom:36px;" th:text="#{nav.schedule}">Our classes</h2>
-      <div class="row g-3">
-        <div th:each="cat : ${ {'CARDIO','YOGA','STRENGTH','PILATES','DANCE','STRETCHING'} }" class="col-6 col-md-4 col-lg-2">
-          <a th:href="@{/schedule(category=${cat})}" class="d-block text-decoration-none"
-             style="background:white;border:0.5px solid #E8DDD8;border-radius:4px;padding:26px 12px;text-align:center;transition:border-color 0.2s;">
-            <div style="width:24px;height:1px;background:#C4687A;margin:0 auto 14px;"></div>
-            <div style="font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#2C2420;" th:text="${cat}">YOGA</div>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-</main>
+<div class="section">
+  <div class="section-eyebrow">What we offer</div>
+  <div class="section-title">Our classes</div>
+  <div class="class-grid">
+    <a th:href="@{/schedule(category='CARDIO')}" class="class-card"><div class="class-line"></div><div class="class-name">Cardio</div><div class="class-count">12 classes / week</div></a>
+    <a th:href="@{/schedule(category='YOGA')}" class="class-card"><div class="class-line"></div><div class="class-name">Yoga</div><div class="class-count">8 classes / week</div></a>
+    <a th:href="@{/schedule(category='STRENGTH')}" class="class-card"><div class="class-line"></div><div class="class-name">Strength</div><div class="class-count">10 classes / week</div></a>
+    <a th:href="@{/schedule(category='PILATES')}" class="class-card"><div class="class-line"></div><div class="class-name">Pilates</div><div class="class-count">6 classes / week</div></a>
+    <a th:href="@{/schedule(category='DANCE')}" class="class-card"><div class="class-line"></div><div class="class-name">Dance</div><div class="class-count">5 classes / week</div></a>
+    <a th:href="@{/schedule(category='STRETCHING')}" class="class-card"><div class="class-line"></div><div class="class-name">Stretching</div><div class="class-count">7 classes / week</div></a>
+  </div>
+</div>
 
 <footer th:replace="~{common/layout :: footer}"></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

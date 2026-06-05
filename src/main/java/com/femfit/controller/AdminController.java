@@ -48,7 +48,7 @@ public class AdminController {
      * @param page current page number (1-based)
      */
     @GetMapping("/clients")
-    public String clients(@RequestParam(defaultValue = "1") int page, Model model) {
+    public String clients(@RequestParam(name = "page", defaultValue = "1") int page, Model model) {
         PageDto<User> pageDto = userService.findByRole(Role.CLIENT, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "CLIENT");
@@ -59,7 +59,7 @@ public class AdminController {
      * Paginated list of trainers.
      */
     @GetMapping("/trainers")
-    public String trainers(@RequestParam(defaultValue = "1") int page, Model model) {
+    public String trainers(@RequestParam(name = "page", defaultValue = "1") int page, Model model) {
         PageDto<User> pageDto = userService.findByRole(Role.TRAINER, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
@@ -100,7 +100,7 @@ public class AdminController {
      */
     @PostMapping("/user/discount/{userId}")
     public String setDiscount(@PathVariable Long userId,
-                              @RequestParam int discountPercent,
+                              @RequestParam(name = "discountPercent") int discountPercent,
                               RedirectAttributes redirectAttrs) {
         userService.setDiscount(userId, discountPercent);
         redirectAttrs.addFlashAttribute("success", "msg.success.save");

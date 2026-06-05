@@ -42,18 +42,24 @@ public class HomeController {
      * @return schedule view
      */
     @GetMapping("/schedule")
-    public String schedule(@RequestParam(required = false) String category,
-                           Model model) {
-        List<ClassSchedule> schedules;
-        if (category != null && !category.isBlank()) {
-            schedules = scheduleDao.findUpcomingByCategory(category);
-            model.addAttribute("activeCategory", category.toUpperCase());
-        } else {
-            schedules = scheduleDao.findUpcoming();
-            model.addAttribute("activeCategory", "ALL");
+    public String schedule(@RequestParam(name = "category", required = false) String category, Model model) {
+        log.info("Schedule page requested, category={}", category);
+        try {
+            List<ClassSchedule> schedules;
+            if (category != null && !category.isBlank()) {
+                schedules = scheduleDao.findUpcomingByCategory(category);
+                model.addAttribute("activeCategory", category.toUpperCase());
+            } else {
+                schedules = scheduleDao.findUpcoming();
+                model.addAttribute("activeCategory", "ALL");
+            }
+            log.info("Schedules found: {}", schedules.size());
+            model.addAttribute("schedules", schedules);
+            return "schedule";
+        } catch (Exception e) {
+            log.error("Error loading schedule: {}", e.getMessage(), e);
+            throw e;
         }
-        model.addAttribute("schedules", schedules);
-        return "schedule";
     }
 
     /**

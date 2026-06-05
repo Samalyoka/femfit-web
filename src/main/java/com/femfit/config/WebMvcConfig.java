@@ -9,11 +9,14 @@ import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring6.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
+
+import java.util.Locale;
 
 /**
  * Spring MVC configuration: Thymeleaf views, static resources, interceptors,
@@ -85,8 +88,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // i18n: switches locale on ?lang=ru
         registry.addInterceptor(localeChangeInterceptor);
+        registry.addInterceptor(new AuthInterceptor());
     }
 
     // ── Validation ─────────────────────────────────────────────────────────
@@ -100,6 +103,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.setValidationMessageSource(messageSource);
         return validator;
+    }
+
+    /**
+     * Stores the user's selected locale in the HTTP session.
+     * Must be declared in web context (WebMvcConfig) so Spring MVC
+     * can resolve it via DispatcherServlet — not in root context.
+     */
+    @Bean
+    public LocaleResolver localeResolver() {
+        SessionLocaleResolver resolver = new SessionLocaleResolver();
+        resolver.setDefaultLocale(Locale.ENGLISH);
+        return resolver;
     }
 
     @Override

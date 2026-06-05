@@ -9,13 +9,11 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.core.annotation.Order;
 
 /**
  * Spring Security configuration.
@@ -24,6 +22,7 @@ import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler
  */
 @Configuration
 @EnableWebSecurity
+@Order(1)
 public class SecurityConfig {
 
     private final FemFitUserDetailsService userDetailsService;
@@ -89,7 +88,7 @@ public class SecurityConfig {
                         .loginProcessingUrl("/auth/login")
                         .usernameParameter("email")
                         .passwordParameter("password")
-                        .defaultSuccessUrl("/home", false)
+                        .defaultSuccessUrl("/home", true)
                         .failureUrl("/auth/login?error=true")
                         .permitAll()
                 )

@@ -77,16 +77,6 @@ public class AppConfig {
     }
 
     /**
-     * Stores the user's selected locale in the HTTP session.
-     */
-    @Bean
-    public SessionLocaleResolver localeResolver() {
-        SessionLocaleResolver resolver = new SessionLocaleResolver();
-        resolver.setDefaultLocale(Locale.ENGLISH);
-        return resolver;
-    }
-
-    /**
      * Intercepts ?lang=ru requests and changes the session locale.
      */
     @Bean
