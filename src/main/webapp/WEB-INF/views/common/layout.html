@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FemFit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/static/css/main.css}">
+  <style>
+    :root {
+      --rose:#C4687A; --rose-light:#F5E8EA; --rose-mid:#E8B4BC;
+      --rose-dark:#7A3040; --rose-deep:#3D1520;
+      --muted:#8A7A72; --border:#E8DDD8;
+      --serif:'Cormorant Garamond',Georgia,serif;
+      --sans:'DM Sans',sans-serif;
+    }
+    body { font-family:var(--sans); background:#FDFAF7; color:#2C2420; }
+    .navbar-brand { font-family:var(--serif); font-size:24px; color:var(--rose-dark) !important; }
+    .navbar-brand span { color:var(--rose); }
+    .nav-link { color:var(--muted) !important; font-size:13px; }
+    .nav-link:hover { color:var(--rose-dark) !important; }
+    .btn-rose { background:var(--rose); color:white; border:none; border-radius:30px; padding:8px 22px; font-size:13px; cursor:pointer; transition:background 0.2s; text-decoration:none; display:inline-block; }
+    .btn-rose:hover { background:var(--rose-dark); color:white; }
+    .lang-sw { display:flex; gap:2px; background:var(--rose-light); border-radius:20px; padding:3px; }
+    .lang-btn { font-size:11px; font-weight:500; padding:4px 10px; border-radius:16px; border:none; background:transparent; color:var(--muted); cursor:pointer; text-decoration:none; }
+    .lang-btn:hover { color:var(--rose-dark); }
+  </style>
+</head>
+<body>
+<nav th:fragment="nav" class="navbar navbar-expand-lg bg-white border-bottom sticky-top">
+  <div class="container">
+    <a class="navbar-brand" th:href="@{/home}">Fem<span>Fit</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" th:href="@{/home}" th:text="#{nav.home}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/schedule}" th:text="#{nav.schedule}">Schedule</a></li>
+        <li class="nav-item"><a class="nav-link" th:href="@{/plans}" th:text="#{nav.membership}">Membership</a></li>
+        <li class="nav-item" sec:authorize="hasRole('CLIENT')">
+          <a class="nav-link" th:href="@{/client/profile}" th:text="#{nav.profile}">My Profile</a>
+        </li>
+        <li class="nav-item" sec:authorize="hasRole('TRAINER')">
+          <a class="nav-link" th:href="@{/trainer/dashboard}" th:text="#{nav.trainer}">Trainer Panel</a>
+        </li>
+        <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+          <a class="nav-link" th:href="@{/admin/dashboard}" th:text="#{nav.admin}">Admin Panel</a>
+        </li>
+      </ul>
+      <div class="d-flex align-items-center gap-3">
+        <div class="lang-sw">
+          <a th:href="@{''(lang=en)}" class="lang-btn">EN</a>
+          <a th:href="@{''(lang=ru)}" class="lang-btn">RU</a>
+          <a th:href="@{''(lang=kz)}" class="lang-btn">KZ</a>
+        </div>
+        <sec:authorize access="isAuthenticated()">
+          <form th:action="@{/auth/logout}" method="post" class="d-inline">
+            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+            <button type="submit" class="btn-rose" th:text="#{nav.logout}">Log Out</button>
+          </form>
+        </sec:authorize>
+        <sec:authorize access="isAnonymous()">
+          <a th:href="@{/auth/login}" class="btn-rose" th:text="#{nav.login}">Log In</a>
+          <a th:href="@{/auth/register}" class="btn btn-outline-secondary ms-2" style="border-radius:30px;font-size:13px;" th:text="#{nav.register}">Join Now</a>
+        </sec:authorize>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-3" th:if="${success}">
+  <div class="alert alert-success border-0" th:text="${success}">Success</div>
+</div>
+<div class="container mt-3" th:if="${error}">
+  <div class="alert alert-danger border-0" th:text="${error}">Error</div>
+</div>
+
+<footer th:fragment="footer" style="background:#3D1520;color:rgba(255,255,255,0.6);text-align:center;padding:32px 40px;margin-top:60px;font-size:13px;">
+  <div style="font-family:var(--serif);font-size:20px;color:white;margin-bottom:6px;">FemFit</div>
+  <div>© 2026 FemFit Women's Fitness Club. All rights reserved.</div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

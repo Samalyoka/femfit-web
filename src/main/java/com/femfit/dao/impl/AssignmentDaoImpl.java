@@ -1,0 +1,151 @@
+package com.femfit.dao.impl;
+
+import com.femfit.dao.AssignmentDao;
+import com.femfit.model.Assignment;
+import com.femfit.util.pool.ConnectionPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.sql.*;
+import java.util.Optional;
+
+/**
+ * JDBC implementation of {@link AssignmentDao}.
+ */
+@Repository
+public class AssignmentDaoImpl implements AssignmentDao {
+
+    private static final Logger log = LoggerFactory.getLogger(AssignmentDaoImpl.class);
+
+    private final ConnectionPool pool;
+
+    @Autowired
+    public AssignmentDaoImpl(ConnectionPool pool) {
+        this.pool = pool;
+    }
+
+    private static final String INSERT = """
+            INSERT INTO assignments (order_id, exercises, equipment, nutrition_plan,
+                                     schedule_info, status, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, 'ACTIVE', NOW(), NOW())
+            RETURNING id, created_at, updated_at
+            """;
+
+    private static final String SELECT_BY_ORDER = """
+            SELECT id, order_id, exercises, equipment, nutrition_plan,
+                   schedule_info, status, created_at, updated_at
+            FROM assignments
+            WHERE order_id = ?
+            """;
+
+    private static final String UPDATE = """
+            UPDATE assignments
+            SET exercises = ?, equipment = ?, nutrition_plan = ?,
+                schedule_info = ?, updated_at = NOW()
+            WHERE id = ?
+            """;
+
+    private static final String UPDATE_STATUS = """
+            UPDATE assignments SET status = ?, updated_at = NOW()
+            WHERE id = ?
+            """;
+
+    @Override
+    public Assignment save(Assignment assignment) {
+        Connection conn = pool.getConnection();
+        try {
+            conn.setAutoCommit(false);
+            try (PreparedStatement ps = conn.prepareStatement(INSERT)) {
+                ps.setLong(1, assignment.getOrderId());
+                ps.setString(2, assignment.getExercises());
+                ps.setString(3, assignment.getEquipment());
+                ps.setString(4, assignment.getNutritionPlan());
+                ps.setString(5, assignment.getScheduleInfo());
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        assignment.setId(rs.getLong("id"));
+                        assignment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+                        assignment.setUpdatedAt(rs.getTimestamp("updated_at").toLocalDateTime());
+                    }
+                }
+            }
+            conn.commit();
+            log.info("Assignment saved: id={}", assignment.getId());
+            return assignment;
+        } catch (SQLException e) {
+            try { conn.rollback(); } catch (SQLException ex) { log.error("Rollback failed", ex); }
+            log.error("Error saving assignment: {}", e.getMessage());
+            throw new RuntimeException("Failed to save assignment", e);
+        } finally {
+            try { conn.setAutoCommit(true); } catch (SQLException e) { log.error("AutoCommit reset failed", e); }
+            pool.releaseConnection(conn);
+        }
+    }
+
+    @Override
+    public Optional<Assignment> findByOrderId(Long orderId) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_ORDER)) {
+            ps.setLong(1, orderId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return Optional.of(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Error finding assignment for order {}: {}", orderId, e.getMessage());
+            throw new RuntimeException("Failed to find assignment", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public void update(Assignment assignment) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(UPDATE)) {
+            ps.setString(1, assignment.getExercises());
+            ps.setString(2, assignment.getEquipment());
+            ps.setString(3, assignment.getNutritionPlan());
+            ps.setString(4, assignment.getScheduleInfo());
+            ps.setLong(5, assignment.getId());
+            ps.executeUpdate();
+            log.debug("Assignment updated: id={}", assignment.getId());
+        } catch (SQLException e) {
+            log.error("Error updating assignment: {}", e.getMessage());
+            throw new RuntimeException("Failed to update assignment", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
+    @Override
+    public void updateStatus(Long assignmentId, String status) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(UPDATE_STATUS)) {
+            ps.setString(1, status);
+            ps.setLong(2, assignmentId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Error updating assignment status: {}", e.getMessage());
+            throw new RuntimeException("Failed to update assignment status", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
+    private Assignment mapRow(ResultSet rs) throws SQLException {
+        return Assignment.builder()
+                .id(rs.getLong("id"))
+                .orderId(rs.getLong("order_id"))
+                .exercises(rs.getString("exercises"))
+                .equipment(rs.getString("equipment"))
+                .nutritionPlan(rs.getString("nutrition_plan"))
+                .scheduleInfo(rs.getString("schedule_info"))
+                .status(rs.getString("status"))
+                .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
+                .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
+                .build();
+    }
+}

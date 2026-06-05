@@ -1,0 +1,25 @@
+# Maven
+target/
+*.jar
+*.war
+*.ear
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.swp
+
+# Logs
+logs/
+*.log
+
+# Environment / secrets
+application-local.properties
+src/main/resources/application.properties
+
+# OS
+.DS_Store
+Thumbs.db

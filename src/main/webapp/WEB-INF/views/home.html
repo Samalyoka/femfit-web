@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{common/layout :: head}">
+  <title>Home</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<main>
+  <!-- HERO -->
+  <section style="background:#F5E8EA;padding:80px 0 60px;">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <p style="font-size:11px;letter-spacing:3px;color:#C4687A;text-transform:uppercase;margin-bottom:16px;">Premium Women's Fitness</p>
+          <h1 style="font-family:'Cormorant Garamond',serif;font-size:clamp(42px,6vw,68px);font-weight:400;color:#3D1520;line-height:1.1;margin-bottom:20px;">
+            Your strength.<br><em>Your space.</em>
+          </h1>
+          <p style="font-size:16px;color:#8A7A72;line-height:1.7;margin-bottom:32px;max-width:440px;">
+            A luxury fitness club designed exclusively for women — where wellness meets elegance.
+          </p>
+          <div class="d-flex gap-3">
+            <a th:href="@{/plans}" class="btn-rose" style="padding:13px 30px;border-radius:30px;font-size:14px;font-weight:500;background:#C4687A;color:white;text-decoration:none;" th:text="#{plans.title}">Choose a Plan</a>
+            <a th:href="@{/schedule}" style="padding:12px 30px;border-radius:30px;font-size:14px;color:#7A3040;border:1.5px solid #E8B4BC;text-decoration:none;" th:text="#{nav.schedule}">View Schedule</a>
+          </div>
+        </div>
+        <div class="col-lg-6 d-none d-lg-flex justify-content-end">
+          <div style="background:white;border-radius:20px;padding:28px;width:280px;box-shadow:0 8px 40px rgba(196,104,122,0.15);">
+            <div style="font-size:11px;color:#8A7A72;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Next class</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:#3D1520;margin-bottom:4px;">Morning Yoga</div>
+            <div style="font-size:13px;color:#8A7A72;margin-bottom:16px;">07:00 · Studio A · Elena M.</div>
+            <div style="height:1px;background:#E8DDD8;margin-bottom:16px;"></div>
+            <div style="font-size:28px;font-family:'Cormorant Garamond',serif;color:#C4687A;">2,400+</div>
+            <div style="font-size:12px;color:#8A7A72;">Active members</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OUR CLASSES -->
+  <section style="padding:70px 0;">
+    <div class="container">
+      <p style="font-size:11px;letter-spacing:3px;color:#C4687A;text-transform:uppercase;margin-bottom:10px;">What we offer</p>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:400;color:#3D1520;margin-bottom:36px;" th:text="#{nav.schedule}">Our classes</h2>
+      <div class="row g-3">
+        <div th:each="cat : ${ {'CARDIO','YOGA','STRENGTH','PILATES','DANCE','STRETCHING'} }" class="col-6 col-md-4 col-lg-2">
+          <a th:href="@{/schedule(category=${cat})}" class="d-block text-decoration-none"
+             style="background:white;border:0.5px solid #E8DDD8;border-radius:4px;padding:26px 12px;text-align:center;transition:border-color 0.2s;">
+            <div style="width:24px;height:1px;background:#C4687A;margin:0 auto 14px;"></div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:3px;text-transform:uppercase;color:#2C2420;" th:text="${cat}">YOGA</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="#{schedule.title} + ' — FemFit'">Schedule</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--rose:#C4687A;--rose-light:#F5E8EA;--rose-mid:#E8B4BC;--rose-dark:#7A3040;--muted:#8A7A72;--border:#E8DDD8;--serif:'Cormorant Garamond',serif;--sans:'DM Sans',sans-serif;}
+        body{font-family:var(--sans);background:#FDFAF7;color:#2C2420;}
+        .pill{padding:7px 18px;border-radius:30px;font-size:13px;border:1px solid var(--border);background:white;color:var(--muted);text-decoration:none;transition:all 0.2s;}
+        .pill:hover,.pill.active{background:var(--rose-light);border-color:var(--rose-mid);color:var(--rose-dark);font-weight:500;}
+        .sched-table{background:white;border:0.5px solid var(--border);border-radius:16px;overflow:hidden;}
+        .sched-head{display:grid;grid-template-columns:90px 1fr 140px 80px 110px;padding:12px 24px;background:#F7F3EE;font-size:11px;font-weight:500;color:var(--muted);letter-spacing:1px;text-transform:uppercase;gap:12px;}
+        .sched-row{display:grid;grid-template-columns:90px 1fr 140px 80px 110px;padding:16px 24px;border-top:0.5px solid var(--border);align-items:center;gap:12px;font-size:14px;}
+        .sched-row:hover{background:#F7F3EE;}
+        .spots{display:inline-block;font-size:11px;padding:3px 10px;border-radius:12px;background:var(--rose-light);color:var(--rose-dark);font-weight:500;}
+        .spots.full{background:#F1EFE8;color:var(--muted);}
+        .book-btn{padding:7px 16px;background:var(--rose);color:white;border:none;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;}
+        .book-btn:hover{background:var(--rose-dark);}
+        @media(max-width:768px){.sched-head,.sched-row{grid-template-columns:70px 1fr 80px;}.sched-head span:nth-child(3),.sched-head span:nth-child(4),.sched-row>*:nth-child(3),.sched-row>*:nth-child(4){display:none;}}
+    </style>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="container py-5">
+    <p style="font-size:11px;letter-spacing:3px;color:#C4687A;text-transform:uppercase;margin-bottom:10px;">Book your spot</p>
+    <h1 style="font-family:var(--serif);font-size:36px;font-weight:400;color:#3D1520;margin-bottom:28px;" th:text="#{schedule.title}">Class Schedule</h1>
+
+    <!-- Filters -->
+    <div class="d-flex gap-2 flex-wrap mb-4">
+        <a th:href="@{/schedule}" th:class="${activeCategory == 'ALL'} ? 'pill active' : 'pill'" th:text="#{schedule.filter.all}">All</a>
+        <a th:href="@{/schedule(category='CARDIO')}" th:class="${activeCategory == 'CARDIO'} ? 'pill active' : 'pill'" th:text="#{schedule.filter.cardio}">Cardio</a>
+        <a th:href="@{/schedule(category='YOGA')}" th:class="${activeCategory == 'YOGA'} ? 'pill active' : 'pill'" th:text="#{schedule.filter.yoga}">Yoga</a>
+        <a th:href="@{/schedule(category='STRENGTH')}" th:class="${activeCategory == 'STRENGTH'} ? 'pill active' : 'pill'" th:text="#{schedule.filter.strength}">Strength</a>
+        <a th:href="@{/schedule(category='PILATES')}" th:class="${activeCategory == 'PILATES'} ? 'pill active' : 'pill'" th:text="#{schedule.filter.pilates}">Pilates</a>
+        <a th:href="@{/schedule(category='DANCE')}" th:class="${activeCategory == 'DANCE'} ? 'pill active' : 'pill'" th:text="#{schedule.filter.dance}">Dance</a>
+    </div>
+
+    <!-- Schedule table -->
+    <div class="sched-table">
+        <div class="sched-head">
+            <span th:text="#{schedule.col.time}">Time</span>
+            <span th:text="#{schedule.col.class}">Class</span>
+            <span th:text="#{schedule.col.trainer}">Trainer</span>
+            <span th:text="#{schedule.col.spots}">Spots</span>
+            <span></span>
+        </div>
+
+        <div th:if="${#lists.isEmpty(schedules)}" style="padding:32px;text-align:center;color:#8A7A72;font-size:14px;" th:text="#{schedule.no.classes}">No classes found</div>
+
+        <div th:each="s : ${schedules}" class="sched-row">
+            <span style="font-size:13px;color:#8A7A72;" th:text="${#temporals.format(s.scheduledAt,'HH:mm')}">07:00</span>
+            <span style="font-weight:500;" th:text="${s.className}">Morning Yoga</span>
+            <span style="font-size:13px;color:#8A7A72;" th:text="${s.trainerName}">Elena M.</span>
+            <span th:class="${s.spotsLeft == 0} ? 'spots full' : 'spots'"
+                  th:text="${s.spotsLeft == 0} ? #{schedule.full} : ${s.spotsLeft} + ' left'">3 left</span>
+            <div>
+                <sec:authorize access="hasRole('CLIENT')">
+                    <form th:action="@{/client/book/{id}(id=${s.id})}" method="post" th:if="${s.spotsLeft > 0}">
+                        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                        <button type="submit" class="book-btn" th:text="#{schedule.book}">Book</button>
+                    </form>
+                </sec:authorize>
+                <sec:authorize access="isAnonymous()">
+                    <a th:href="@{/auth/login}" class="book-btn" style="text-decoration:none;display:inline-block;" th:text="#{schedule.book}">Book</a>
+                </sec:authorize>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
