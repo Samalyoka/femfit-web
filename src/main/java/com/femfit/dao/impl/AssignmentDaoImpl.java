@@ -11,9 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.Optional;
 
-/**
- * JDBC implementation of {@link AssignmentDao}.
- */
 @Repository
 public class AssignmentDaoImpl implements AssignmentDao {
 
@@ -25,6 +22,8 @@ public class AssignmentDaoImpl implements AssignmentDao {
     public AssignmentDaoImpl(ConnectionPool pool) {
         this.pool = pool;
     }
+
+    // ─── SQL ──────────────────────────────────────────────────────────────────
 
     private static final String INSERT = """
             INSERT INTO assignments (order_id, exercises, equipment, nutrition_plan,
@@ -40,17 +39,34 @@ public class AssignmentDaoImpl implements AssignmentDao {
             WHERE order_id = ?
             """;
 
+    private static final String SELECT_LATEST_BY_CLIENT = """
+            SELECT a.id, a.order_id, a.exercises, a.equipment, a.nutrition_plan,
+                   a.schedule_info, a.status, a.created_at, a.updated_at
+            FROM assignments a
+            JOIN orders o ON o.id = a.order_id
+            WHERE o.user_id = ?
+            ORDER BY a.updated_at DESC
+            LIMIT 1
+            """;
+
     private static final String UPDATE = """
             UPDATE assignments
-            SET exercises = ?, equipment = ?, nutrition_plan = ?,
-                schedule_info = ?, updated_at = NOW()
-            WHERE id = ?
+               SET exercises = ?, equipment = ?, nutrition_plan = ?,
+                   schedule_info = ?, updated_at = NOW()
+             WHERE id = ?
             """;
 
     private static final String UPDATE_STATUS = """
-            UPDATE assignments SET status = ?, updated_at = NOW()
-            WHERE id = ?
+            UPDATE assignments
+               SET status = ?, updated_at = NOW()
+             WHERE id = ?
             """;
+
+    private static final String DELETE_BY_ORDER = """
+            DELETE FROM assignments WHERE order_id = ?
+            """;
+
+    // ─── Interface methods ────────────────────────────────────────────────────
 
     @Override
     public Assignment save(Assignment assignment) {
@@ -76,7 +92,7 @@ public class AssignmentDaoImpl implements AssignmentDao {
             return assignment;
         } catch (SQLException e) {
             try { conn.rollback(); } catch (SQLException ex) { log.error("Rollback failed", ex); }
-            log.error("Error saving assignment: {}", e.getMessage());
+            log.error("Error saving assignment", e);
             throw new RuntimeException("Failed to save assignment", e);
         } finally {
             try { conn.setAutoCommit(true); } catch (SQLException e) { log.error("AutoCommit reset failed", e); }
@@ -93,8 +109,25 @@ public class AssignmentDaoImpl implements AssignmentDao {
                 if (rs.next()) return Optional.of(mapRow(rs));
             }
         } catch (SQLException e) {
-            log.error("Error finding assignment for order {}: {}", orderId, e.getMessage());
-            throw new RuntimeException("Failed to find assignment", e);
+            log.error("Error finding assignment for order {}", orderId, e);
+            throw new RuntimeException("Failed to find assignment by orderId", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<Assignment> findLatestByClientId(long clientId) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_LATEST_BY_CLIENT)) {
+            ps.setLong(1, clientId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return Optional.of(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Error finding assignment for client {}", clientId, e);
+            throw new RuntimeException("Failed to find assignment by clientId", e);
         } finally {
             pool.releaseConnection(conn);
         }
@@ -113,7 +146,7 @@ public class AssignmentDaoImpl implements AssignmentDao {
             ps.executeUpdate();
             log.debug("Assignment updated: id={}", assignment.getId());
         } catch (SQLException e) {
-            log.error("Error updating assignment: {}", e.getMessage());
+            log.error("Error updating assignment id={}", assignment.getId(), e);
             throw new RuntimeException("Failed to update assignment", e);
         } finally {
             pool.releaseConnection(conn);
@@ -127,13 +160,31 @@ public class AssignmentDaoImpl implements AssignmentDao {
             ps.setString(1, status);
             ps.setLong(2, assignmentId);
             ps.executeUpdate();
+            log.debug("Assignment status updated: id={}, status={}", assignmentId, status);
         } catch (SQLException e) {
-            log.error("Error updating assignment status: {}", e.getMessage());
+            log.error("Error updating assignment status id={}", assignmentId, e);
             throw new RuntimeException("Failed to update assignment status", e);
         } finally {
             pool.releaseConnection(conn);
         }
     }
+
+    @Override
+    public void deleteByOrderId(Long orderId) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(DELETE_BY_ORDER)) {
+            ps.setLong(1, orderId);
+            int rows = ps.executeUpdate();
+            log.debug("Deleted {} assignment(s) for order {}", rows, orderId);
+        } catch (SQLException e) {
+            log.error("Error deleting assignments for order {}", orderId, e);
+            throw new RuntimeException("Failed to delete assignments", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
+    // ─── Mapping ──────────────────────────────────────────────────────────────
 
     private Assignment mapRow(ResultSet rs) throws SQLException {
         return Assignment.builder()

@@ -1,30 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FemFit</title>
+  <link rel="stylesheet" th:href="@{/static/css/main.css}">
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --rose:#C4687A; --rose-light:#F5E8EA; --rose-mid:#E8B4BC; --rose-dark:#7A3040; --rose-deep:#3D1520; --sand:#F7F3EE; --warm-white:#FDFAF7; --charcoal:#2C2420; --muted:#8A7A72; --border:#E8DDD8; --serif:'Cormorant Garamond',Georgia,serif; --sans:'DM Sans',sans-serif; }
-    html { scroll-behavior: smooth; }
-    body { font-family: var(--sans); background: var(--warm-white); color: var(--charcoal); font-size: 15px; line-height: 1.6; }
-    nav.main-nav { position:sticky; top:0; z-index:100; background:rgba(253,250,247,0.95); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 40px; height:64px; gap:8px; }
-    .logo { font-family:var(--serif); font-size:26px; font-weight:500; color:var(--rose-dark); letter-spacing:0.5px; margin-right:auto; text-decoration:none; }
-    .logo span { color:var(--rose); }
-    .nav-link { font-size:13px; font-weight:400; color:var(--muted); padding:8px 16px; border-radius:30px; transition:all 0.2s; font-family:var(--sans); letter-spacing:0.3px; text-decoration:none; display:inline-block; }
-    .nav-link:hover { color:var(--charcoal); background:var(--sand); }
-    .nav-cta { margin-left:8px; padding:9px 22px; background:var(--rose); color:white; border:none; border-radius:30px; font-size:13px; font-weight:500; cursor:pointer; font-family:var(--sans); transition:background 0.2s,transform 0.15s; letter-spacing:0.3px; text-decoration:none; display:inline-block; }
-    .nav-cta:hover { background:var(--rose-dark); transform:translateY(-1px); color:white; }
-    .lang-sw { display:flex; gap:2px; margin-left:12px; background:var(--sand); border-radius:20px; padding:3px; }
-    .lang-btn { font-size:11px; font-weight:500; padding:4px 10px; border-radius:16px; border:none; background:transparent; color:var(--muted); cursor:pointer; font-family:var(--sans); transition:all 0.2s; text-decoration:none; display:inline-block; }
-    .lang-btn:hover { color:var(--rose-dark); }
-    footer { background:var(--rose-deep); color:rgba(255,255,255,0.7); text-align:center; padding:32px 40px; font-size:13px; margin-top:80px; }
-    footer .footer-logo { font-family:var(--serif); font-size:22px; color:white; margin-bottom:8px; }
-    @media (max-width:768px) { nav.main-nav { padding:0 16px; } }
-  </style>
 </head>
 <body>
 
@@ -33,9 +14,10 @@
   <a class="nav-link" th:href="@{/home}" th:text="#{nav.home}">Home</a>
   <a class="nav-link" th:href="@{/schedule}" th:text="#{nav.schedule}">Schedule</a>
   <a class="nav-link" th:href="@{/plans}" th:text="#{nav.membership}">Membership</a>
-  <a class="nav-link" sec:authorize="hasRole('CLIENT')" th:href="@{/client/profile}" th:text="#{nav.profile}">My Profile</a>
-  <a class="nav-link" sec:authorize="hasRole('TRAINER')" th:href="@{/trainer/dashboard}" th:text="#{nav.trainer}">Trainer Panel</a>
-  <a class="nav-link" sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}" th:text="#{nav.admin}">Admin Panel</a>
+  <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/profile}" th:text="#{nav.profile}">My Profile</a>
+  <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/cycles}">Programs</a>
+  <a class="nav-link" th:if="${userRole == 'TRAINER'}" th:href="@{/trainer/dashboard}" th:text="#{nav.trainer}">Trainer Panel</a>
+  <a class="nav-link" th:if="${userRole == 'ADMIN'}" th:href="@{/admin/dashboard}" th:text="#{nav.admin}">Admin Panel</a>
   <div class="lang-sw">
     <a th:href="@{''(lang=en)}" class="lang-btn">EN</a>
     <a th:href="@{''(lang=ru)}" class="lang-btn">RU</a>

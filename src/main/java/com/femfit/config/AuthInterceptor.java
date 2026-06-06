@@ -16,17 +16,20 @@ import org.springframework.web.servlet.ModelAndView;
 public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
-    public void postHandle(HttpServletRequest request,
-                           HttpServletResponse response,
-                           Object handler,
-                           ModelAndView modelAndView) {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response,
+                           Object handler, ModelAndView modelAndView) {
         if (modelAndView != null) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean isAuthenticated = auth != null
                     && auth.isAuthenticated()
-                    && !(auth.getPrincipal() instanceof String
-                    && auth.getPrincipal().equals("anonymousUser"));
+                    && !(auth.getPrincipal() instanceof String s && s.equals("anonymousUser"));
             modelAndView.addObject("isAuthenticated", isAuthenticated);
+            if (isAuthenticated && auth.getAuthorities() != null) {
+                auth.getAuthorities().stream()
+                        .findFirst()
+                        .ifPresent(a -> modelAndView.addObject("userRole",
+                                a.getAuthority().replace("ROLE_", "")));
+            }
         }
     }
 }

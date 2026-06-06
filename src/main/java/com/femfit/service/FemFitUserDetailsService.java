@@ -34,6 +34,7 @@ public class FemFitUserDetailsService implements UserDetailsService {
      * @return Spring Security UserDetails
      * @throws UsernameNotFoundException if no user found with given email
      */
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         log.debug("Loading user by email: {}", email);
@@ -43,6 +44,10 @@ public class FemFitUserDetailsService implements UserDetailsService {
                     log.warn("User not found: {}", email);
                     return new UsernameNotFoundException("User not found: " + email);
                 });
+
+        log.debug("Found user: id={}, email={}, active={}, role={}, passwordHash={}",
+                user.getId(), user.getEmail(), user.isActive(), user.getRole(),
+                user.getPasswordHash().substring(0, 10) + "..."); // первые 10 символов хеша
 
         if (!user.isActive()) {
             log.warn("Inactive user tried to login: {}", email);

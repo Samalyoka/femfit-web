@@ -14,16 +14,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Handles user authentication: login page, registration, logout.
- * Logout POST /auth/logout is handled automatically by Spring Security —
- * no explicit method needed here.
+ * Handles user authentication operations including rendering login/registration forms
+ * and processing user registration.
  */
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-
     private final UserService userService;
 
     @Autowired
@@ -32,51 +30,57 @@ public class AuthController {
     }
 
     /**
-     * Shows the login page.
-     * Spring Security processes the actual POST /auth/login automatically.
+     * Renders the login page.
+     * actual POST authentication request processing is intercepted and handled by Spring Security.
      *
-     * @param error  present when login failed (Spring Security adds ?error)
-     * @param logout present after successful logout (Spring Security adds ?logout)
-     * @param model  Spring MVC model
-     * @return login view
+     * @param error  flag appended by Spring Security if authentication fails (?error=true)
+     * @param logout flag appended by Spring Security upon successful session termination (?logout=true)
+     * @param model  Spring MVC model container
+     * @return target login view path
      */
     @GetMapping("/login")
     public String loginPage(@RequestParam(name = "error", required = false) String error,
                             @RequestParam(name = "logout", required = false) String logout,
                             Model model) {
-        log.info("Login page requested, error={}, logout={}", error, logout);
-        if (error != null) model.addAttribute("loginError", true);
-        if (logout != null) model.addAttribute("logoutMsg", true);
-        return "auth/login";
+        log.info("Processing login page view request. error_present={}, logout_present={}", error != null, logout != null);
+        if (error != null) {
+            model.addAttribute("loginError", true);
+        }
+        if (logout != null) {
+            model.addAttribute("logoutMsg", true);
+        }
+        return "auth/login"; // Ensure template location matches: src/main/resources/templates/auth/login.html
     }
 
     /**
-     * Shows the registration form with an empty DTO.
+     * Renders the clean user registration form bound to a blank DTO instance.
      *
-     * @param model Spring MVC model
-     * @return register view
+     * @param model Spring MVC model container
+     * @return target registration view path
      */
     @GetMapping("/register")
     public String registerPage(Model model) {
+        log.info("Processing account registration page view request.");
+        // Explicitly ensuring an uninitialized, clean DTO is pushed to clear form values
         model.addAttribute("registerDto", new RegisterDto());
-        return "auth/register";
+        return "auth/register"; // Ensure template location matches: src/main/resources/templates/auth/register.html
     }
 
     /**
-     * Processes the registration form.
-     * Validates input, creates account, redirects to login on success.
+     * Processes incoming user registration form submissions.
+     * Performs schema validation and handles unique email constraints.
      *
-     * @param dto           registration form data (validated by @Valid)
-     * @param bindingResult validation errors — if present, returns to form
-     * @param redirectAttrs flash attributes for success message on login page
-     * @return redirect to login on success, or back to register on error
+     * @param dto           validated registration form payload
+     * @param bindingResult holds validation constraints computation output
+     * @param redirectAttrs operational flash attributes mapping for multi-request data transfers
+     * @return view redirection routing or fallbacks to the registration form UI state
      */
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute("registerDto") RegisterDto dto,
                            BindingResult bindingResult,
                            RedirectAttributes redirectAttrs) {
         if (bindingResult.hasErrors()) {
-            log.debug("Registration form has {} errors", bindingResult.getErrorCount());
+            log.warn("Registration payload processing rejected due to {} validation errors", bindingResult.getErrorCount());
             return "auth/register";
         }
         try {
@@ -84,11 +88,12 @@ public class AuthController {
             redirectAttrs.addFlashAttribute("success", "Registration successful! Please log in.");
             return "redirect:/auth/login?registered";
         } catch (EmailAlreadyTakenException e) {
-            bindingResult.rejectValue("email", "error.email.taken");
+            log.warn("Registration operation rejected: email address '{}' is already registered", dto.getEmail());
+            bindingResult.rejectValue("email", "error.email.taken", "This email is already in use.");
             return "auth/register";
         } catch (Exception e) {
-            log.error("Registration error: {}", e.getMessage());
-            bindingResult.reject("error.general");
+            log.error("Unexpected failure occurred during user registration sequence: {}", e.getMessage(), e);
+            bindingResult.reject("error.general", "An error occurred. Please try again later.");
             return "auth/register";
         }
     }

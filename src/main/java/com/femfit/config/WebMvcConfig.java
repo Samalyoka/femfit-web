@@ -30,9 +30,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private MessageSource messageSource;
 
-    @Autowired
-    private LocaleChangeInterceptor localeChangeInterceptor;
-
     // ── Thymeleaf ──────────────────────────────────────────────────────────
 
     /**
@@ -70,6 +67,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         ThymeleafViewResolver resolver = new ThymeleafViewResolver();
         resolver.setTemplateEngine(templateEngine());
         resolver.setCharacterEncoding("UTF-8");
+        resolver.setContentType("text/html; charset=UTF-8");
         resolver.setOrder(1);
         return resolver;
     }
@@ -88,7 +86,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(localeChangeInterceptor);
+        registry.addInterceptor(localeChangeInterceptor());
         registry.addInterceptor(new AuthInterceptor());
     }
 
@@ -117,8 +115,22 @@ public class WebMvcConfig implements WebMvcConfigurer {
         return resolver;
     }
 
+    /**
+     * Overrides the default Spring MVC Validator with our custom LocalValidatorFactoryBean
+     */
     @Override
     public org.springframework.validation.Validator getValidator() {
         return validator();
     }
+
+    /**
+     * Interceptor that detects the "lang" request parameter and changes the locale accordingly.
+     */
+    @Bean
+    public LocaleChangeInterceptor localeChangeInterceptor() {
+        LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
+        interceptor.setParamName("lang");
+        return interceptor;
+    }
+
 }

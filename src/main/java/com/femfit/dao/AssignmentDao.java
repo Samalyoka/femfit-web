@@ -1,42 +1,27 @@
 package com.femfit.dao;
 
 import com.femfit.model.Assignment;
-
 import java.util.Optional;
 
-/**
- * DAO interface for {@link Assignment} entity.
- */
 public interface AssignmentDao {
 
-    /**
-     * Saves a new assignment.
-     *
-     * @param assignment the assignment to save
-     * @return saved assignment with generated id
-     */
+    /** Save a new assignment or update an existing one.*/
     Assignment save(Assignment assignment);
 
-    /**
-     * Finds assignment by order id.
-     *
-     * @param orderId the order id
-     * @return Optional with assignment or empty
-     */
+    /** Find the latest assignment for a given order ID. Returns empty if no assignment exists for that order.*/
     Optional<Assignment> findByOrderId(Long orderId);
 
     /**
-     * Updates an existing assignment.
-     *
-     * @param assignment the assignment with updated fields
+     * Find the latest assignment for a given client ID. Returns empty if no assignment exists for that client.
      */
+    Optional<Assignment> findLatestByClientId(long clientId);
+
+    /** Update the content (exercises, equipment, nutrition_plan, schedule_info). */
     void update(Assignment assignment);
 
-    /**
-     * Updates assignment status.
-     *
-     * @param assignmentId assignment id
-     * @param status       new status: ACTIVE, COMPLETED, REVISION_REQUESTED
-     */
+    /** Update only the status. */
     void updateStatus(Long assignmentId, String status);
+
+    /** Delete all assignments for an order. */
+    void deleteByOrderId(Long orderId);
 }

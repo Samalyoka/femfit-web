@@ -9,40 +9,43 @@ import jakarta.servlet.ServletRegistration;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Replaces web.xml entirely.
  * Registers DispatcherServlet, Spring contexts, and Servlet filters.
+ * Spring Security filter chain is activated via DelegatingFilterProxy
+ * which lazily resolves springSecurityFilterChain bean from web context.
  */
 public class WebAppInitializer implements WebApplicationInitializer {
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
 
-        // Root application context (services, DAOs)
         AnnotationConfigWebApplicationContext rootContext =
                 new AnnotationConfigWebApplicationContext();
-        rootContext.register(AppConfig.class);  // ← убери SecurityConfig отсюда
+        rootContext.register(AppConfig.class, SecurityConfig.class);
         servletContext.addListener(new ContextLoaderListener(rootContext));
 
-        // Web (MVC) context
         AnnotationConfigWebApplicationContext webContext =
                 new AnnotationConfigWebApplicationContext();
-        webContext.register(WebMvcConfig.class, SecurityConfig.class);  // ← добавь сюда
+        webContext.register(WebMvcConfig.class);
 
-        // Register DispatcherServlet
         ServletRegistration.Dynamic dispatcher =
                 servletContext.addServlet("dispatcher", new DispatcherServlet(webContext));
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
 
-        // Register EncodingFilter (UTF-8 for RU/KZ locales)
+        FilterRegistration.Dynamic securityFilter = servletContext.addFilter(
+                "springSecurityFilterChain",
+                new DelegatingFilterProxy("springSecurityFilterChain"));
+        securityFilter.addMappingForUrlPatterns(null, false, "/*");
+
         FilterRegistration.Dynamic encodingFilter =
                 servletContext.addFilter("encodingFilter", new EncodingFilter());
         encodingFilter.addMappingForUrlPatterns(null, false, "/*");
 
-        // Register LoggingFilter (request logging)
         FilterRegistration.Dynamic loggingFilter =
                 servletContext.addFilter("loggingFilter", new LoggingFilter());
         loggingFilter.addMappingForUrlPatterns(null, false, "/*");

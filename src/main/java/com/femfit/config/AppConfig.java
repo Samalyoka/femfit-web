@@ -77,16 +77,6 @@ public class AppConfig {
     }
 
     /**
-     * Intercepts ?lang=ru requests and changes the session locale.
-     */
-    @Bean
-    public LocaleChangeInterceptor localeChangeInterceptor() {
-        LocaleChangeInterceptor interceptor = new LocaleChangeInterceptor();
-        interceptor.setParamName("lang");
-        return interceptor;
-    }
-
-    /**
      * BCrypt password encoder with work factor 12.
      */
     @Bean

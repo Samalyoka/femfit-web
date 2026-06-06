@@ -35,34 +35,6 @@ public class HomeController {
     }
 
     /**
-     * Schedule page — shows upcoming classes, optionally filtered by category.
-     *
-     * @param category optional filter (YOGA, CARDIO, STRENGTH, PILATES, DANCE)
-     * @param model    Spring MVC model
-     * @return schedule view
-     */
-    @GetMapping("/schedule")
-    public String schedule(@RequestParam(name = "category", required = false) String category, Model model) {
-        log.info("Schedule page requested, category={}", category);
-        try {
-            List<ClassSchedule> schedules;
-            if (category != null && !category.isBlank()) {
-                schedules = scheduleDao.findUpcomingByCategory(category);
-                model.addAttribute("activeCategory", category.toUpperCase());
-            } else {
-                schedules = scheduleDao.findUpcoming();
-                model.addAttribute("activeCategory", "ALL");
-            }
-            log.info("Schedules found: {}", schedules.size());
-            model.addAttribute("schedules", schedules);
-            return "schedule";
-        } catch (Exception e) {
-            log.error("Error loading schedule: {}", e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    /**
      * Membership plans page.
      */
     @GetMapping("/plans")

@@ -1,6 +1,8 @@
 package com.femfit.config;
 
 import com.femfit.service.FemFitUserDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +11,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -26,46 +29,20 @@ import org.springframework.core.annotation.Order;
 public class SecurityConfig {
 
     private final FemFitUserDetailsService userDetailsService;
-    private final PasswordEncoder passwordEncoder;
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Autowired
-    public SecurityConfig(FemFitUserDetailsService userDetailsService,
-                          PasswordEncoder passwordEncoder) {
+    public SecurityConfig(FemFitUserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * Authentication provider — connects Spring Security to our DB.
-     */
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder);
-        return provider;
-    }
-
-    /**
-     * AuthenticationManager bean.
-     */
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    /**
-     * Security filter chain — access rules, login, logout, CSRF, XSS.
+     * Security filter chain definition — establishes access control rules, login/logout, CSRF protection, and XSS countermeasures.
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        XorCsrfTokenRequestAttributeHandler csrfHandler =
-                new XorCsrfTokenRequestAttributeHandler();
-        csrfHandler.setCsrfRequestAttributeName("_csrf");
-
         http
-                .authenticationProvider(authenticationProvider())
+                .authenticationManager(authenticationManager())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 new AntPathRequestMatcher("/"),
@@ -81,6 +58,7 @@ public class SecurityConfig {
                         .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                         .requestMatchers(new AntPathRequestMatcher("/trainer/**")).hasRole("TRAINER")
                         .requestMatchers(new AntPathRequestMatcher("/client/**")).hasRole("CLIENT")
+                        .requestMatchers(new AntPathRequestMatcher("/trainer/**")).hasRole("TRAINER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -100,9 +78,26 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .csrf(csrf -> csrf
-                        .csrfTokenRequestHandler(csrfHandler)
+                        .ignoringRequestMatchers(
+                                new AntPathRequestMatcher("/auth/login"),
+                                new AntPathRequestMatcher("/client/book/**"),
+                                new AntPathRequestMatcher("/client/booking/cancel/**")
+                        )
                 );
 
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return new org.springframework.security.authentication.ProviderManager(provider);
     }
 }

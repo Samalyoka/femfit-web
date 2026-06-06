@@ -2,6 +2,8 @@ package com.femfit.dto;
 
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 
 /**
@@ -9,6 +11,8 @@ import java.time.LocalDate;
  * Validated with Bean Validation (jakarta.validation).
  */
 @Data
+@NoArgsConstructor  // Ensures clean default initialization without pre-filled data
+@AllArgsConstructor
 public class RegisterDto {
 
     @NotBlank(message = "{error.required}")
@@ -27,7 +31,8 @@ public class RegisterDto {
     @Size(min = 8, max = 255, message = "{error.password.short}")
     private String password;
 
-    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid phone format")
+    // Fixed: Allowed phone to be null or empty during initial form binding
+    @Pattern(regexp = "^(\\+?[0-9]{10,15})?$", message = "Invalid phone format")
     private String phone;
 
     @Past(message = "Birth date must be in the past")

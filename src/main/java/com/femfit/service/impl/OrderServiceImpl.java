@@ -75,4 +75,17 @@ public class OrderServiceImpl implements OrderService {
         assignmentDao.updateStatus(assignmentId, "REVISION_REQUESTED");
         log.info("Revision requested for assignment id={}", assignmentId);
     }
+
+    @Override
+    public Order placeOrder(Long userId, Integer cycleId, java.math.BigDecimal price) {
+        Order order = Order.builder()
+                .userId(userId)
+                .cycleId(cycleId)
+                .paidAmount(price)
+                .status("PENDING")
+                .build();
+        Order saved = orderDao.save(order);
+        log.info("Order placed: userId={}, cycleId={}, orderId={}", userId, cycleId, saved.getId());
+        return saved;
+    }
 }

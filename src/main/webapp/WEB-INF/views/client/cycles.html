@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training Programs — FemFit</title>
+  <link rel="stylesheet" th:href="@{/static/css/main.css}">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="page-wrap">
+  <div class="profile-hero">
+    <p class="section-eyebrow">Training Programs</p>
+    <h1 class="section-title">Choose your program</h1>
+  </div>
+
+  <div class="cycles-grid">
+    <div th:each="cycle : ${cycles}" class="cycle-card">
+      <div class="cycle-header">
+        <h2 class="cycle-title" th:text="${cycle.title}"></h2>
+        <div class="cycle-duration" th:text="${cycle.durationWeeks} + ' weeks'"></div>
+      </div>
+      <p class="cycle-desc" th:text="${cycle.description}"></p>
+      <div class="cycle-footer">
+        <div class="cycle-price" th:text="${#numbers.formatDecimal(cycle.price, 0, 'COMMA', 0, 'POINT')} + ' ₸'"></div>
+        <div th:if="${purchasedCycleIds.contains(cycle.id)}">
+          <span class="cycle-badge">Purchased</span>
+        </div>
+        <div th:unless="${purchasedCycleIds.contains(cycle.id)}">
+          <form th:action="@{/client/cycles/{id}/order(id=${cycle.id})}" method="post">
+            <button type="submit" class="btn-primary">Buy Now</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

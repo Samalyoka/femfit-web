@@ -1,9 +1,9 @@
 package com.femfit.controller;
 
+import com.femfit.dto.ClientOrderDto;
 import com.femfit.model.Assignment;
-import com.femfit.model.Order;
 import com.femfit.model.User;
-import com.femfit.service.OrderService;
+import com.femfit.service.TrainerService;
 import com.femfit.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,82 +16,172 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
-/**
- * Handles all trainer-specific actions:
- * viewing clients, creating and updating assignments.
- */
 @Controller
 @RequestMapping("/trainer")
 public class TrainerController {
 
     private static final Logger log = LoggerFactory.getLogger(TrainerController.class);
 
-    private final UserService userService;
-    private final OrderService orderService;
+    private final TrainerService trainerService;
+    private final UserService    userService;
 
     @Autowired
-    public TrainerController(UserService userService, OrderService orderService) {
-        this.userService = userService;
-        this.orderService = orderService;
+    public TrainerController(TrainerService trainerService, UserService userService) {
+        this.trainerService = trainerService;
+        this.userService    = userService;
     }
 
+    // ─── Хелпер ───────────────────────────────────────────────────────────────
+
+    private User resolveCurrentUser(UserDetails principal) {
+        return userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Authenticated user not found: " + principal.getUsername()));
+    }
+
+    // ─── Dashboard ────────────────────────────────────────────────────────────
+
     /**
-     * Trainer dashboard — list of active client orders.
+     * GET /trainer/dashboard
      */
     @GetMapping("/dashboard")
-    public String dashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User trainer = getUser(userDetails);
-        List<Order> orders = orderService.findActiveByTrainerId(trainer.getId());
-        model.addAttribute("orders", orders);
-        model.addAttribute("trainer", trainer);
-        return "trainer/dashboard";
+    public String dashboard(@AuthenticationPrincipal UserDetails principal,
+                            Model model) {
+        User trainer = resolveCurrentUser(principal);
+        List<ClientOrderDto> clients =
+                trainerService.getClientsWithOrderByTrainerUserId(trainer.getId());
+        model.addAttribute("clients", clients);
+        log.debug("Trainer dashboard loaded: userId={}, clients={}",
+                trainer.getId(), clients.size());
+        return "trainer/trainer-dashboard";
     }
 
-    /**
-     * Shows assignment form for a specific order.
-     *
-     * @param orderId the order to create/edit assignment for
-     */
-    @GetMapping("/assignment/{orderId}")
-    public String assignmentForm(@PathVariable Long orderId, Model model) {
-        orderService.findById(orderId).ifPresent(order -> model.addAttribute("order", order));
+    // ─── Просмотр assignment ──────────────────────────────────────────────────
 
-        Assignment assignment = orderService.findAssignment(orderId)
-                .orElse(Assignment.builder().orderId(orderId).build());
+    /**
+     * GET /trainer/client/{clientId}/assignment
+     */
+    @GetMapping("/client/{clientId}/assignment")
+    public String viewAssignment(@PathVariable long clientId,
+                                 @RequestParam long orderId,
+                                 Model model) {
+        Optional<Assignment> assignment =
+                trainerService.getAssignmentForClient(clientId);
+
+        model.addAttribute("assignment",     assignment.orElse(null));
+        model.addAttribute("clientId",       clientId);
+        model.addAttribute("orderId",        orderId);
+        model.addAttribute("hasAssignment",  assignment.isPresent());
+        return "trainer/assignment-view";
+    }
+
+    // ─── Форма create / edit ──────────────────────────────────────────────────
+
+    /**
+     * GET /trainer/client/{clientId}/assignment/form?orderId={orderId}
+     */
+    @GetMapping("/client/{clientId}/assignment/form")
+    public String assignmentForm(@PathVariable long clientId,
+                                 @RequestParam long orderId,
+                                 Model model) {
+        Optional<Assignment> existing =
+                trainerService.getAssignmentForClient(clientId);
+
+        Assignment assignment = existing.orElseGet(() ->
+                Assignment.builder()
+                        .orderId(orderId)
+                        .status("ACTIVE")
+                        .build());
+
         model.addAttribute("assignment", assignment);
+        model.addAttribute("clientId",   clientId);
+        model.addAttribute("orderId",    orderId);
+        model.addAttribute("editMode",   existing.isPresent());
         return "trainer/assignment-form";
     }
 
+    // ─── Сохранение ───────────────────────────────────────────────────────────
+
     /**
-     * Saves or updates an assignment for a client order.
+     * POST /trainer/assignment/save
      *
-     * @param assignment the assignment data from form
+     * Поля приходят из формы. orderId и clientId — hidden-поля.
+     * @ModelAttribute не используем — Assignment имеет getClientId()
+     * возвращающий orderId, что сбивает Spring при binding.
      */
     @PostMapping("/assignment/save")
-    public String saveAssignment(@ModelAttribute Assignment assignment,
-                                 RedirectAttributes redirectAttrs) {
-        orderService.saveAssignment(assignment);
-        redirectAttrs.addFlashAttribute("success", "msg.success.save");
-        log.info("Assignment saved for order id={}", assignment.getOrderId());
+    public String saveAssignment(@RequestParam long clientId,
+                                 @RequestParam long orderId,
+                                 @RequestParam(required = false) String exercises,
+                                 @RequestParam(required = false) String equipment,
+                                 @RequestParam(required = false) String nutritionPlan,
+                                 @RequestParam(required = false) String scheduleInfo,
+                                 RedirectAttributes ra) {
+        Assignment assignment = Assignment.builder()
+                .orderId(orderId)
+                .exercises(exercises)
+                .equipment(equipment)
+                .nutritionPlan(nutritionPlan)
+                .scheduleInfo(scheduleInfo)
+                .status("ACTIVE")
+                .build();
+
+        trainerService.saveOrUpdateAssignment(assignment);
+        log.info("Assignment saved: orderId={}, clientId={}", orderId, clientId);
+
+        ra.addFlashAttribute("successMsg", "assignment.saved");
         return "redirect:/trainer/dashboard";
     }
+
+    // ─── Смена статуса ────────────────────────────────────────────────────────
 
     /**
-     * Marks an assignment as completed.
-     *
-     * @param orderId the order id
+     * POST /trainer/assignment/{assignmentId}/status
      */
-    @PostMapping("/order/complete/{orderId}")
-    public String completeOrder(@PathVariable Long orderId,
-                                RedirectAttributes redirectAttrs) {
-        orderService.updateStatus(orderId, "COMPLETED");
-        redirectAttrs.addFlashAttribute("success", "msg.success.save");
+    @PostMapping("/assignment/{assignmentId}/status")
+    public String updateStatus(@PathVariable long assignmentId,
+                               @RequestParam String status,
+                               @RequestParam long clientId,
+                               @RequestParam long orderId,
+                               RedirectAttributes ra) {
+        if (!isValidStatus(status)) {
+            log.warn("Invalid assignment status attempted: '{}'", status);
+            ra.addFlashAttribute("errorMsg", "assignment.status.invalid");
+            return "redirect:/trainer/client/" + clientId +
+                    "/assignment?orderId=" + orderId;
+        }
+
+        trainerService.updateAssignmentStatus(assignmentId, status);
+        log.info("Assignment status updated: id={}, status={}", assignmentId, status);
+
+        ra.addFlashAttribute("successMsg", "assignment.status.updated");
+        return "redirect:/trainer/client/" + clientId +
+                "/assignment?orderId=" + orderId;
+    }
+
+    // ─── Удаление ─────────────────────────────────────────────────────────────
+
+    /**
+     * POST /trainer/assignment/delete
+     */
+    @PostMapping("/assignment/delete")
+    public String deleteAssignment(@RequestParam long orderId,
+                                   RedirectAttributes ra) {
+        trainerService.deleteAssignment(orderId);
+        log.info("Assignment deleted: orderId={}", orderId);
+
+        ra.addFlashAttribute("successMsg", "assignment.deleted");
         return "redirect:/trainer/dashboard";
     }
 
-    private User getUser(UserDetails userDetails) {
-        return userService.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Trainer not found"));
+    // ─── Private ──────────────────────────────────────────────────────────────
+
+    private boolean isValidStatus(String status) {
+        return switch (status) {
+            case "ACTIVE", "COMPLETED", "REVISION_REQUESTED" -> true;
+            default -> false;
+        };
     }
 }

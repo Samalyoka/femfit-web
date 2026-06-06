@@ -25,4 +25,8 @@ public class Assignment {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public long getClientId() {
+        return orderId != null ? orderId : -1L;
+    }
 }

@@ -28,6 +28,7 @@ public class User {
     private String phone;
     private String passwordHash;
     private LocalDate birthDate;
+
     private Role role;
     private boolean active;
     private LocalDateTime registrationDate;
@@ -61,5 +62,8 @@ public class User {
         String f = (firstName != null && !firstName.isEmpty()) ? String.valueOf(firstName.charAt(0)) : "";
         String l = (lastName != null && !lastName.isEmpty()) ? String.valueOf(lastName.charAt(0)) : "";
         return (f + l).toUpperCase();
+    }
+
+    public void setEnabled(boolean enabled) {
     }
 }

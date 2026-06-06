@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders — FemFit</title>
+  <link rel="stylesheet" th:href="@{/static/css/main.css}">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="page-wrap">
+  <div class="profile-hero">
+    <p class="section-eyebrow">My Account</p>
+    <h1 class="section-title">My Orders</h1>
+  </div>
+
+  <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+
+  <div class="profile-section-card">
+    <div th:if="${#lists.isEmpty(orders)}" class="profile-empty">
+      You have no orders yet.
+      <a th:href="@{/client/cycles}" class="btn-primary" style="margin-left:16px;">Browse Programs</a>
+    </div>
+
+    <div th:each="order : ${orders}" class="order-row">
+      <div class="order-info">
+        <div class="order-title" th:text="${order.cycleTitle}"></div>
+        <div class="order-meta">
+          <span class="order-date" th:text="${#temporals.format(order.createdAt, 'dd MMM yyyy')}"></span>
+          <span th:class="${'order-status status-' + order.status.toLowerCase()}"
+                th:text="${order.status}"></span>
+        </div>
+        <div class="order-price" th:text="${#numbers.formatDecimal(order.paidAmount, 0, 'COMMA', 0, 'POINT')} + ' ₸'"></div>
+      </div>
+      <a th:href="@{/client/assignment/{id}(id=${order.id})}"
+         class="btn-outline" style="white-space:nowrap;">View Assignment</a>
+    </div>
+  </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

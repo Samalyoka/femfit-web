@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6"
+      th:lang="${#locale.language}">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="#{trainer.dashboard.title}">Trainer Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<main class="container">
+    <h1 class="page-title" th:text="#{trainer.dashboard.title}">My Clients</h1>
+
+    <div th:if="${successMsg}" class="alert alert--success"
+         th:text="${successMsg}"></div>
+    <div th:if="${errorMsg}"   class="alert alert--error"
+         th:text="${errorMsg}"></div>
+
+    <div th:if="${clients.empty}" class="empty-state">
+        <p th:text="#{trainer.no.clients}">No active clients assigned yet.</p>
+    </div>
+
+    <div class="client-grid" th:unless="${clients.empty}">
+        <div class="client-card" th:each="client : ${clients}">
+
+            <div class="client-card__header">
+                <span class="client-card__name"
+                      th:text="${client.fullName}">Full Name</span>
+                <span class="client-card__email"
+                      th:text="${client.email}">email</span>
+                <span class="client-card__status"
+                      th:text="${client.orderStatus}"
+                      th:classappend="${client.orderStatus == 'ACTIVE'} ? 'badge--active' : 'badge--progress'">
+                    ACTIVE
+                </span>
+            </div>
+
+            <div class="client-card__actions">
+                <!--
+                  View — GET /trainer/client/{clientId}/assignment?orderId={orderId}
+                -->
+                <a class="btn btn--secondary btn--sm"
+                   th:href="@{/trainer/client/{cid}/assignment(cid=${client.clientId},
+                                                               orderId=${client.orderId})}"
+                   th:text="#{trainer.assignment.view}">View</a>
+
+                <!--
+                  Edit — GET /trainer/client/{clientId}/assignment/form?orderId={orderId}
+                -->
+                <a class="btn btn--primary btn--sm"
+                   th:href="@{/trainer/client/{cid}/assignment/form(cid=${client.clientId},
+                                                                    orderId=${client.orderId})}"
+                   th:text="#{trainer.assignment.edit}">Edit</a>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

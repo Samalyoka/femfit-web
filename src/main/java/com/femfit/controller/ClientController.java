@@ -16,6 +16,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.femfit.model.TrainingCycle;
+import com.femfit.service.TrainingCycleService;
 
 import java.util.List;
 
@@ -32,14 +34,17 @@ public class ClientController {
     private final UserService userService;
     private final BookingService bookingService;
     private final OrderService orderService;
+    private final TrainingCycleService trainingCycleService;
 
     @Autowired
     public ClientController(UserService userService,
                             BookingService bookingService,
-                            OrderService orderService) {
+                            OrderService orderService,
+                            TrainingCycleService trainingCycleService) {
         this.userService = userService;
         this.bookingService = bookingService;
         this.orderService = orderService;
+        this.trainingCycleService = trainingCycleService;
     }
 
     /**
@@ -137,5 +142,40 @@ public class ClientController {
     private User getUser(UserDetails userDetails) {
         return userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    /**
+     * Shows all available training cycles for purchase.
+     */
+    @GetMapping("/cycles")
+    public String cycles(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User user = getUser(userDetails);
+        List<TrainingCycle> cycles = trainingCycleService.findAllActive();
+        List<Order> myOrders = orderService.findByUserId(user.getId());
+        // передаём id уже купленных циклов чтобы показать статус
+        List<Integer> purchasedCycleIds = myOrders.stream()
+                .map(Order::getCycleId)
+                .toList();
+        model.addAttribute("cycles", cycles);
+        model.addAttribute("purchasedCycleIds", purchasedCycleIds);
+        return "client/cycles";
+    }
+
+    /**
+     * Places an order for a training cycle.
+     */
+    @PostMapping("/cycles/{cycleId}/order")
+    public String placeOrder(@PathVariable Integer cycleId,
+                             @AuthenticationPrincipal UserDetails userDetails,
+                             RedirectAttributes redirectAttrs) {
+        User user = getUser(userDetails);
+        trainingCycleService.findById(cycleId).ifPresentOrElse(
+                cycle -> {
+                    orderService.placeOrder(user.getId(), cycleId, cycle.getPrice());
+                    redirectAttrs.addFlashAttribute("success", "Order placed successfully!");
+                },
+                () -> redirectAttrs.addFlashAttribute("error", "Training cycle not found.")
+        );
+        return "redirect:/client/orders";
     }
 }

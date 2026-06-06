@@ -64,4 +64,14 @@ public interface OrderService {
      * @param assignmentId the assignment id
      */
     void requestRevision(Long assignmentId);
+
+    /**
+     * Places a new order for a training cycle.
+     *
+     * @param userId  client's user id
+     * @param cycleId training cycle id
+     * @param price   amount to pay
+     * @return saved order
+     */
+    Order placeOrder(Long userId, Integer cycleId, java.math.BigDecimal price);
 }
