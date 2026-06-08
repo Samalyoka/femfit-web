@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FemFit — Women's Fitness Club</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FemFit — Women's Fitness Club</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose: #C4687A;
+    --rose-light: #F5E8EA;
+    --rose-mid: #E8B4BC;
+    --rose-dark: #7A3040;
+    --rose-deep: #3D1520;
+    --sand: #F7F3EE;
+    --warm-white: #FDFAF7;
+    --charcoal: #2C2420;
+    --muted: #8A7A72;
+    --border: #E8DDD8;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--warm-white);
+    color: var(--charcoal);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(253,250,247,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    height: 64px;
+    gap: 8px;
+  }
+
+  .logo {
+    font-family: var(--serif);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--rose-dark);
+    letter-spacing: 0.5px;
+    margin-right: auto;
+  }
+  .logo span { color: var(--rose); }
+
+  .nav-link {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 30px;
+    transition: all 0.2s;
+    font-family: var(--sans);
+    letter-spacing: 0.3px;
+  }
+  .nav-link:hover { color: var(--charcoal); background: var(--sand); }
+  .nav-link.active { color: var(--rose-dark); font-weight: 500; }
+
+  .nav-cta {
+    margin-left: 8px;
+    padding: 9px 22px;
+    background: var(--rose);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: background 0.2s, transform 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .nav-cta:hover { background: var(--rose-dark); transform: translateY(-1px); }
+
+  /* ── LANG SWITCHER ── */
+  .lang-sw {
+    display: flex;
+    gap: 2px;
+    margin-left: 12px;
+    background: var(--sand);
+    border-radius: 20px;
+    padding: 3px;
+  }
+  .lang-btn {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 16px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+  }
+  .lang-btn.active { background: white; color: var(--rose-dark); }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HOME ── */
+  .hero {
+    min-height: 88vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 80px 40px 60px;
+    gap: 60px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .hero-text { }
+
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: var(--rose);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .hero-h1 {
+    font-family: var(--serif);
+    font-size: clamp(48px, 6vw, 72px);
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--rose-deep);
+    margin-bottom: 24px;
+  }
+  .hero-h1 em { font-style: italic; color: var(--rose); }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 36px;
+    max-width: 420px;
+  }
+
+  .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+  .btn-primary {
+    padding: 14px 32px;
+    background: var(--rose);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-primary:hover { background: var(--rose-dark); transform: translateY(-2px); }
+
+  .btn-outline {
+    padding: 13px 32px;
+    background: transparent;
+    color: var(--rose-dark);
+    border: 1.5px solid var(--rose-mid);
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+  .btn-outline:hover { border-color: var(--rose); background: var(--rose-light); }
+
+  .hero-visual {
+    position: relative;
+    height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-card-big {
+    position: absolute;
+    width: 280px;
+    height: 340px;
+    background: var(--rose-light);
+    border-radius: 20px;
+    border: 1px solid var(--rose-mid);
+    left: 40px;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 24px;
+  }
+
+  .hero-card-small {
+    position: absolute;
+    right: 20px;
+    bottom: 40px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 20px;
+    width: 200px;
+    box-shadow: 0 4px 24px rgba(196,104,122,0.1);
+  }
+
+  .hero-stat-card {
+    position: absolute;
+    top: 30px;
+    right: 10px;
+    background: var(--rose-dark);
+    color: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    width: 160px;
+  }
+
+  .stat-num-big { font-family: var(--serif); font-size: 36px; font-weight: 500; }
+  .stat-label-sm { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+  .floating-icon {
+    width: 56px;
+    height: 56px;
+    background: var(--rose);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+  .hero-card-big-title { font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--rose-dark); }
+  .hero-card-big-sub { font-size: 13px; color: var(--muted); text-align: center; }
+
+  .mini-stat { margin-bottom: 8px; }
+  .mini-stat-label { font-size: 11px; color: var(--muted); }
+  .mini-stat-val { font-size: 18px; font-weight: 500; color: var(--charcoal); font-family: var(--serif); }
+  .mini-bar { height: 4px; background: var(--rose-light); border-radius: 2px; margin-top: 6px; }
+  .mini-bar-fill { height: 100%; background: var(--rose); border-radius: 2px; transition: width 0.6s; }
+
+  /* ── SECTION WRAPPER ── */
+  .section { padding: 80px 40px; max-width: 1200px; margin: 0 auto; }
+
+  .section-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    color: var(--rose);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: var(--serif);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 400;
+    color: var(--rose-deep);
+    margin-bottom: 40px;
+    line-height: 1.2;
+  }
+
+  /* ── CLASS CARDS ── */
+  .class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+  .class-card {
+    background: white;
+    border: 0.5px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 20px 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .class-card:hover { background: var(--rose-light); }
+
+  .class-line {
+    width: 24px;
+    height: 1px;
+    background: var(--rose);
+    margin-bottom: 16px;
+  }
+  .class-name {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--charcoal);
+  }
+  .class-count {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+    font-family: var(--sans);
+  }
+
+  /* ── SCHEDULE ── */
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .fpill {
+    padding: 7px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--sans);
+  }
+  .fpill:hover { border-color: var(--rose-mid); color: var(--rose-dark); }
+  .fpill.active { background: var(--rose-light); border-color: var(--rose-mid); color: var(--rose-dark); font-weight: 500; }
+
+  .sched-table {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .sched-head {
+    display: grid;
+    grid-template-columns: 80px 1fr 130px 80px 100px;
+    padding: 14px 24px;
+    background: var(--sand);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    gap: 12px;
+  }
+  .sched-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 130px 80px 100px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    transition: background 0.15s;
+  }
+  .sched-row:hover { background: var(--sand); }
+  .time-c { font-size: 13px; color: var(--muted); font-weight: 400; }
+  .class-n { font-weight: 500; color: var(--charcoal); }
+  .trainer-c { font-size: 13px; color: var(--muted); }
+  .spots-badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: var(--rose-light);
+    color: var(--rose-dark);
+    font-weight: 500;
+  }
+  .spots-badge.full { background: #F1EFE8; color: var(--muted); }
+  .book-btn {
+    padding: 7px 16px;
+    background: var(--rose);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .book-btn:hover { background: var(--rose-dark); }
+  .book-btn.booked { background: #E8F5EE; color: #2E7D52; }
+  .book-btn:disabled { background: #F1EFE8; color: var(--muted); cursor: default; }
+
+  /* ── PLANS ── */
+  .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+  .plan-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.25s;
+  }
+  .plan-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(196,104,122,0.1); }
+  .plan-card.featured {
+    border: 2px solid var(--rose);
+    background: var(--rose-light);
+  }
+
+  .popular-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 4px 12px;
+    background: var(--rose);
+    color: white;
+    border-radius: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    align-self: flex-start;
+  }
+
+  .plan-name { font-family: var(--serif); font-size: 24px; font-weight: 400; color: var(--rose-deep); margin-bottom: 8px; }
+  .plan-price { font-family: var(--serif); font-size: 34px; font-weight: 300; color: var(--rose); line-height: 1; margin-bottom: 4px; }
+  .plan-price-mo { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+  .plan-divider { height: 1px; background: var(--border); margin-bottom: 20px; }
+
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .plan-features li {
+    font-size: 14px;
+    color: var(--muted);
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.4;
+  }
+  .plan-features li::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rose-mid);
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  .plan-cta {
+    margin-top: auto;
+    padding: 13px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+    text-align: center;
+    border: 1.5px solid var(--rose-mid);
+    background: transparent;
+    color: var(--rose-dark);
+  }
+  .plan-cta:hover { background: white; border-color: var(--rose); }
+  .plan-card.featured .plan-cta { background: var(--rose); border-color: var(--rose); color: white; }
+  .plan-card.featured .plan-cta:hover { background: var(--rose-dark); }
+
+  /* ── PROFILE ── */
+  .profile-wrap { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+
+  .profile-sidebar {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px 24px;
+  }
+
+  .avatar-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--rose-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 26px;
+    color: var(--rose-dark);
+    margin: 0 auto 16px;
+    border: 2px solid var(--rose-mid);
+  }
+
+  .profile-name { font-family: var(--serif); font-size: 20px; font-weight: 500; color: var(--rose-deep); text-align: center; margin-bottom: 4px; }
+  .profile-tag {
+    font-size: 12px;
+    text-align: center;
+    color: var(--rose);
+    background: var(--rose-light);
+    padding: 3px 12px;
+    border-radius: 12px;
+    display: inline-block;
+    margin: 0 auto 20px;
+    display: block;
+    width: fit-content;
+    margin: 0 auto 20px;
+  }
+
+  .profile-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  .profile-detail { display: flex; flex-direction: column; gap: 12px; }
+  .detail-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+  .detail-label { color: var(--muted); }
+  .detail-val { font-weight: 500; color: var(--charcoal); }
+
+  .profile-main { display: flex; flex-direction: column; gap: 20px; }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .stat-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    text-align: center;
+  }
+  .stat-box-num { font-family: var(--serif); font-size: 32px; font-weight: 400; color: var(--rose); }
+  .stat-box-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .bookings-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .bookings-header { padding: 18px 24px; border-bottom: 1px solid var(--border); }
+  .bookings-title { font-family: var(--serif); font-size: 20px; font-weight: 400; color: var(--rose-deep); }
+
+  .booking-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  .booking-item:last-child { border-bottom: none; }
+  .booking-item:hover { background: var(--sand); }
+
+  .booking-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--rose); flex-shrink: 0; }
+  .booking-info { flex: 1; }
+  .booking-name { font-weight: 500; font-size: 14px; color: var(--charcoal); margin-bottom: 2px; }
+  .booking-time { font-size: 12px; color: var(--muted); }
+
+  .cancel-btn {
+    font-size: 12px;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 5px 14px;
+    cursor: pointer;
+    font-family: var(--sans);
+    transition: all 0.2s;
+  }
+  .cancel-btn:hover { color: #C0392B; border-color: #C0392B; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--rose-deep);
+    color: white;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 400;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--rose-deep);
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    padding: 32px 40px;
+    font-size: 13px;
+    margin-top: 80px;
+  }
+  footer .footer-logo { font-family: var(--serif); font-size: 22px; color: white; margin-bottom: 8px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 40px 20px; }
+    .hero-visual { display: none; }
+    .plans-grid { grid-template-columns: 1fr; }
+    .profile-wrap { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .sched-head, .sched-row { grid-template-columns: 70px 1fr 90px; }
+    .sched-head span:nth-child(3), .sched-head span:nth-child(4),
+    .sched-row > *:nth-child(4) { display: none; }
+    nav { padding: 0 16px; }
+    .section { padding: 40px 16px; }
+  }
+
+  @media (max-width: 600px) {
+    .nav-link { display: none; }
+    .lang-sw { display: none; }
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .page.active > * { animation: fadeUp 0.4s ease both; }
+  .page.active > *:nth-child(2) { animation-delay: 0.05s; }
+  .page.active > *:nth-child(3) { animation-delay: 0.1s; }
+
+  /* ── TRAINER PANEL ── */
+  .trainer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
+  .client-card { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+  .client-card-header { display: flex; align-items: center; gap: 14px; }
+  .client-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--rose-light); display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 18px; color: var(--rose-dark); border: 1.5px solid var(--rose-mid); flex-shrink: 0; }
+  .client-name { font-family: var(--serif); font-size: 16px; color: var(--rose-deep); margin-bottom: 2px; }
+  .client-email { font-size: 12px; color: var(--muted); }
+  .order-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+  .order-badge.active { background: #D1FAE5; color: #065F46; }
+  .order-badge.revision { background: #FEF3C7; color: #92400E; }
+  .order-badge.completed { background: var(--rose-light); color: var(--rose-dark); }
+  .assignment-preview { background: var(--sand); border-radius: 12px; padding: 12px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .assignment-preview strong { color: var(--charcoal); display: block; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .btn-sm { padding: 7px 16px; background: var(--rose); color: white; border: none; border-radius: 16px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: var(--sans); transition: all 0.2s; }
+  .btn-sm:hover { background: var(--rose-dark); }
+  .btn-sm.outline { background: transparent; border: 1.5px solid var(--rose-mid); color: var(--rose-dark); }
+  .btn-sm.outline:hover { border-color: var(--rose); background: var(--rose-light); }
+  .assignment-form { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 32px; max-width: 640px; }
+  .form-group { margin-bottom: 20px; }
+  .form-label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .form-textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--border); border-radius: 12px; font-family: var(--sans); font-size: 14px; resize: vertical; background: var(--sand); color: var(--charcoal); outline: none; transition: border-color 0.2s; }
+  .form-textarea:focus { border-color: var(--rose); background: white; }
+  .status-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 12px; font-family: var(--sans); font-size: 14px; background: var(--sand); color: var(--charcoal); outline: none; cursor: pointer; }
+  /* ── ADMIN PANEL ── */
+  .admin-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 32px; }
+  .admin-stat-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; text-align: center; }
+  .admin-stat-num { font-family: var(--serif); font-size: 36px; color: var(--rose); line-height: 1; }
+  .admin-stat-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .admin-tabs { display: flex; gap: 4px; margin-bottom: 24px; background: var(--sand); padding: 4px; border-radius: 14px; width: fit-content; }
+  .admin-tab { padding: 8px 20px; border-radius: 10px; font-size: 13px; border: none; background: transparent; color: var(--muted); cursor: pointer; font-family: var(--sans); transition: all 0.2s; }
+  .admin-tab.active { background: white; color: var(--rose-dark); font-weight: 500; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+  .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+  .data-table thead th { background: var(--sand); font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  .data-table tbody td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--charcoal); }
+  .data-table tbody tr:last-child td { border-bottom: none; }
+  .data-table tbody tr:hover td { background: var(--sand); }
+  .status-badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 12px; }
+  .status-badge.active { background: #D1FAE5; color: #065F46; }
+  .status-badge.inactive { background: #F1EFE8; color: var(--muted); }
+  .status-badge.completed { background: var(--rose-light); color: var(--rose-dark); }
+  .action-btn { padding: 5px 12px; font-size: 11px; border-radius: 10px; border: 1px solid var(--border); background: white; color: var(--charcoal); cursor: pointer; font-family: var(--sans); margin-right: 4px; transition: all 0.2s; }
+  .action-btn:hover { border-color: var(--rose); color: var(--rose); }
+  .action-btn.danger:hover { border-color: #E53E3E; color: #E53E3E; }
+  .discount-input { width: 56px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 12px; text-align: center; font-family: var(--sans); }
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Fem<span>Fit</span></div>
+  <button class="nav-link active" onclick="goTo('home',this)" data-en="Home" data-ru="Главная" data-kz="Басты">Home</button>
+  <button class="nav-link" onclick="goTo('schedule',this)" data-en="Schedule" data-ru="Расписание" data-kz="Кесте">Schedule</button>
+  <button class="nav-link" onclick="goTo('plans',this)" data-en="Membership" data-ru="Членство" data-kz="Мүшелік">Membership</button>
+  <button class="nav-link" onclick="goTo('profile',this)" data-en="My Profile" data-ru="Профиль" data-kz="Профиль">My Profile</button>
+  <button class="nav-link" onclick="goTo('trainer',this)" data-en="Trainer Panel" data-ru="Панель тренера" data-kz="Тренер панелі">Trainer Panel</button>
+  <button class="nav-link" onclick="goTo('admin',this)" data-en="Admin Panel" data-ru="Админ панель" data-kz="Админ панелі">Admin Panel</button>
+  <div class="lang-sw">
+    <button class="lang-btn active" onclick="setLang('en',this)">EN</button>
+    <button class="lang-btn" onclick="setLang('ru',this)">RU</button>
+    <button class="lang-btn" onclick="setLang('kz',this)">KZ</button>
+  </div>
+  <button class="nav-cta" onclick="goTo('plans',document.querySelectorAll('.nav-link')[2])" data-en="Join Now" data-ru="Вступить" data-kz="Қосылу">Join Now</button>
+</nav>
+
+
+
+<!-- ═══ HOME ═══ -->
+<div id="home" class="page active">
+  <div class="hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow" data-en="Premium Women's Fitness" data-ru="Премиум фитнес для женщин" data-kz="Әйелдерге арналған фитнес">Premium Women's Fitness</div>
+      <h1 class="hero-h1">Your strength.<br><em>Your space.</em></h1>
+      <p class="hero-sub" data-en="A luxury fitness club designed exclusively for women — where wellness meets elegance." data-ru="Премиум фитнес-клуб исключительно для женщин — где здоровье встречается с элегантностью." data-kz="Тек әйелдерге арналған премиум фитнес клубы.">A luxury fitness club designed exclusively for women — where wellness meets elegance.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="goTo('plans',document.querySelectorAll('.nav-link')[2])" data-en="Choose a Plan" data-ru="Выбрать план" data-kz="Жоспар таңдау">Choose a Plan</button>
+        <button class="btn-outline" onclick="goTo('schedule',document.querySelectorAll('.nav-link')[1])" data-en="View Schedule" data-ru="Смотреть расписание" data-kz="Кестені көру">View Schedule</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card-big">
+        <div class="floating-icon">🌸</div>
+        <div class="hero-card-big-title">Morning Yoga</div>
+        <div class="hero-card-big-sub">07:00 · Studio A · Elena M.</div>
+        <div style="width:100%;height:1px;background:var(--rose-mid);margin:4px 0;"></div>
+        <div style="font-size:12px;color:var(--muted);">3 spots left</div>
+      </div>
+      <div class="hero-stat-card">
+        <div class="stat-num-big">2,400+</div>
+        <div class="stat-label-sm">Active members</div>
+      </div>
+      <div class="hero-card-small">
+        <div class="mini-stat">
+          <div class="mini-stat-label">This month</div>
+          <div class="mini-stat-val">14 visits</div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:70%"></div></div>
+        </div>
+        <div class="mini-stat" style="margin-top:10px;">
+          <div class="mini-stat-label">Goal</div>
+          <div class="mini-stat-val">20 visits</div>
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:40%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" style="padding-top:0;">
+    <div class="section-eyebrow" data-en="What we offer" data-ru="Что мы предлагаем" data-kz="Біз не ұсынамыз">What we offer</div>
+    <div class="section-title" data-en="Our classes" data-ru="Наши занятия" data-kz="Біздің сабақтар">Our classes</div>
+    <div class="class-grid" id="homeClasses"></div>
+  </div>
+</div>
+
+<!-- ═══ SCHEDULE ═══ -->
+<div id="schedule" class="page">
+  <div class="section">
+    <div class="section-eyebrow" data-en="Book your spot" data-ru="Забронируй место" data-kz="Орын брондаңыз">Book your spot</div>
+    <div class="section-title" data-en="Class schedule" data-ru="Расписание занятий" data-kz="Сабақ кестесі">Class schedule</div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="sched-table">
+      <div class="sched-head">
+        <span data-en="Time" data-ru="Время" data-kz="Уақыт">Time</span>
+        <span data-en="Class" data-ru="Занятие" data-kz="Сабақ">Class</span>
+        <span data-en="Trainer" data-ru="Тренер" data-kz="Жаттықтырушы">Trainer</span>
+        <span data-en="Spots" data-ru="Места" data-kz="Орындар">Spots</span>
+        <span></span>
+      </div>
+      <div id="schedBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PLANS ═══ -->
+<div id="plans" class="page">
+  <div class="section">
+    <div class="section-eyebrow" data-en="Flexible options" data-ru="Гибкие варианты" data-kz="Икемді нұсқалар">Flexible options</div>
+    <div class="section-title" style="text-align:center;" data-en="Choose your membership" data-ru="Выберите членство" data-kz="Мүшелікті таңдаңыз">Choose your membership</div>
+    <div class="plans-grid">
+
+      <div class="plan-card">
+        <div class="plan-name">Basic</div>
+        <div class="plan-price">49 900 ₸</div>
+        <div class="plan-price-mo" data-en="per month" data-ru="в месяц" data-kz="айына">per month</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li data-en="Gym access 6am–10pm" data-ru="Доступ в зал 6:00–22:00" data-kz="Залға кіру 6:00–22:00">Gym access 6am–10pm</li>
+          <li data-en="4 group classes/month" data-ru="4 групповых занятия в месяц" data-kz="Айына 4 топтық сабақ">4 group classes/month</li>
+          <li data-en="Locker room & shower" data-ru="Раздевалка и душ" data-kz="Киім ауыстыру бөлмесі">Locker room & shower</li>
+        </ul>
+        <button class="plan-cta" onclick="selectPlan('Basic')" data-en="Get started" data-ru="Начать" data-kz="Бастау">Get started</button>
+      </div>
+
+      <div class="plan-card featured">
+        <span class="popular-tag" data-en="Most popular" data-ru="Популярный" data-kz="Танымал">Most popular</span>
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">89 900 ₸</div>
+        <div class="plan-price-mo" data-en="per month" data-ru="в месяц" data-kz="айына">per month</div>
+        <div class="plan-divider" style="background:var(--rose-mid);"></div>
+        <ul class="plan-features">
+          <li data-en="Unlimited gym access" data-ru="Безлимитный доступ в зал" data-kz="Шексіз залға кіру">Unlimited gym access</li>
+          <li data-en="Unlimited group classes" data-ru="Безлимитные групповые занятия" data-kz="Шексіз топтық сабақтар">Unlimited group classes</li>
+          <li data-en="2 personal sessions/month" data-ru="2 персональные тренировки в месяц" data-kz="Айына 2 жеке жаттығу">2 personal sessions/month</li>
+          <li data-en="Sauna & spa access" data-ru="Доступ в сауну и спа" data-kz="Сауна мен спаға кіру">Sauna & spa access</li>
+        </ul>
+        <button class="plan-cta" onclick="selectPlan('Premium')" data-en="Get Premium" data-ru="Оформить Premium" data-kz="Premium алу">Get Premium</button>
+      </div>
+
+      <div class="plan-card">
+        <div class="plan-name">Elite</div>
+        <div class="plan-price">139 900 ₸</div>
+        <div class="plan-price-mo" data-en="per month" data-ru="в месяц" data-kz="айына">per month</div>
+        <div class="plan-divider"></div>
+        <ul class="plan-features">
+          <li data-en="Everything in Premium" data-ru="Всё из Premium" data-kz="Premium-дегінің бәрі">Everything in Premium</li>
+          <li data-en="Unlimited personal sessions" data-ru="Безлимитные персональные тренировки" data-kz="Шексіз жеке жаттығулар">Unlimited personal sessions</li>
+          <li data-en="Nutrition consultation" data-ru="Консультация по питанию" data-kz="Тамақтану кеңесі">Nutrition consultation</li>
+          <li data-en="Priority booking" data-ru="Приоритетное бронирование" data-kz="Басымдықты брондау">Priority booking</li>
+        </ul>
+        <button class="plan-cta" onclick="selectPlan('Elite')" data-en="Go Elite" data-ru="Оформить Elite" data-kz="Elite алу">Go Elite</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROFILE ═══ -->
+<div id="profile" class="page">
+  <div class="section">
+    <div class="section-eyebrow" data-en="Your account" data-ru="Ваш аккаунт" data-kz="Сіздің аккаунт">Your account</div>
+    <div class="section-title" data-en="My profile" data-ru="Мой профиль" data-kz="Менің профилім">My profile</div>
+    <div class="profile-wrap">
+      <div class="profile-sidebar">
+        <div class="avatar-wrap">AK</div>
+        <div class="profile-name">Anna Kim</div>
+        <div class="profile-tag" data-en="Premium member" data-ru="Premium участница" data-kz="Premium мүшесі">Premium member</div>
+        <div class="profile-divider"></div>
+        <div class="profile-detail">
+          <div class="detail-row">
+            <span class="detail-label" data-en="Member since" data-ru="Участник с" data-kz="Мүше болған">Member since</span>
+            <span class="detail-val">Mar 2026</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label" data-en="Email" data-ru="Почта" data-kz="Пошта">Email</span>
+            <span class="detail-val" style="font-size:12px;">anna@mail.com</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label" data-en="Plan renewal" data-ru="Продление" data-kz="Жаңарту">Plan renewal</span>
+            <span class="detail-val">Mar 1, 2027</span>
+          </div>
+        </div>
+      </div>
+      <div class="profile-main">
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-box-num" id="visitCount">14</div>
+            <div class="stat-box-label" data-en="Visits this month" data-ru="Посещений в месяце" data-kz="Осы айдағы келулер">Visits this month</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-num" id="bookingCount">3</div>
+            <div class="stat-box-label" data-en="Upcoming bookings" data-ru="Предстоящие записи" data-kz="Алдағы брондаулар">Upcoming bookings</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-num">2</div>
+            <div class="stat-box-label" data-en="Personal sessions left" data-ru="Осталось персональных" data-kz="Жеке жаттығу қалды">Personal sessions left</div>
+          </div>
+        </div>
+        <div class="bookings-card">
+          <div class="bookings-header">
+            <div class="bookings-title" data-en="Upcoming bookings" data-ru="Предстоящие записи" data-kz="Алдағы брондаулар">Upcoming bookings</div>
+          </div>
+          <div id="bookingsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TRAINER PANEL ═══ -->
+<div id="trainer" class="page">
+  <div class="section">
+    <div class="section-eyebrow" data-en="Trainer Dashboard" data-ru="Панель тренера" data-kz="Тренер панелі">Trainer Dashboard</div>
+    <div class="section-title" data-en="My Clients" data-ru="Мои клиенты" data-kz="Менің клиенттерім">My Clients</div>
+    <div class="trainer-grid" id="trainerClients"></div>
+    <div id="assignmentFormWrap" style="margin-top:40px;display:none;">
+      <div class="section-eyebrow" data-en="Assignment Form" data-ru="Форма задания" data-kz="Тапсырма формасы">Assignment Form</div>
+      <div class="section-title" style="font-size:24px;margin-bottom:24px;" id="assignmentFormTitle">Edit Assignment</div>
+      <div class="assignment-form">
+        <div class="form-group">
+          <label class="form-label" data-en="Exercise Plan" data-ru="План упражнений" data-kz="Жаттығу жоспары">Exercise Plan</label>
+          <textarea class="form-textarea" rows="4">3x10 squats, 3x12 lunges, 3x15 glute bridges. Rest 60s between sets.</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-en="Equipment Needed" data-ru="Необходимое оборудование" data-kz="Қажетті жабдық">Equipment Needed</label>
+          <textarea class="form-textarea" rows="3">Resistance bands, dumbbells 5kg, yoga mat</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-en="Nutrition Plan" data-ru="План питания" data-kz="Тамақтану жоспары">Nutrition Plan</label>
+          <textarea class="form-textarea" rows="4">High protein diet, 1.8g per kg bodyweight. Avoid processed sugar.</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-en="Schedule Info" data-ru="График тренировок" data-kz="Жаттығу кестесі">Schedule Info</label>
+          <textarea class="form-textarea" rows="3">Mon, Wed, Fri — 3 sessions/week, 45 min each</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-en="Status" data-ru="Статус" data-kz="Мәртебе">Status</label>
+          <select class="status-select">
+            <option>Active</option>
+            <option>Completed</option>
+            <option>Revision Requested</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button class="btn-sm" onclick="saveAssignment()" data-en="Save" data-ru="Сохранить" data-kz="Сақтау">Save</button>
+          <button class="btn-sm outline" onclick="closeForm()" data-en="Cancel" data-ru="Отмена" data-kz="Болдырмау">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div id="admin" class="page">
+  <div class="section">
+    <div class="section-eyebrow" data-en="Admin Dashboard" data-ru="Панель администратора" data-kz="Әкімші панелі">Admin Dashboard</div>
+    <div class="section-title" data-en="Manage FemFit" data-ru="Управление FemFit" data-kz="FemFit басқару">Manage FemFit</div>
+    <div class="admin-stats">
+      <div class="admin-stat-card"><div class="admin-stat-num">13</div><div class="admin-stat-label" data-en="Clients" data-ru="Клиенты" data-kz="Клиенттер">Clients</div></div>
+      <div class="admin-stat-card"><div class="admin-stat-num">3</div><div class="admin-stat-label" data-en="Trainers" data-ru="Тренеры" data-kz="Жаттықтырушылар">Trainers</div></div>
+      <div class="admin-stat-card"><div class="admin-stat-num">6</div><div class="admin-stat-label" data-en="Active Orders" data-ru="Активных заказов" data-kz="Белсенді тапсырыстар">Active Orders</div></div>
+      <div class="admin-stat-card"><div class="admin-stat-num">9</div><div class="admin-stat-label" data-en="Training Cycles" data-ru="Тренировочных циклов" data-kz="Жаттығу циклдары">Training Cycles</div></div>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="switchAdminTab('clients',this)" data-en="Clients" data-ru="Клиенты" data-kz="Клиенттер">Clients</button>
+      <button class="admin-tab" onclick="switchAdminTab('trainers',this)" data-en="Trainers" data-ru="Тренеры" data-kz="Жаттықтырушылар">Trainers</button>
+      <button class="admin-tab" onclick="switchAdminTab('orders',this)" data-en="Orders" data-ru="Заказы" data-kz="Тапсырыстар">Orders</button>
+    </div>
+    <div id="adminClients">
+      <table class="data-table">
+        <thead><tr>
+          <th data-en="Name" data-ru="Имя" data-kz="Аты">Name</th>
+          <th>Email</th>
+          <th data-en="Registered" data-ru="Зарегистрирован" data-kz="Тіркелген">Registered</th>
+          <th data-en="Status" data-ru="Статус" data-kz="Мәртебе">Status</th>
+          <th data-en="Discount" data-ru="Скидка" data-kz="Жеңілдік">Discount</th>
+          <th data-en="Actions" data-ru="Действия" data-kz="Әрекеттер">Actions</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><strong>Anna Kim</strong></td><td style="color:var(--muted);font-size:12px;">anna@mail.kz</td><td style="color:var(--muted);font-size:12px;">Mar 2026</td><td><span class="status-badge active" data-en="Active" data-ru="Активен" data-kz="Белсенді">Active</span></td><td><input class="discount-input" type="number" value="0" min="0" max="100"> %</td><td><button class="action-btn" data-en="Deactivate" data-ru="Деактивировать" data-kz="Өшіру">Deactivate</button></td></tr>
+          <tr><td><strong>Dana Dana</strong></td><td style="color:var(--muted);font-size:12px;">dana@mail.com</td><td style="color:var(--muted);font-size:12px;">Jun 2026</td><td><span class="status-badge active" data-en="Active" data-ru="Активен" data-kz="Белсенді">Active</span></td><td><input class="discount-input" type="number" value="5" min="0" max="100"> %</td><td><button class="action-btn" data-en="Deactivate" data-ru="Деактивировать" data-kz="Өшіру">Deactivate</button></td></tr>
+          <tr><td><strong>Maria Ivanova</strong></td><td style="color:var(--muted);font-size:12px;">maria.i@mail.kz</td><td style="color:var(--muted);font-size:12px;">Mar 2025</td><td><span class="status-badge inactive" data-en="Inactive" data-ru="Неактивен" data-kz="Белсенді емес">Inactive</span></td><td><input class="discount-input" type="number" value="10" min="0" max="100"> %</td><td><button class="action-btn" data-en="Activate" data-ru="Активировать" data-kz="Белсендіру">Activate</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="adminTrainers" style="display:none;">
+      <table class="data-table">
+        <thead><tr>
+          <th data-en="Name" data-ru="Имя" data-kz="Аты">Name</th>
+          <th>Email</th>
+          <th data-en="Status" data-ru="Статус" data-kz="Мәртебе">Status</th>
+          <th data-en="Actions" data-ru="Действия" data-kz="Әрекеттер">Actions</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><strong>Elena Morozova</strong></td><td style="color:var(--muted);font-size:12px;">elena@femfit.kz</td><td><span class="status-badge active">Active</span></td><td><button class="action-btn">Deactivate</button></td></tr>
+          <tr><td><strong>Sofia Romanova</strong></td><td style="color:var(--muted);font-size:12px;">sofia@femfit.kz</td><td><span class="status-badge active">Active</span></td><td><button class="action-btn">Deactivate</button></td></tr>
+          <tr><td><strong>Maria Volkova</strong></td><td style="color:var(--muted);font-size:12px;">maria@femfit.kz</td><td><span class="status-badge active">Active</span></td><td><button class="action-btn">Deactivate</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="adminOrders" style="display:none;">
+      <table class="data-table">
+        <thead><tr>
+          <th>#</th>
+          <th data-en="Client" data-ru="Клиент" data-kz="Клиент">Client</th>
+          <th data-en="Program" data-ru="Программа" data-kz="Бағдарлама">Program</th>
+          <th data-en="Trainer" data-ru="Тренер" data-kz="Жаттықтырушы">Trainer</th>
+          <th data-en="Amount" data-ru="Сумма" data-kz="Сома">Amount</th>
+          <th data-en="Status" data-ru="Статус" data-kz="Мәртебе">Status</th>
+          <th data-en="Actions" data-ru="Действия" data-kz="Әрекеттер">Actions</th>
+        </tr></thead>
+        <tbody>
+          <tr><td style="color:var(--muted);">#1</td><td><strong>Anna Kim</strong></td><td>Beginner Fitness</td><td style="color:var(--muted);font-size:12px;">Elena Morozova</td><td style="color:var(--rose);font-weight:500;">29,900 ₸</td><td><span class="status-badge active">Active</span></td><td><button class="action-btn">Complete</button><button class="action-btn danger">Cancel</button></td></tr>
+          <tr><td style="color:var(--muted);">#6</td><td><strong>Dana Dana</strong></td><td>Core &amp; Flexibility</td><td style="color:var(--muted);font-size:12px;">Sofia Romanova</td><td style="color:var(--rose);font-weight:500;">79,900 ₸</td><td><span class="status-badge active">Active</span></td><td><button class="action-btn">Complete</button><button class="action-btn danger">Cancel</button></td></tr>
+          <tr><td style="color:var(--muted);">#3</td><td><strong>Anna Kim</strong></td><td>Yoga &amp; Flexibility</td><td style="color:var(--muted);font-size:12px;">Elena Morozova</td><td style="color:var(--rose);font-weight:500;">39,900 ₸</td><td><span class="status-badge completed">Completed</span></td><td style="color:var(--muted);font-size:12px;">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">FemFit</div>
+  <div data-en="© 2026 FemFit Women's Fitness Club. All rights reserved." data-ru="© 2026 FemFit. Все права защищены." data-kz="© 2026 FemFit. Барлық құқықтар қорғалған.">© 2026 FemFit Women's Fitness Club. All rights reserved.</div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── DATA ──
+  const classes = [
+    {time:'07:00',name:'Morning Yoga',trainer:'Elena M.',spots:3,cat:'yoga'},
+    {time:'08:30',name:'HIIT Cardio',trainer:'Sofia R.',spots:0,cat:'cardio'},
+    {time:'09:00',name:'Pilates Flow',trainer:'Anna K.',spots:8,cat:'pilates'},
+    {time:'10:30',name:'Power Strength',trainer:'Maria V.',spots:5,cat:'strength'},
+    {time:'12:00',name:'Zumba Dance',trainer:'Daria S.',spots:12,cat:'dance'},
+    {time:'13:30',name:'Yoga Restore',trainer:'Elena M.',spots:2,cat:'yoga'},
+    {time:'17:00',name:'Body Pump',trainer:'Sofia R.',spots:6,cat:'strength'},
+    {time:'18:30',name:'Evening Cardio',trainer:'Lena T.',spots:4,cat:'cardio'},
+    {time:'19:30',name:'Stretching',trainer:'Anna K.',spots:10,cat:'stretching'},
+  ];
+
+
+  const homeCategories = [
+    {name:{en:'Cardio',ru:'Кардио',kz:'Кардио'},icon:'cardio',count:'12',cat:'cardio'},
+    {name:{en:'Yoga',ru:'Йога',kz:'Йога'},icon:'yoga',count:'8',cat:'yoga'},
+    {name:{en:'Strength',ru:'Силовые',kz:'Күш'},icon:'strength',count:'10',cat:'strength'},
+    {name:{en:'Pilates',ru:'Пилатес',kz:'Пилатес'},icon:'pilates',count:'6',cat:'pilates'},
+    {name:{en:'Dance',ru:'Танцы',kz:'Би'},icon:'dance',count:'5',cat:'dance'},
+    {name:{en:'Stretching',ru:'Растяжка',kz:'Созылу'},icon:'stretching',count:'7',cat:'stretching'},
+  ];
+
+  const filters = [
+    {key:'all',en:'All',ru:'Все',kz:'Барлығы'},
+    {key:'cardio',en:'Cardio',ru:'Кардио',kz:'Кардио'},
+    {key:'yoga',en:'Yoga',ru:'Йога',kz:'Йога'},
+    {key:'strength',en:'Strength',ru:'Силовые',kz:'Күш'},
+    {key:'pilates',en:'Pilates',ru:'Пилатес',kz:'Пилатес'},
+    {key:'dance',en:'Dance',ru:'Танцы',kz:'Би'},
+  ];
+
+  let booked = new Set();
+  let curFilter = 'all';
+  let curLang = 'en';
+
+  let myBookings = [
+    {id:'b1',name:'Morning Yoga',time:{en:'Mon, 9 Jun · 07:00',ru:'Пн, 9 июн · 07:00',kz:'Дс, 9 мау · 07:00'}},
+    {id:'b2',name:'Power Strength',time:{en:'Wed, 11 Jun · 10:30',ru:'Ср, 11 июн · 10:30',kz:'Ср, 11 мау · 10:30'}},
+    {id:'b3',name:'Pilates Flow',time:{en:'Fri, 13 Jun · 09:00',ru:'Пт, 13 июн · 09:00',kz:'Жм, 13 мау · 09:00'}},
+  ];
+
+  // ── i18n ──
+  function setLang(lang, btn) {
+    curLang = lang;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('[data-' + lang + ']').forEach(el => {
+      el.textContent = el.getAttribute('data-' + lang);
+    });
+    renderHomeClasses();
+    renderFilters();
+    renderSchedule();
+    renderBookings();
+  }
+
+  // ── NAVIGATION ──
+  function goTo(page, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-link').forEach(b => b.classList.remove('active'));
+    document.getElementById(page).classList.add('active');
+    if (btn) btn.classList.add('active');
+    if (page === 'schedule') renderSchedule();
+    if (page === 'profile') renderBookings();
+    window.scrollTo(0, 0);
+  }
+
+  // ── HOME CLASSES ──
+  function renderHomeClasses() {
+    const grid = document.getElementById('homeClasses');
+    const perWeek = curLang === 'ru' ? ' зан./нед.' : curLang === 'kz' ? ' сабақ/апта' : ' classes / week';
+    grid.innerHTML = homeCategories.map(c => `
+      <div class="class-card" onclick="goTo('schedule',document.querySelectorAll('.nav-link')[1])">
+        <div class="class-line"></div>
+        <div class="class-name">${c.name[curLang]}</div>
+        <div class="class-count">${c.count}${perWeek}</div>
+      </div>`).join('');
+  }
+
+  // ── FILTERS ──
+  function renderFilters() {
+    document.getElementById('filterBar').innerHTML = filters.map(f => `
+      <div class="fpill${curFilter===f.key?' active':''}" onclick="filterBy('${f.key}',this)">${f[curLang]}</div>`).join('');
+  }
+
+  function filterBy(cat) {
+    curFilter = cat;
+    renderFilters();
+    renderSchedule();
+  }
+
+  // ── SCHEDULE ──
+  function renderSchedule() {
+    const filtered = curFilter === 'all' ? classes : classes.filter(c => c.cat === curFilter);
+    const t = {book:{en:'Book',ru:'Записаться',kz:'Жазылу'},booked:{en:'Cancel',ru:'Отменить',kz:'Болдырмау'},full:{en:'Full',ru:'Нет мест',kz:'Орын жоқ'},left:{en:' left',ru:' осталось',kz:' қалды'}};
+    const body = document.getElementById('schedBody');
+    if (filtered.length === 0) {
+      body.innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted);font-size:14px;">${curLang==='ru'?'Нет занятий':curLang==='kz'?'Сабақ жоқ':'No classes found'}</div>`;
+      return;
+    }
+    body.innerHTML = filtered.map((c, i) => {
+      const idx = classes.indexOf(c);
+      const isBooked = booked.has(idx);
+      const isFull = c.spots === 0 && !isBooked;
+      return `<div class="sched-row">
+        <span class="time-c">${c.time}</span>
+        <span class="class-n">${c.name}</span>
+        <span class="trainer-c">${c.trainer}</span>
+        <span class="spots-badge${isFull?' full':''}">${isFull?t.full[curLang]:isBooked?'✓':(c.spots+t.left[curLang])}</span>
+        <button class="book-btn${isBooked?' booked':''}" ${isFull?'disabled':''} onclick="bookClass(${idx})">${isBooked?t.booked[curLang]:t.book[curLang]}</button>
+      </div>`;
+    }).join('');
+  }
+
+  function bookClass(idx) {
+    const msgs = {booked:{en:'Booked! See you there 🌸',ru:'Записано! Ждём вас 🌸',kz:'Жазылдыңыз! Күтеміз 🌸'},cancelled:{en:'Booking cancelled',ru:'Запись отменена',kz:'Брондау жойылды'}};
+    if (booked.has(idx)) {
+      booked.delete(idx);
+      showToast(msgs.cancelled[curLang]);
+    } else {
+      booked.add(idx);
+      document.getElementById('bookingCount').textContent = 3 + booked.size;
+      showToast(msgs.booked[curLang]);
+    }
+    renderSchedule();
+  }
+
+  // ── BOOKINGS ──
+  function renderBookings() {
+    const list = document.getElementById('bookingsList');
+    const cancelLbl = {en:'Cancel',ru:'Отменить',kz:'Болдырмау'};
+    list.innerHTML = myBookings.map(b => `
+      <div class="booking-item" id="${b.id}">
+        <div class="booking-dot"></div>
+        <div class="booking-info">
+          <div class="booking-name">${b.name}</div>
+          <div class="booking-time">${b.time[curLang]}</div>
+        </div>
+        <button class="cancel-btn" onclick="cancelBooking('${b.id}')">${cancelLbl[curLang]}</button>
+      </div>`).join('') || `<div style="padding:24px;text-align:center;color:var(--muted);font-size:14px;">${curLang==='ru'?'Нет предстоящих записей':curLang==='kz'?'Алдағы брондаулар жоқ':'No upcoming bookings'}</div>`;
+  }
+
+  function cancelBooking(id) {
+    myBookings = myBookings.filter(b => b.id !== id);
+    document.getElementById('bookingCount').textContent = Math.max(0, myBookings.length);
+    renderBookings();
+    const msg = {en:'Booking cancelled',ru:'Запись отменена',kz:'Брондау жойылды'};
+    showToast(msg[curLang]);
+  }
+
+  // ── PLANS ──
+  function selectPlan(name) {
+    const msg = {en:`${name} plan selected! Welcome to FemFit 🌸`,ru:`Выбран план ${name}! Добро пожаловать в FemFit 🌸`,kz:`${name} жоспары таңдалды! FemFit-ке қош келдіңіз 🌸`};
+    showToast(msg[curLang]);
+    setTimeout(() => goTo('profile', document.querySelectorAll('.nav-link')[3]), 900);
+  }
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+
+  // ── TRAINER DATA ──
+  const trainerClients = [
+    { name:'Anna Kim', initials:'AK', email:'anna@mail.kz', cycle:'Beginner Fitness', status:'active', exercises:'3x10 squats, 3x12 lunges, 3x15 glute bridges' },
+    { name:'Dana Dana', initials:'DD', email:'dana@mail.com', cycle:'Core & Flexibility', status:'revision', exercises:'Pilates core set, 3x15 planks, 2x20 side crunches' }
+  ];
+
+  function renderTrainerClients() {
+    const statusLabel = {
+      active:{en:'Active',ru:'Активно',kz:'Белсенді'},
+      revision:{en:'Revision Requested',ru:'Запрошена доработка',kz:'Қайта өңдеу сұралды'}
+    };
+    const el = document.getElementById('trainerClients');
+    if (!el) return;
+    el.innerHTML = trainerClients.map((c,i) => `
+      <div class="client-card">
+        <div class="client-card-header">
+          <div class="client-avatar">${c.initials}</div>
+          <div>
+            <div class="client-name">${c.name}</div>
+            <div class="client-email">${c.email}</div>
+          </div>
+        </div>
+        <div><span style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;">Program: </span><span style="font-size:13px;font-weight:500;">${c.cycle}</span></div>
+        <span class="order-badge ${c.status}">${statusLabel[c.status][curLang]}</span>
+        <div class="assignment-preview"><strong>Exercises</strong>${c.exercises}</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-sm" onclick="editAssignment(${i})" data-en="Edit Assignment" data-ru="Редактировать" data-kz="Өңдеу">Edit Assignment</button>
+          <button class="btn-sm outline" data-en="View Full" data-ru="Подробнее" data-kz="Толық">View Full</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function editAssignment(idx) {
+    document.getElementById('assignmentFormTitle').textContent = 'Edit Assignment — ' + trainerClients[idx].name;
+    document.getElementById('assignmentFormWrap').style.display = 'block';
+    document.getElementById('assignmentFormWrap').scrollIntoView({behavior:'smooth'});
+  }
+  function saveAssignment() {
+    document.getElementById('assignmentFormWrap').style.display = 'none';
+    showToast(curLang==='ru'?'Задание сохранено! 🌸':curLang==='kz'?'Тапсырма сақталды! 🌸':'Assignment saved! 🌸');
+  }
+  function closeForm() { document.getElementById('assignmentFormWrap').style.display = 'none'; }
+
+  // ── ADMIN TABS ──
+  function switchAdminTab(tab, btn) {
+    document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('adminClients').style.display  = tab==='clients'  ? 'block':'none';
+    document.getElementById('adminTrainers').style.display = tab==='trainers' ? 'block':'none';
+    document.getElementById('adminOrders').style.display   = tab==='orders'   ? 'block':'none';
+  }
+
+  // ── INIT ──
+  renderHomeClasses();
+  renderFilters();
+  renderSchedule();
+  renderBookings();
+  renderTrainerClients();
+</script>
+</body>
+</html>
