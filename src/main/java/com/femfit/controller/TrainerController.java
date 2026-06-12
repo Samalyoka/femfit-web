@@ -2,9 +2,9 @@ package com.femfit.controller;
 
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.model.Assignment;
-import com.femfit.model.User;
+import com.femfit.model.Member;
 import com.femfit.service.TrainerService;
-import com.femfit.service.UserService;
+import com.femfit.service.MemberService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,23 +25,19 @@ public class TrainerController {
     private static final Logger log = LoggerFactory.getLogger(TrainerController.class);
 
     private final TrainerService trainerService;
-    private final UserService    userService;
+    private final MemberService    userService;
 
     @Autowired
-    public TrainerController(TrainerService trainerService, UserService userService) {
+    public TrainerController(TrainerService trainerService, MemberService userService) {
         this.trainerService = trainerService;
         this.userService    = userService;
     }
 
-    // ─── Хелпер ───────────────────────────────────────────────────────────────
-
-    private User resolveCurrentUser(UserDetails principal) {
+    private Member resolveCurrentUser(UserDetails principal) {
         return userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalStateException(
                         "Authenticated user not found: " + principal.getUsername()));
     }
-
-    // ─── Dashboard ────────────────────────────────────────────────────────────
 
     /**
      * GET /trainer/dashboard
@@ -49,7 +45,7 @@ public class TrainerController {
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails principal,
                             Model model) {
-        User trainer = resolveCurrentUser(principal);
+        Member trainer = resolveCurrentUser(principal);
         List<ClientOrderDto> clients =
                 trainerService.getClientsWithOrderByTrainerUserId(trainer.getId());
         model.addAttribute("clients", clients);
@@ -57,8 +53,6 @@ public class TrainerController {
                 trainer.getId(), clients.size());
         return "trainer/trainer-dashboard";
     }
-
-    // ─── Просмотр assignment ──────────────────────────────────────────────────
 
     /**
      * GET /trainer/client/{clientId}/assignment
@@ -76,8 +70,6 @@ public class TrainerController {
         model.addAttribute("hasAssignment",  assignment.isPresent());
         return "trainer/assignment-view";
     }
-
-    // ─── Форма create / edit ──────────────────────────────────────────────────
 
     /**
      * GET /trainer/client/{clientId}/assignment/form?orderId={orderId}
@@ -101,8 +93,6 @@ public class TrainerController {
         model.addAttribute("editMode",   existing.isPresent());
         return "trainer/assignment-form";
     }
-
-    // ─── Сохранение ───────────────────────────────────────────────────────────
 
     /**
      * POST /trainer/assignment/save
@@ -135,8 +125,6 @@ public class TrainerController {
         return "redirect:/trainer/dashboard";
     }
 
-    // ─── Смена статуса ────────────────────────────────────────────────────────
-
     /**
      * POST /trainer/assignment/{assignmentId}/status
      */
@@ -161,8 +149,6 @@ public class TrainerController {
                 "/assignment?orderId=" + orderId;
     }
 
-    // ─── Удаление ─────────────────────────────────────────────────────────────
-
     /**
      * POST /trainer/assignment/delete
      */
@@ -175,8 +161,6 @@ public class TrainerController {
         ra.addFlashAttribute("successMsg", "assignment.deleted");
         return "redirect:/trainer/dashboard";
     }
-
-    // ─── Private ──────────────────────────────────────────────────────────────
 
     private boolean isValidStatus(String status) {
         return switch (status) {

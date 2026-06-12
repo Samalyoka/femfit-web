@@ -48,6 +48,10 @@
   </div>
 </div>
 
+<div th:if="${param.error}" class="alert alert-error">
+  <span th:text="${param.error}"></span>
+</div>
+
 <footer class="auth-footer">
   <div class="auth-footer-logo">FemFit</div>
   <div>© 2026 FemFit. All rights reserved.</div>

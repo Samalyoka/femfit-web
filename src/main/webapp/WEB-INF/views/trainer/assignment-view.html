@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+<head th:replace="~{common/layout :: head}">
+    <title>Assignment</title>
+</head>
+<body>
+
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<section class="page-section">
+    <div class="container" style="max-width: 760px;">
+
+        <div class="page-header">
+            <a class="back-link"
+               th:href="@{/trainer/dashboard}"
+               th:text="#{common.back}">← Back</a>
+            <h1 class="section-title" th:text="#{assignment.title}">Assignment</h1>
+        </div>
+
+        <!-- No assignment yet -->
+        <div th:if="${!hasAssignment}" class="empty-state">
+            <p class="section-sub" th:text="#{assignment.no.assignment}">No assignment created yet.</p>
+            <a class="btn btn--primary"
+               th:href="@{/trainer/client/{cid}/assignment/form(cid=${clientId},
+                                                                orderId=${orderId})}"
+               th:text="#{trainer.assignment.create}">Create Assignment</a>
+        </div>
+
+        <!-- Assignment content -->
+        <div th:if="${hasAssignment}" class="form-card">
+
+            <!-- Status badge -->
+            <div style="margin-bottom: 24px;">
+                <span class="badge"
+                      th:classappend="${assignment.status == 'ACTIVE'}    ? ' badge--active'
+                                    : (${assignment.status == 'COMPLETED'} ? ' badge--success'
+                                    : ' badge--warning')"
+                      th:text="${assignment.status}">ACTIVE</span>
+            </div>
+
+            <!-- Exercises -->
+            <div class="form-group">
+                <label class="form-label" th:text="#{assignment.exercises}">Exercises</label>
+                <div class="assignment-text" th:text="${assignment.exercises}">—</div>
+            </div>
+
+            <!-- Equipment -->
+            <div class="form-group">
+                <label class="form-label" th:text="#{assignment.equipment}">Equipment</label>
+                <div class="assignment-text" th:text="${assignment.equipment}">—</div>
+            </div>
+
+            <!-- Nutrition -->
+            <div class="form-group">
+                <label class="form-label" th:text="#{assignment.nutrition}">Nutrition Plan</label>
+                <div class="assignment-text" th:text="${assignment.nutritionPlan}">—</div>
+            </div>
+
+            <!-- Schedule -->
+            <div class="form-group">
+                <label class="form-label" th:text="#{assignment.schedule}">Schedule</label>
+                <div class="assignment-text" th:text="${assignment.scheduleInfo}">—</div>
+            </div>
+
+            <!-- Edit button -->
+            <div class="form-actions">
+                <a class="btn btn--primary"
+                   th:href="@{/trainer/client/{cid}/assignment/form(cid=${clientId},
+                                                                    orderId=${orderId})}"
+                   th:text="#{trainer.assignment.edit}">Edit Assignment</a>
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

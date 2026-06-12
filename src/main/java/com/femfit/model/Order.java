@@ -26,8 +26,6 @@ public class Order {
     private BigDecimal paidAmount;
     private LocalDateTime createdAt;
     private LocalDateTime completedAt;
-
-    // Joined display fields
     private String clientName;
     private String trainerName;
     private String cycleTitle;

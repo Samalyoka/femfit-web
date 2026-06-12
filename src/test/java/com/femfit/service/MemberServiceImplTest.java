@@ -1,17 +1,16 @@
 package com.femfit.service;
 
-import com.femfit.dao.UserDao;
+import com.femfit.dao.MemberDao;
 import com.femfit.dto.RegisterDto;
 import com.femfit.exception.EmailAlreadyTakenException;
 import com.femfit.exception.InvalidPasswordException;
 import com.femfit.model.Role;
-import com.femfit.model.User;
-import com.femfit.service.impl.UserServiceImpl;
+import com.femfit.model.Member;
+import com.femfit.service.impl.MemberServiceImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
@@ -21,22 +20,22 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Unit tests for {@link UserServiceImpl}.
+ * Unit tests for {@link MemberServiceImpl}.
  * Uses Mockito to isolate the service from the DAO and PasswordEncoder.
  * Covers positive, negative, and edge-case scenarios.
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserServiceImpl tests")
-class UserServiceImplTest {
+class MemberServiceImplTest {
 
     @Mock
-    private UserDao userDao;
+    private MemberDao memberDao;
 
     @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private UserServiceImpl userService;
+    private MemberServiceImpl userService;
 
     private RegisterDto validDto;
 
@@ -56,17 +55,17 @@ class UserServiceImplTest {
     @Test
     @DisplayName("register: success — new user is saved with hashed password")
     void register_success() {
-        when(userDao.existsByEmail(validDto.getEmail())).thenReturn(false);
+        when(memberDao.existsByEmail(validDto.getEmail())).thenReturn(false);
         when(passwordEncoder.encode(validDto.getPassword())).thenReturn("$2a$12$hashed");
-        User savedUser = User.builder().id(1L).email(validDto.getEmail()).role(Role.CLIENT).build();
-        when(userDao.save(any(User.class))).thenReturn(savedUser);
+        Member savedMember = Member.builder().id(1L).email(validDto.getEmail()).role(Role.CLIENT).build();
+        when(memberDao.save(any(Member.class))).thenReturn(savedMember);
 
-        User result = userService.register(validDto);
+        Member result = userService.register(validDto);
 
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(1L);
         assertThat(result.getRole()).isEqualTo(Role.CLIENT);
-        verify(userDao).save(argThat(u ->
+        verify(memberDao).save(argThat(u ->
                 u.getPasswordHash().equals("$2a$12$hashed") &&
                         u.getEmail().equals(validDto.getEmail())
         ));
@@ -75,25 +74,25 @@ class UserServiceImplTest {
     @Test
     @DisplayName("register: throws EmailAlreadyTakenException when email exists")
     void register_emailTaken_throwsException() {
-        when(userDao.existsByEmail(validDto.getEmail())).thenReturn(true);
+        when(memberDao.existsByEmail(validDto.getEmail())).thenReturn(true);
 
         assertThatThrownBy(() -> userService.register(validDto))
                 .isInstanceOf(EmailAlreadyTakenException.class)
                 .hasMessageContaining(validDto.getEmail());
 
-        verify(userDao, never()).save(any());
+        verify(memberDao, never()).save(any());
     }
 
     @Test
     @DisplayName("register: plain-text password is never stored")
     void register_passwordIsHashed() {
-        when(userDao.existsByEmail(any())).thenReturn(false);
+        when(memberDao.existsByEmail(any())).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("$2a$12$hashed");
-        when(userDao.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(memberDao.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         userService.register(validDto);
 
-        verify(userDao).save(argThat(u ->
+        verify(memberDao).save(argThat(u ->
                 !u.getPasswordHash().equals(validDto.getPassword())
         ));
     }
@@ -103,10 +102,10 @@ class UserServiceImplTest {
     @Test
     @DisplayName("findById: returns user when found")
     void findById_found() {
-        User user = User.builder().id(1L).email("anna@test.kz").build();
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
+        Member member = Member.builder().id(1L).email("anna@test.kz").build();
+        when(memberDao.findById(1L)).thenReturn(Optional.of(member));
 
-        Optional<User> result = userService.findById(1L);
+        Optional<Member> result = userService.findById(1L);
 
         assertThat(result).isPresent();
         assertThat(result.get().getId()).isEqualTo(1L);
@@ -115,9 +114,9 @@ class UserServiceImplTest {
     @Test
     @DisplayName("findById: returns empty when not found")
     void findById_notFound() {
-        when(userDao.findById(999L)).thenReturn(Optional.empty());
+        when(memberDao.findById(999L)).thenReturn(Optional.empty());
 
-        Optional<User> result = userService.findById(999L);
+        Optional<Member> result = userService.findById(999L);
 
         assertThat(result).isEmpty();
     }
@@ -127,27 +126,27 @@ class UserServiceImplTest {
     @Test
     @DisplayName("changePassword: success when old password matches")
     void changePassword_success() {
-        User user = User.builder().id(1L).passwordHash("$2a$hash").build();
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
+        Member member = Member.builder().id(1L).passwordHash("$2a$hash").build();
+        when(memberDao.findById(1L)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches("oldPass", "$2a$hash")).thenReturn(true);
         when(passwordEncoder.encode("newPass")).thenReturn("$2a$newHash");
 
         userService.changePassword(1L, "oldPass", "newPass");
 
-        verify(userDao).updatePassword(1L, "$2a$newHash");
+        verify(memberDao).updatePassword(1L, "$2a$newHash");
     }
 
     @Test
     @DisplayName("changePassword: throws InvalidPasswordException when old password is wrong")
     void changePassword_wrongOldPassword() {
-        User user = User.builder().id(1L).passwordHash("$2a$hash").build();
-        when(userDao.findById(1L)).thenReturn(Optional.of(user));
+        Member member = Member.builder().id(1L).passwordHash("$2a$hash").build();
+        when(memberDao.findById(1L)).thenReturn(Optional.of(member));
         when(passwordEncoder.matches("wrongPass", "$2a$hash")).thenReturn(false);
 
         assertThatThrownBy(() -> userService.changePassword(1L, "wrongPass", "newPass"))
                 .isInstanceOf(InvalidPasswordException.class);
 
-        verify(userDao, never()).updatePassword(anyLong(), anyString());
+        verify(memberDao, never()).updatePassword(anyLong(), anyString());
     }
 
     // ── setDiscount ───────────────────────────────────────────────────────
@@ -156,7 +155,7 @@ class UserServiceImplTest {
     @DisplayName("setDiscount: success for valid discount 0-100")
     void setDiscount_valid() {
         userService.setDiscount(1L, 20);
-        verify(userDao).setDiscount(1L, 20);
+        verify(memberDao).setDiscount(1L, 20);
     }
 
     @Test
@@ -164,7 +163,7 @@ class UserServiceImplTest {
     void setDiscount_invalidValue() {
         assertThatThrownBy(() -> userService.setDiscount(1L, 150))
                 .isInstanceOf(IllegalArgumentException.class);
-        verify(userDao, never()).setDiscount(anyLong(), anyInt());
+        verify(memberDao, never()).setDiscount(anyLong(), anyInt());
     }
 
     @Test

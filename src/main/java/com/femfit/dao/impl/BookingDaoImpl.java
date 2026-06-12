@@ -44,7 +44,7 @@ public class BookingDaoImpl implements BookingDao {
             JOIN class_schedules cs ON b.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
-            JOIN users u ON t.id = u.id
+            JOIN members u ON t.id = u.id
             WHERE b.id = ?
             """;
 
@@ -57,7 +57,7 @@ public class BookingDaoImpl implements BookingDao {
             JOIN class_schedules cs ON b.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
-            JOIN users u ON t.id = u.id
+            JOIN members u ON t.id = u.id
             WHERE b.user_id = ?
               AND b.status = 'CONFIRMED'
               AND cs.scheduled_at > NOW()
@@ -72,7 +72,7 @@ public class BookingDaoImpl implements BookingDao {
             JOIN class_schedules cs ON b.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
-            JOIN users u ON t.id = u.id
+            JOIN members u ON t.id = u.id
             WHERE b.schedule_id = ?
             """;
 

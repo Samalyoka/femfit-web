@@ -24,7 +24,7 @@ import java.util.Locale;
  */
 @Configuration
 @EnableWebMvc
-@ComponentScan(basePackages = "com.femfit.controller")
+@ComponentScan(basePackages = {"com.femfit.controller", "com.femfit.exception"})
 public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired

@@ -9,7 +9,7 @@ ON CONFLICT (name) DO NOTHING;
 
 -- ── USERS ──
 -- Admin: password = admin123
-INSERT INTO users (first_name, last_name, email, phone, password_hash, birth_date, role_id)
+INSERT INTO members (first_name, last_name, email, phone, password_hash, birth_date, role_id)
 VALUES ('Admin', 'FemFit', 'admin@femfit.kz', '+77001234567',
         '$2a$12$KIx6.tqNcKmK3Kz8GW4.1.wGqF5K3bT7yJ0yLvhU3lC7mPNYvE2.q',
         '1990-01-01',
@@ -17,7 +17,7 @@ VALUES ('Admin', 'FemFit', 'admin@femfit.kz', '+77001234567',
 ON CONFLICT (email) DO NOTHING;
 
 -- Trainers: password = trainer123
-INSERT INTO users (first_name, last_name, email, phone, password_hash, birth_date, role_id)
+INSERT INTO members (first_name, last_name, email, phone, password_hash, birth_date, role_id)
 VALUES
     ('Elena',  'Morozova', 'elena@femfit.kz',  '+77012345678',
      '$2a$12$LJy7.upOdLnL4Lz9HX5.2.xHrG6L4cU8zK1zMwhV4mD8nQOZwF3.r', '1992-03-15',
@@ -31,7 +31,7 @@ VALUES
 ON CONFLICT (email) DO NOTHING;
 
 -- Clients: password = client123
-INSERT INTO users (first_name, last_name, email, phone, password_hash, birth_date, role_id)
+INSERT INTO members (first_name, last_name, email, phone, password_hash, birth_date, role_id)
 VALUES
     ('Anna',    'Kim',      'anna@mail.kz',    '+77045678901',
      '$2a$12$MKz8.vqPeLpM5Mb0IY6.3.yIsMh7M5dV9aL2aNxiW5nEoPQawG4.s', '1998-05-20',
@@ -47,20 +47,20 @@ ON CONFLICT (email) DO NOTHING;
 -- ── TRAINERS ──
 INSERT INTO trainers (id, bio, experience_years, certification)
 SELECT id, 'Certified yoga and pilates instructor with 8 years experience.', 8, 'RYT-500'
-FROM users WHERE email = 'elena@femfit.kz' ON CONFLICT DO NOTHING;
+FROM members WHERE email = 'elena@femfit.kz' ON CONFLICT DO NOTHING;
 
 INSERT INTO trainers (id, bio, experience_years, certification)
 SELECT id, 'HIIT and cardio specialist. Former athletics coach.', 6, 'ACE-CPT'
-FROM users WHERE email = 'sofia@femfit.kz' ON CONFLICT DO NOTHING;
+FROM members WHERE email = 'sofia@femfit.kz' ON CONFLICT DO NOTHING;
 
 INSERT INTO trainers (id, bio, experience_years, certification)
 SELECT id, 'Strength training and nutrition expert.', 5, 'NSCA-CSCS'
-FROM users WHERE email = 'maria@femfit.kz' ON CONFLICT DO NOTHING;
+FROM members WHERE email = 'maria@femfit.kz' ON CONFLICT DO NOTHING;
 
 -- ── TRAINER SPECIALIZATIONS ──
 INSERT INTO trainer_specializations (trainer_id, name)
 SELECT t.id, s.name FROM trainers t
-                             JOIN users u ON t.id = u.id
+                             JOIN members u ON t.id = u.id
                              JOIN (VALUES
                                        ('elena@femfit.kz', 'Yoga'),
                                        ('elena@femfit.kz', 'Pilates'),
@@ -126,7 +126,7 @@ FROM (VALUES
           ('Stretching',      'elena@femfit.kz', NOW()::date + INTERVAL '4 day' + TIME '19:30', 'Studio A')
      ) AS sched(class_name, trainer_email, scheduled_at, room)
          JOIN fitness_classes fc ON fc.name = sched.class_name
-         JOIN users u ON u.email = sched.trainer_email;
+         JOIN members u ON u.email = sched.trainer_email;
 
 -- ── TRAINING CYCLES ──
 INSERT INTO training_cycles (title, description, duration_weeks, price)
@@ -145,6 +145,6 @@ SELECT
     CURRENT_DATE,
     CURRENT_DATE + INTERVAL '1 month',
     mp.price_per_month
-FROM users u, membership_plans mp
+FROM members u, membership_plans mp
 WHERE u.email = 'anna@mail.kz' AND mp.name = 'Premium'
 ON CONFLICT DO NOTHING;

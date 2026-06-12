@@ -41,4 +41,12 @@ public class HomeController {
     public String plans(Model model) {
         return "plans";
     }
+
+    /**
+     * Error page for access denied (403).
+     */
+    @GetMapping("/error/403")
+    public String accessDenied() {
+        return "error/403";
+    }
 }

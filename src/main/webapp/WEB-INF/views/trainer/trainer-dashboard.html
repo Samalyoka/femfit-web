@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+<head th:replace="~{common/layout :: head}">
+    <title>Trainer Dashboard</title>
+</head>
+<body>
+
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<section class="page-section">
+    <div class="container">
+
+        <div class="page-header">
+            <h1 class="section-title" th:text="#{trainer.dashboard.title}">Trainer Dashboard</h1>
+        </div>
+
+        <!-- Flash messages -->
+        <div th:if="${successMsg}" class="alert alert--success" th:text="${successMsg}"></div>
+        <div th:if="${errorMsg}"   class="alert alert--error"   th:text="${errorMsg}"></div>
+
+        <!-- Empty state -->
+        <div th:if="${clients.empty}" class="empty-state">
+            <p class="section-sub" th:text="#{trainer.no.clients}">No active clients assigned yet.</p>
+        </div>
+
+        <!-- Client cards -->
+        <div class="cards-grid" th:unless="${clients.empty}">
+            <div class="card" th:each="client : ${clients}">
+
+                <div class="card__body">
+                    <h3 class="card__title" th:text="${client.fullName}">Client Name</h3>
+                    <p class="card__meta" th:text="${client.email}">email@example.com</p>
+                    <span class="badge"
+                          th:text="${client.orderStatus}"
+                          th:classappend="${client.orderStatus == 'ACTIVE'} ? ' badge--active' : ' badge--progress'">
+                        ACTIVE
+                    </span>
+                </div>
+
+                <div class="card__actions">
+                    <a class="btn btn--outline"
+                       th:href="@{/trainer/client/{cid}/assignment(cid=${client.clientId},
+                                                                   orderId=${client.orderId})}"
+                       th:text="#{trainer.assignment.view}">View Assignment</a>
+                    <a class="btn btn--primary"
+                       th:href="@{/trainer/client/{cid}/assignment/form(cid=${client.clientId},
+                                                                        orderId=${client.orderId})}"
+                       th:text="#{trainer.assignment.edit}">Edit Assignment</a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

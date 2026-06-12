@@ -2,23 +2,26 @@ package com.femfit.service;
 
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.model.Assignment;
-import com.femfit.model.User;
+import com.femfit.model.Member;
+
 import java.util.List;
 import java.util.Optional;
 
 public interface TrainerService {
 
-    /** Старый метод — оставляем для обратной совместимости. */
-    List<User> getClientsByTrainerUserId(long userIdOfTrainer);
+    /** Returns a list of clients assigned to the specified trainer. */
+    List<Member> getClientsByTrainerUserId(long userIdOfTrainer);
 
-    /** Новый метод — для dashboard, несёт orderId. */
+    /** Returns a list of clients with their orders for the specified trainer. */
     List<ClientOrderDto> getClientsWithOrderByTrainerUserId(long userIdOfTrainer);
+
+    List<Member> getAllTrainers();
 
     Optional<Assignment> getAssignmentForClient(long clientId);
 
     void saveOrUpdateAssignment(Assignment assignment);
 
-    /** @param orderId — FK в таблице assignments, не clientId */
+    /** Deletes an assignment by its ID. */
     void deleteAssignment(long orderId);
 
     void updateAssignmentStatus(Long assignmentId, String status);

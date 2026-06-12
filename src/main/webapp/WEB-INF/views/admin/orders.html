@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+<head th:replace="~{common/layout :: head}">
+  <title>All Orders — Admin</title>
+</head>
+<body>
+
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<section class="page-section">
+  <div class="container">
+
+    <div class="page-header">
+      <a class="back-link" th:href="@{/admin/dashboard}">← Dashboard</a>
+      <h1 class="section-title" th:text="#{admin.orders}">All Orders</h1>
+    </div>
+
+    <div th:if="${success}" class="alert alert--success" th:text="${success}"></div>
+
+    <!-- Empty state -->
+    <div th:if="${orders.empty}" class="empty-state">
+      <p class="section-sub">No orders yet.</p>
+    </div>
+
+    <!-- Orders table -->
+    <div th:unless="${orders.empty}" class="table-wrap">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Client</th>
+          <th>Program</th>
+          <th>Trainer</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order : ${orders}">
+
+          <td class="data-table__meta"
+              th:text="${order.id}">1</td>
+
+          <td class="data-table__name"
+              th:text="${order.clientName}">Client</td>
+
+          <td th:text="${order.cycleTitle}">Program</td>
+
+          <td class="data-table__meta"
+              th:text="${order.trainerName != null ? order.trainerName : '—'}">—</td>
+
+          <td th:text="${#numbers.formatDecimal(order.paidAmount, 0, 'COMMA', 0, 'POINT') + ' ₸'}">
+            0 ₸
+          </td>
+
+          <td>
+                        <span class="badge"
+                              th:text="${order.status}"
+                              th:classappend="${order.status == 'ACTIVE'}    ? ' badge--active'
+                                           : (${order.status == 'COMPLETED'} ? ' badge--success'
+                                           : (${order.status == 'CANCELLED'} ? ' badge--inactive'
+                                           : ' badge--warning'))">
+                            ACTIVE
+                        </span>
+          </td>
+
+          <td class="data-table__meta"
+              th:text="${order.createdAt != null}
+                                 ? ${#temporals.format(order.createdAt, 'dd MMM yyyy')}
+                                 : '—'">
+            —
+          </td>
+
+          <!-- Status actions -->
+          <td>
+            <div class="action-row">
+              <form th:if="${order.status == 'ACTIVE'}"
+                    th:action="@{/admin/order/complete/{id}(id=${order.id})}"
+                    method="post">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+                <button class="btn btn--outline btn--sm" type="submit">
+                  Complete
+                </button>
+              </form>
+              <form th:if="${order.status == 'ACTIVE' or order.status == 'PENDING'}"
+                    th:action="@{/admin/order/cancel/{id}(id=${order.id})}"
+                    method="post">
+                <input type="hidden"
+                       th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"/>
+                <button class="btn btn--danger btn--sm" type="submit">
+                  Cancel
+                </button>
+              </form>
+            </div>
+          </td>
+
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div th:if="${totalPages > 1}" class="pagination">
+      <a class="pagination__btn"
+         th:if="${currentPage > 1}"
+         th:href="@{/admin/orders(page=${currentPage - 1})}"
+         th:text="#{pagination.prev}">Previous</a>
+
+      <span class="pagination__info">
+                <th:block th:text="${currentPage}">1</th:block>
+                /
+                <th:block th:text="${totalPages}">1</th:block>
+            </span>
+
+      <a class="pagination__btn"
+         th:if="${currentPage < totalPages}"
+         th:href="@{/admin/orders(page=${currentPage + 1})}"
+         th:text="#{pagination.next}">Next</a>
+    </div>
+
+  </div>
+</section>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

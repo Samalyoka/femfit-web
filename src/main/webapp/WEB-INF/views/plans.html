@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
 <head th:replace="~{common/layout :: head}">
   <title>Membership — FemFit</title>
 </head>
@@ -8,9 +9,11 @@
 
 <!-- HEADER -->
 <div style="background:var(--rose-light);padding:60px 40px 50px;text-align:center;">
-  <div class="section-eyebrow">Flexible options</div>
-  <h1 style="font-family:var(--serif);font-size:clamp(36px,5vw,56px);font-weight:400;color:var(--rose-deep);margin-bottom:16px;" th:text="#{plans.title}">Choose your membership</h1>
-  <p style="font-size:15px;color:var(--muted);max-width:480px;margin:0 auto;">No contracts. Cancel anytime. Start your journey today.</p>
+  <div class="section-eyebrow" th:text="#{plans.eyebrow}">Flexible options</div>
+  <h1 style="font-family:var(--serif);font-size:clamp(36px,5vw,56px);font-weight:400;color:var(--rose-deep);margin-bottom:16px;"
+      th:text="#{plans.title}">Choose your membership</h1>
+  <p style="font-size:15px;color:var(--muted);max-width:480px;margin:0 auto;"
+     th:text="#{plans.subtitle}">No contracts. Cancel anytime. Start your journey today.</p>
 </div>
 
 <!-- PLANS -->
@@ -19,14 +22,14 @@
 
     <!-- BASIC -->
     <div class="plan-card">
-      <div class="plan-name">Basic</div>
+      <div class="plan-name" th:text="#{plans.basic.name}">Basic</div>
       <div class="plan-price">49 900 ₸</div>
       <div class="plan-mo" th:text="#{plans.per.month}">per month</div>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>Gym access 6am–10pm</li>
-        <li>4 group classes per month</li>
-        <li>Locker room &amp; shower</li>
+        <li th:text="#{plans.basic.feature1}">Gym access 6am–10pm</li>
+        <li th:text="#{plans.basic.feature2}">4 group classes per month</li>
+        <li th:text="#{plans.basic.feature3}">Locker room &amp; shower</li>
       </ul>
       <a th:href="${isAuthenticated} ? @{/client/profile} : @{/auth/register}"
          class="plan-cta" th:text="#{plans.get.started}">Get started</a>
@@ -35,35 +38,35 @@
     <!-- PREMIUM -->
     <div class="plan-card featured">
       <span class="popular-tag" th:text="#{plans.popular}">Most popular</span>
-      <div class="plan-name">Premium</div>
+      <div class="plan-name" th:text="#{plans.premium.name}">Premium</div>
       <div class="plan-price">89 900 ₸</div>
       <div class="plan-mo" th:text="#{plans.per.month}">per month</div>
       <div class="plan-divider" style="background:var(--rose-mid);"></div>
       <ul class="plan-features">
-        <li>Unlimited gym access</li>
-        <li>Unlimited group classes</li>
-        <li>2 personal sessions/month</li>
-        <li>Sauna &amp; spa access</li>
+        <li th:text="#{plans.premium.feature1}">Unlimited gym access</li>
+        <li th:text="#{plans.premium.feature2}">Unlimited group classes</li>
+        <li th:text="#{plans.premium.feature3}">2 personal sessions/month</li>
+        <li th:text="#{plans.premium.feature4}">Sauna &amp; spa access</li>
       </ul>
       <a th:href="${isAuthenticated} ? @{/client/profile} : @{/auth/register}"
-         class="plan-cta">Get Premium</a>
+         class="plan-cta" th:text="#{plans.premium.cta}">Get Premium</a>
     </div>
 
     <!-- ELITE -->
     <div class="plan-card">
-      <div class="plan-name">Elite</div>
+      <div class="plan-name" th:text="#{plans.elite.name}">Elite</div>
       <div class="plan-price">139 900 ₸</div>
       <div class="plan-mo" th:text="#{plans.per.month}">per month</div>
       <div class="plan-divider"></div>
       <ul class="plan-features">
-        <li>Everything in Premium</li>
-        <li>Unlimited personal sessions</li>
-        <li>Nutrition consultation</li>
-        <li>Priority booking</li>
-        <li>Guest passes (2/month)</li>
+        <li th:text="#{plans.elite.feature1}">Everything in Premium</li>
+        <li th:text="#{plans.elite.feature2}">Unlimited personal sessions</li>
+        <li th:text="#{plans.elite.feature3}">Nutrition consultation</li>
+        <li th:text="#{plans.elite.feature4}">Priority booking</li>
+        <li th:text="#{plans.elite.feature5}">Guest passes (2/month)</li>
       </ul>
       <a th:href="${isAuthenticated} ? @{/client/profile} : @{/auth/register}"
-         class="plan-cta">Go Elite</a>
+         class="plan-cta" th:text="#{plans.elite.cta}">Go Elite</a>
     </div>
 
   </div>
@@ -71,22 +74,23 @@
 
 <!-- FAQ -->
 <div style="padding:0 40px 80px;max-width:740px;margin:0 auto;">
-  <h2 style="font-family:var(--serif);font-size:32px;font-weight:400;color:var(--rose-deep);margin-bottom:32px;">FAQ</h2>
+  <h2 style="font-family:var(--serif);font-size:32px;font-weight:400;color:var(--rose-deep);margin-bottom:32px;"
+      th:text="#{plans.faq.title}">FAQ</h2>
   <div class="faq-item">
-    <div class="faq-q">Can I cancel my membership anytime?</div>
-    <div class="faq-a">Yes, you can cancel at any time. Your membership remains active until the end of the billing period.</div>
+    <div class="faq-q" th:text="#{plans.faq.cancel.q}">Can I cancel my membership anytime?</div>
+    <div class="faq-a" th:text="#{plans.faq.cancel.a}">Yes, you can cancel at any time.</div>
   </div>
   <div class="faq-item">
-    <div class="faq-q">Is there a joining fee?</div>
-    <div class="faq-a">No joining fee. You only pay the monthly membership price.</div>
+    <div class="faq-q" th:text="#{plans.faq.fee.q}">Is there a joining fee?</div>
+    <div class="faq-a" th:text="#{plans.faq.fee.a}">No joining fee.</div>
   </div>
   <div class="faq-item">
-    <div class="faq-q">Can I freeze my membership?</div>
-    <div class="faq-a">Yes, Premium and Elite members can freeze their membership for up to 30 days per year.</div>
+    <div class="faq-q" th:text="#{plans.faq.freeze.q}">Can I freeze my membership?</div>
+    <div class="faq-a" th:text="#{plans.faq.freeze.a}">Yes, Premium and Elite members can freeze.</div>
   </div>
   <div class="faq-item">
-    <div class="faq-q">How do I book a personal session?</div>
-    <div class="faq-a">After signing up, go to your profile and select a trainer. You can book sessions directly from the schedule page.</div>
+    <div class="faq-q" th:text="#{plans.faq.session.q}">How do I book a personal session?</div>
+    <div class="faq-a" th:text="#{plans.faq.session.a}">After signing up, go to your profile.</div>
   </div>
 </div>
 

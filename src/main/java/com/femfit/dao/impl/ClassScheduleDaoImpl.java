@@ -36,7 +36,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_schedules cs
             JOIN fitness_classes fc ON cs.class_id = fc.id
-            JOIN users u ON cs.trainer_id = u.id
+            JOIN members u ON cs.trainer_id = u.id
             LEFT JOIN class_categories cc ON fc.id = cc.class_id
             LEFT JOIN bookings b ON cs.id = b.schedule_id
             WHERE cs.id = ?
@@ -51,7 +51,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_schedules cs
             JOIN fitness_classes fc ON cs.class_id = fc.id
-            JOIN users u ON cs.trainer_id = u.id
+            JOIN members u ON cs.trainer_id = u.id
             LEFT JOIN class_categories cc ON fc.id = cc.class_id
             LEFT JOIN bookings b ON cs.id = b.schedule_id
             WHERE cs.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
@@ -68,7 +68,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_schedules cs
             JOIN fitness_classes fc ON cs.class_id = fc.id
-            JOIN users u ON cs.trainer_id = u.id
+            JOIN members u ON cs.trainer_id = u.id
             LEFT JOIN class_categories cc ON fc.id = cc.class_id
             LEFT JOIN bookings b ON cs.id = b.schedule_id
             WHERE cs.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'

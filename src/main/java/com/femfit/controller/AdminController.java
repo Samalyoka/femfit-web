@@ -2,9 +2,9 @@ package com.femfit.controller;
 
 import com.femfit.dto.PageDto;
 import com.femfit.model.Role;
-import com.femfit.model.User;
+import com.femfit.model.Member;
 import com.femfit.service.OrderService;
-import com.femfit.service.UserService;
+import com.femfit.service.MemberService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +23,11 @@ public class AdminController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
-    private final UserService userService;
+    private final MemberService userService;
     private final OrderService orderService;
 
     @Autowired
-    public AdminController(UserService userService, OrderService orderService) {
+    public AdminController(MemberService userService, OrderService orderService) {
         this.userService = userService;
         this.orderService = orderService;
     }
@@ -49,7 +49,7 @@ public class AdminController {
      */
     @GetMapping("/clients")
     public String clients(@RequestParam(name = "page", defaultValue = "1") int page, Model model) {
-        PageDto<User> pageDto = userService.findByRole(Role.CLIENT, page, 10);
+        PageDto<Member> pageDto = userService.findByRole(Role.CLIENT, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "CLIENT");
         return "admin/users";
@@ -60,10 +60,23 @@ public class AdminController {
      */
     @GetMapping("/trainers")
     public String trainers(@RequestParam(name = "page", defaultValue = "1") int page, Model model) {
-        PageDto<User> pageDto = userService.findByRole(Role.TRAINER, page, 10);
+        PageDto<Member> pageDto = userService.findByRole(Role.TRAINER, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
         return "admin/users";
+    }
+
+    /**
+     * All orders list with pagination.
+     */
+    @GetMapping("/orders")
+    public String orders(@RequestParam(defaultValue = "1") int page, Model model) {
+        int offset = (page - 1) * 10;
+        model.addAttribute("orders", orderService.findAll(offset, 10));
+        model.addAttribute("totalPages",
+                (int) Math.ceil(orderService.countAll() / 10.0));
+        model.addAttribute("currentPage", page);
+        return "admin/orders";
     }
 
     /**
@@ -105,5 +118,27 @@ public class AdminController {
         userService.setDiscount(userId, discountPercent);
         redirectAttrs.addFlashAttribute("success", "msg.success.save");
         return "redirect:/admin/clients";
+    }
+
+    /**
+     * Marks order as completed.
+     */
+    @PostMapping("/order/complete/{orderId}")
+    public String completeOrder(@PathVariable Long orderId,
+                                RedirectAttributes ra) {
+        orderService.updateStatus(orderId, "COMPLETED");
+        ra.addFlashAttribute("success", "Order marked as completed.");
+        return "redirect:/admin/orders";
+    }
+
+    /**
+     * Cancels an order.
+     */
+    @PostMapping("/order/cancel/{orderId}")
+    public String cancelOrder(@PathVariable Long orderId,
+                              RedirectAttributes ra) {
+        orderService.updateStatus(orderId, "CANCELLED");
+        ra.addFlashAttribute("success", "Order cancelled.");
+        return "redirect:/admin/orders";
     }
 }

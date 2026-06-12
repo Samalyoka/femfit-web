@@ -31,7 +31,7 @@ public class OrderDaoImpl implements OrderDao {
 
     private static final String INSERT = """
             INSERT INTO orders (user_id, cycle_id, trainer_id, status, paid_amount, created_at)
-            VALUES (?, ?, ?, 'PENDING', ?, NOW())
+            VALUES (?, ?, ?, 'ACTIVE', ?, NOW())
             RETURNING id, created_at
             """;
 
@@ -42,9 +42,9 @@ public class OrderDaoImpl implements OrderDao {
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN users u ON o.user_id = u.id
+            JOIN members u ON o.user_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
-            LEFT JOIN users t ON o.trainer_id = t.id
+            LEFT JOIN members t ON o.trainer_id = t.id
             WHERE o.id = ?
             """;
 
@@ -55,9 +55,9 @@ public class OrderDaoImpl implements OrderDao {
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN users u ON o.user_id = u.id
+            JOIN members u ON o.user_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
-            LEFT JOIN users t ON o.trainer_id = t.id
+            LEFT JOIN members t ON o.trainer_id = t.id
             WHERE o.user_id = ?
             ORDER BY o.created_at DESC
             """;
@@ -69,9 +69,9 @@ public class OrderDaoImpl implements OrderDao {
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN users u ON o.user_id = u.id
+            JOIN members u ON o.user_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
-            LEFT JOIN users t ON o.trainer_id = t.id
+            LEFT JOIN members t ON o.trainer_id = t.id
             WHERE o.trainer_id = ? AND o.status IN ('PENDING', 'ACTIVE')
             ORDER BY o.created_at DESC
             """;
@@ -83,9 +83,9 @@ public class OrderDaoImpl implements OrderDao {
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN users u ON o.user_id = u.id
+            JOIN members u ON o.user_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
-            LEFT JOIN users t ON o.trainer_id = t.id
+            LEFT JOIN members t ON o.trainer_id = t.id
             ORDER BY o.created_at DESC
             LIMIT ? OFFSET ?
             """;

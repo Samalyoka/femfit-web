@@ -20,8 +20,6 @@ public class ClassSchedule {
     private String room;
     private boolean cancelled;
     private int capacity;
-
-    // Joined display fields
     private String className;
     private String trainerName;
     private String category;

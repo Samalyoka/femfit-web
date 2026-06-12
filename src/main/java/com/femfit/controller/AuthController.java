@@ -2,7 +2,7 @@ package com.femfit.controller;
 
 import com.femfit.dto.RegisterDto;
 import com.femfit.exception.EmailAlreadyTakenException;
-import com.femfit.service.UserService;
+import com.femfit.service.MemberService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
- * Handles user authentication operations including rendering login/registration forms
+ * Handles member authentication operations including rendering login/registration forms
  * and processing user registration.
  */
 @Controller
@@ -22,11 +22,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-    private final UserService userService;
+    private final MemberService memberService;
 
     @Autowired
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(MemberService memberService){
+        this.memberService = memberService;
     }
 
     /**
@@ -84,7 +84,7 @@ public class AuthController {
             return "auth/register";
         }
         try {
-            userService.register(dto);
+            memberService.register(dto);
             redirectAttrs.addFlashAttribute("success", "Registration successful! Please log in.");
             return "redirect:/auth/login?registered";
         } catch (EmailAlreadyTakenException e) {

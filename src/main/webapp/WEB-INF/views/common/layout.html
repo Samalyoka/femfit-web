@@ -9,19 +9,37 @@
 </head>
 <body>
 
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const lang = params.get('lang');
+  if (lang) {
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      const href = btn.getAttribute('href');
+      if (href && href.includes('lang=' + lang)) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+  }
+</script>
+
 <nav th:fragment="nav" class="main-nav">
   <a class="logo" th:href="@{/home}">Fem<span>Fit</span></a>
   <a class="nav-link" th:href="@{/home}" th:text="#{nav.home}">Home</a>
   <a class="nav-link" th:href="@{/schedule}" th:text="#{nav.schedule}">Schedule</a>
   <a class="nav-link" th:href="@{/plans}" th:text="#{nav.membership}">Membership</a>
   <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/profile}" th:text="#{nav.profile}">My Profile</a>
-  <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/cycles}">Programs</a>
+  <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/cycles}" th:text="#{nav.cycles}">Programs</a>
   <a class="nav-link" th:if="${userRole == 'TRAINER'}" th:href="@{/trainer/dashboard}" th:text="#{nav.trainer}">Trainer Panel</a>
   <a class="nav-link" th:if="${userRole == 'ADMIN'}" th:href="@{/admin/dashboard}" th:text="#{nav.admin}">Admin Panel</a>
   <div class="lang-sw">
-    <a th:href="@{''(lang=en)}" class="lang-btn">EN</a>
-    <a th:href="@{''(lang=ru)}" class="lang-btn">RU</a>
-    <a th:href="@{''(lang=kz)}" class="lang-btn">KZ</a>
+    <a th:href="@{''(lang=en)}" class="lang-btn"
+       th:classappend="${#locale.language == 'en' or #locale.language == 'en_US'} ? ' active' : ''">EN</a>
+    <a th:href="@{''(lang=ru)}" class="lang-btn"
+       th:classappend="${#locale.language == 'ru'} ? ' active' : ''">RU</a>
+    <a th:href="@{''(lang=kz)}" class="lang-btn"
+       th:classappend="${#locale.language == 'kz'} ? ' active' : ''">KZ</a>
   </div>
   <th:block th:if="${isAuthenticated}">
     <form th:action="@{/auth/logout}" method="post" style="display:inline;margin-left:8px;">

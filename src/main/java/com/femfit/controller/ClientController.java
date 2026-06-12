@@ -1,12 +1,11 @@
 package com.femfit.controller;
 
+import com.femfit.dto.ChangePasswordDto;
 import com.femfit.exception.BookingException;
-import com.femfit.model.Booking;
-import com.femfit.model.Order;
-import com.femfit.model.User;
-import com.femfit.service.BookingService;
-import com.femfit.service.OrderService;
-import com.femfit.service.UserService;
+import com.femfit.exception.InvalidPasswordException;
+import com.femfit.model.*;
+import com.femfit.service.*;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +13,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import com.femfit.model.TrainingCycle;
-import com.femfit.service.TrainingCycleService;
-
+import com.femfit.dto.ChangePasswordDto;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import java.util.List;
 
 /**
@@ -31,20 +30,23 @@ public class ClientController {
 
     private static final Logger log = LoggerFactory.getLogger(ClientController.class);
 
-    private final UserService userService;
+    private final MemberService userService;
     private final BookingService bookingService;
     private final OrderService orderService;
     private final TrainingCycleService trainingCycleService;
+    private final TrainerService trainerService;
 
     @Autowired
-    public ClientController(UserService userService,
+    public ClientController(MemberService userService,
                             BookingService bookingService,
                             OrderService orderService,
-                            TrainingCycleService trainingCycleService) {
+                            TrainingCycleService trainingCycleService,
+                            TrainerService trainerService) {
         this.userService = userService;
         this.bookingService = bookingService;
         this.orderService = orderService;
         this.trainingCycleService = trainingCycleService;
+        this.trainerService = trainerService;
     }
 
     /**
@@ -52,19 +54,20 @@ public class ClientController {
      */
     @GetMapping("/profile")
     public String profile(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = getUser(userDetails);
-        List<Booking> bookings = bookingService.getUpcoming(user.getId());
-        List<Order> orders = orderService.findByUserId(user.getId());
+        Member member = getUser(userDetails);
+        List<Booking> bookings = bookingService.getUpcoming(member.getId());
+        List<Order> orders = orderService.findByUserId(member.getId());
 
-        model.addAttribute("user", user);
+        model.addAttribute("member", member);
         model.addAttribute("bookings", bookings);
         model.addAttribute("orders", orders);
-        model.addAttribute("visitCount", bookingService.countVisitsThisMonth(user.getId()));
+        model.addAttribute("visitCount", bookingService.countVisitsThisMonth(member.getId()));
+        model.addAttribute("changePasswordDto", new ChangePasswordDto());
         return "client/profile";
     }
 
     /**
-     * Books a class for the current user.
+     * Books a class for the current member.
      *
      * @param scheduleId the schedule slot to book
      */
@@ -72,9 +75,9 @@ public class ClientController {
     public String book(@PathVariable Long scheduleId,
                        @AuthenticationPrincipal UserDetails userDetails,
                        RedirectAttributes redirectAttrs) {
-        User user = getUser(userDetails);
+        Member member = getUser(userDetails);
         try {
-            bookingService.book(user.getId(), scheduleId);
+            bookingService.book(member.getId(), scheduleId);
             redirectAttrs.addFlashAttribute("success", "msg.success.booking");
         } catch (BookingException e) {
             redirectAttrs.addFlashAttribute("error", e.getMessage());
@@ -91,8 +94,8 @@ public class ClientController {
     public String cancelBooking(@PathVariable Long bookingId,
                                 @AuthenticationPrincipal UserDetails userDetails,
                                 RedirectAttributes redirectAttrs) {
-        User user = getUser(userDetails);
-        bookingService.cancel(bookingId, user.getId());
+        Member member = getUser(userDetails);
+        bookingService.cancel(bookingId, member.getId());
         redirectAttrs.addFlashAttribute("success", "msg.success.cancel");
         return "redirect:/client/profile";
     }
@@ -102,8 +105,8 @@ public class ClientController {
      */
     @GetMapping("/orders")
     public String orders(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = getUser(userDetails);
-        model.addAttribute("orders", orderService.findByUserId(user.getId()));
+        Member member = getUser(userDetails);
+        model.addAttribute("orders", orderService.findByUserId(member.getId()));
         return "client/orders";
     }
 
@@ -114,7 +117,7 @@ public class ClientController {
     public String assignment(@PathVariable Long orderId,
                              @AuthenticationPrincipal UserDetails userDetails,
                              Model model) {
-        User user = getUser(userDetails);
+        Member member = getUser(userDetails);
         orderService.findById(orderId).ifPresent(order -> {
             model.addAttribute("order", order);
             orderService.findAssignment(orderId).ifPresent(a ->
@@ -134,12 +137,12 @@ public class ClientController {
                                   RedirectAttributes redirectAttrs) {
         log.info("Revision requested for assignment id={}", assignmentId);
         orderService.requestRevision(assignmentId);
-        redirectAttrs.addFlashAttribute("success", "Revision request sent to your trainer.");
+        redirectAttrs.addFlashAttribute("success", "msg.success.revision.requested");
         return "redirect:/client/profile";
     }
 
     // Helper — loads full User from DB using Spring Security email
-    private User getUser(UserDetails userDetails) {
+    private Member getUser(UserDetails userDetails) {
         return userService.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
@@ -149,10 +152,9 @@ public class ClientController {
      */
     @GetMapping("/cycles")
     public String cycles(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        User user = getUser(userDetails);
+        Member member = getUser(userDetails);
         List<TrainingCycle> cycles = trainingCycleService.findAllActive();
-        List<Order> myOrders = orderService.findByUserId(user.getId());
-        // передаём id уже купленных циклов чтобы показать статус
+        List<Order> myOrders = orderService.findByUserId(member.getId());
         List<Integer> purchasedCycleIds = myOrders.stream()
                 .map(Order::getCycleId)
                 .toList();
@@ -162,20 +164,68 @@ public class ClientController {
     }
 
     /**
-     * Places an order for a training cycle.
+     * Shows trainer selection page before placing order.
+     */
+    @GetMapping("/cycles/{cycleId}/choose-trainer")
+    public String chooseTrainer(@PathVariable Integer cycleId,
+                                Model model) {
+        trainingCycleService.findById(cycleId)
+                .ifPresent(cycle -> model.addAttribute("cycle", cycle));
+        model.addAttribute("trainers", trainerService.getAllTrainers());
+        return "client/choose-trainer";
+    }
+
+    /**
+     * Places an order with selected trainer.
      */
     @PostMapping("/cycles/{cycleId}/order")
     public String placeOrder(@PathVariable Integer cycleId,
+                             @RequestParam(required = false) Long trainerId,
                              @AuthenticationPrincipal UserDetails userDetails,
                              RedirectAttributes redirectAttrs) {
-        User user = getUser(userDetails);
+        Member member = getUser(userDetails);
         trainingCycleService.findById(cycleId).ifPresentOrElse(
                 cycle -> {
-                    orderService.placeOrder(user.getId(), cycleId, cycle.getPrice());
-                    redirectAttrs.addFlashAttribute("success", "Order placed successfully!");
+                    orderService.placeOrder(member.getId(), cycleId,
+                            cycle.getPrice(), trainerId);
+                    redirectAttrs.addFlashAttribute("success",
+                            "Order placed successfully!");
                 },
-                () -> redirectAttrs.addFlashAttribute("error", "Training cycle not found.")
+                () -> redirectAttrs.addFlashAttribute("error",
+                        "Training cycle not found.")
         );
         return "redirect:/client/orders";
+    }
+
+  /**
+     * Changes the current member's password.
+     * Validates new password length/match and verifies the current password
+     * before delegating to the service layer.
+     */
+    @PostMapping("/profile/password")
+    public String changePassword(@Valid @ModelAttribute("changePasswordDto") ChangePasswordDto dto,
+                                 BindingResult bindingResult,
+                                 @AuthenticationPrincipal UserDetails userDetails,
+                                 RedirectAttributes redirectAttrs) {
+        if (bindingResult.hasErrors()) {
+            log.warn("Password change rejected due to {} validation errors", bindingResult.getErrorCount());
+            redirectAttrs.addFlashAttribute("error", "msg.error.password.invalid");
+            return "redirect:/client/profile";
+        }
+
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+            redirectAttrs.addFlashAttribute("error", "msg.error.password.mismatch");
+            return "redirect:/client/profile";
+        }
+
+        Member member = getUser(userDetails);
+        try {
+            userService.changePassword(member.getId(), dto.getCurrentPassword(), dto.getNewPassword());
+            redirectAttrs.addFlashAttribute("success", "msg.success.password.changed");
+        } catch (InvalidPasswordException e) {
+            log.warn("Password change failed for member id={}: {}", member.getId(), e.getMessage());
+            redirectAttrs.addFlashAttribute("error", "msg.error.password.current.wrong");
+        }
+        return "redirect:/client/profile";
     }
 }

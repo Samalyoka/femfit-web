@@ -2,8 +2,8 @@ package com.femfit.dao.impl;
 
 import com.femfit.dao.TrainerDao;
 import com.femfit.dto.ClientOrderDto;
+import com.femfit.model.Member;
 import com.femfit.model.Role;
-import com.femfit.model.User;
 import com.femfit.util.pool.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +26,14 @@ public class TrainerDaoImpl implements TrainerDao {
         this.pool = pool;
     }
 
-    // ─── SQL ──────────────────────────────────────────────────────────────────
-
     private static final String FIND_TRAINER_ID = """
-            SELECT id FROM trainers WHERE user_id = ?
+            SELECT id FROM trainers WHERE id = ?
             """;
 
     private static final String FIND_CLIENTS = """
             SELECT DISTINCT u.id, u.first_name, u.last_name, u.email,
-                            u.phone, u.enabled, r.name AS role
-            FROM users u
+                            u.phone, u.is_active AS enabled, r.name AS role
+            FROM members u
             JOIN roles r  ON r.id  = u.role_id
             JOIN orders o ON o.user_id = u.id
             WHERE o.trainer_id = ?
@@ -54,17 +52,25 @@ public class TrainerDaoImpl implements TrainerDao {
                    u.last_name,
                    u.email,
                    u.phone,
-                   u.enabled,
+                   u.is_active AS enabled,
                    o.id          AS order_id,
                    o.status      AS order_status
-            FROM users u
+            FROM members u
             JOIN orders o ON o.user_id = u.id
             WHERE o.trainer_id = ?
               AND o.status IN ('ACTIVE', 'IN_PROGRESS')
             ORDER BY u.id, o.created_at DESC
             """;
 
-    // ─── Implementations ──────────────────────────────────────────────────────
+    private static final String FIND_ALL_TRAINERS = """
+            SELECT u.id, u.first_name, u.last_name, u.email,
+                   u.phone, u.is_active AS enabled, r.name AS role
+            FROM members u
+            JOIN roles r ON r.id = u.role_id
+            WHERE r.name = 'TRAINER'
+              AND u.is_active = true
+            ORDER BY u.first_name
+            """;
 
     @Override
     public long findTrainerIdByUserId(long userId) {
@@ -81,8 +87,8 @@ public class TrainerDaoImpl implements TrainerDao {
     }
 
     @Override
-    public List<User> findClientsByTrainerId(long trainerId) {
-        List<User> clients = new ArrayList<>();
+    public List<Member> findClientsByTrainerId(long trainerId) {
+        List<Member> clients = new ArrayList<>();
         try (Connection con = pool.getConnection();
              PreparedStatement ps = con.prepareStatement(FIND_CLIENTS)) {
             ps.setLong(1, trainerId);
@@ -111,10 +117,21 @@ public class TrainerDaoImpl implements TrainerDao {
         return result;
     }
 
-    // ─── Mapping ──────────────────────────────────────────────────────────────
+    @Override
+    public List<Member> findAllTrainers() {
+        List<Member> trainers = new ArrayList<>();
+        try (Connection con = pool.getConnection();
+             PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINERS);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) trainers.add(mapUser(rs));
+        } catch (SQLException e) {
+            throw new RuntimeException("TrainerDao.findAllTrainers failed", e);
+        }
+        return trainers;
+    }
 
-    private User mapUser(ResultSet rs) throws SQLException {
-        User u = new User();
+    private Member mapUser(ResultSet rs) throws SQLException {
+        Member u = new Member();
         u.setId(rs.getLong("id"));
         u.setFirstName(rs.getString("first_name"));
         u.setLastName(rs.getString("last_name"));

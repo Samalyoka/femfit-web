@@ -21,8 +21,6 @@ public class Booking {
 
     /** CONFIRMED, CANCELLED, ATTENDED */
     private String status;
-
-    // Joined fields for display
     private String className;
     private String trainerName;
     private LocalDateTime scheduledAt;

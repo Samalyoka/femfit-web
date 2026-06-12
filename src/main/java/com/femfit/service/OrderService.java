@@ -3,6 +3,7 @@ package com.femfit.service;
 import com.femfit.model.Assignment;
 import com.femfit.model.Order;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +72,18 @@ public interface OrderService {
      * @param userId  client's user id
      * @param cycleId training cycle id
      * @param price   amount to pay
+     * @param trainerId the trainer's user id
      * @return saved order
      */
-    Order placeOrder(Long userId, Integer cycleId, java.math.BigDecimal price);
+    Order placeOrder(Long userId, Integer cycleId, BigDecimal price, Long trainerId);
+
+    /**
+     * Returns all orders with pagination (admin).
+     */
+    List<Order> findAll(int offset, int limit);
+
+    /**
+     * Counts total orders (admin pagination).
+     */
+    int countAll();
 }

@@ -10,6 +10,9 @@
     <div class="section-eyebrow">Book your spot</div>
     <h1 class="section-title" th:text="#{schedule.title}">Class Schedule</h1>
 
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
+
     <div class="filter-bar">
         <a th:href="@{/schedule}" th:class="${activeCategory == 'ALL'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.all}">All</a>
         <a th:href="@{/schedule(category='CARDIO')}" th:class="${activeCategory == 'CARDIO'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.cardio}">Cardio</a>

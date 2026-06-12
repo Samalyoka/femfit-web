@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+<head th:replace="~{common/layout :: head}">
+    <title>Access Denied</title>
+</head>
+<body>
+
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<section class="page-section">
+    <div class="container" style="text-align: center; padding: 80px 20px;">
+
+        <div style="font-family: 'Cormorant Garamond', serif;
+                    font-size: 6rem; font-weight: 300;
+                    color: #C4687A; line-height: 1;">403</div>
+
+        <h1 class="section-title" style="margin: 16px 0 12px;"
+            th:text="#{error.404.title}">Access Denied</h1>
+
+        <p class="section-sub" style="margin-bottom: 32px;"
+           th:text="#{error.404.message}">You do not have permission to view this page.</p>
+
+        <a class="btn btn--primary" th:href="@{/home}"
+           th:text="#{error.back.home}">Back to Home</a>
+
+    </div>
+</section>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

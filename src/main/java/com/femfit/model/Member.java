@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 import java.time.Period;
 
 /**
- * Represents a system user (Client, Trainer, or Admin).
- * Maps to the {@code users} table.
+ * Represents a system member (Client, Trainer, or Admin).
+ * Maps to the {@code members} table.
  *
  * <p>Key entity — identified by {@code id} (primary key).</p>
  */
@@ -19,7 +19,7 @@ import java.time.Period;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class Member {
 
     private Long id;
     private String firstName;
@@ -65,5 +65,10 @@ public class User {
     }
 
     public void setEnabled(boolean enabled) {
+        this.active = enabled;
+    }
+
+     public boolean isEnabled() {
+        return active;
     }
 }

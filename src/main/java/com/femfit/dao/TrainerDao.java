@@ -1,12 +1,14 @@
 package com.femfit.dao;
 
 import com.femfit.dto.ClientOrderDto;
-import com.femfit.model.User;
+import com.femfit.model.Member;
+
 import java.util.List;
 
 public interface TrainerDao {
     long findTrainerIdByUserId(long userId);
-    List<User> findClientsByTrainerId(long trainerId);
+    List<Member> findClientsByTrainerId(long trainerId);
+    List<Member> findAllTrainers();
 
     /**
      * Get last active order for each client of the trainer.

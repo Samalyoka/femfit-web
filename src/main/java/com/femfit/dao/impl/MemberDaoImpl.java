@@ -1,8 +1,8 @@
 package com.femfit.dao.impl;
 
-import com.femfit.dao.UserDao;
+import com.femfit.dao.MemberDao;
+import com.femfit.model.Member;
 import com.femfit.model.Role;
-import com.femfit.model.User;
 import com.femfit.util.pool.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * JDBC implementation of {@link UserDao}.
+ * JDBC implementation of {@link MemberDao}.
  *
  * <p>All queries use {@link PreparedStatement} to prevent SQL injection.
  * String concatenation in SQL is strictly prohibited.</p>
@@ -23,21 +23,19 @@ import java.util.Optional;
  * <p>Design pattern: <strong>DAO (Data Access Object)</strong></p>
  */
 @Repository
-public class UserDaoImpl implements UserDao {
+public class MemberDaoImpl implements MemberDao {
 
-    private static final Logger log = LoggerFactory.getLogger(UserDaoImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(MemberDaoImpl.class);
 
     private final ConnectionPool pool;
 
     @Autowired
-    public UserDaoImpl(ConnectionPool pool) {
+    public MemberDaoImpl(ConnectionPool pool) {
         this.pool = pool;
     }
 
-    // ── SQL constants ──────────────────────────────────────────────────────
-
     private static final String INSERT_USER = """
-            INSERT INTO users (first_name, last_name, email, phone, password_hash,
+            INSERT INTO members (first_name, last_name, email, phone, password_hash,
                                birth_date, role_id, is_active, registration_date, discount_percent)
             VALUES (?, ?, ?, ?, ?, ?, (SELECT id FROM roles WHERE name = ?),
                     TRUE, NOW(), 0)
@@ -48,7 +46,7 @@ public class UserDaoImpl implements UserDao {
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
                    u.is_active, u.registration_date, u.discount_percent
-            FROM users u
+            FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE u.id = ?
             """;
@@ -57,7 +55,7 @@ public class UserDaoImpl implements UserDao {
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
                    u.is_active, u.registration_date, u.discount_percent
-            FROM users u
+            FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE u.email = ?
             """;
@@ -66,7 +64,7 @@ public class UserDaoImpl implements UserDao {
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
                    u.is_active, u.registration_date, u.discount_percent
-            FROM users u
+            FROM members u
             JOIN roles r ON u.role_id = r.id
             ORDER BY u.registration_date DESC
             """;
@@ -75,7 +73,7 @@ public class UserDaoImpl implements UserDao {
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
                    u.is_active, u.registration_date, u.discount_percent
-            FROM users u
+            FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE r.name = ?
             ORDER BY u.last_name, u.first_name
@@ -83,53 +81,51 @@ public class UserDaoImpl implements UserDao {
             """;
 
     private static final String COUNT_BY_ROLE = """
-            SELECT COUNT(*) FROM users u
+            SELECT COUNT(*) FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE r.name = ?
             """;
 
     private static final String UPDATE_USER = """
-            UPDATE users SET first_name = ?, last_name = ?, phone = ?, birth_date = ?
+            UPDATE members SET first_name = ?, last_name = ?, phone = ?, birth_date = ?
             WHERE id = ?
             """;
 
     private static final String UPDATE_PASSWORD = """
-            UPDATE users SET password_hash = ? WHERE id = ?
+            UPDATE members SET password_hash = ? WHERE id = ?
             """;
 
     private static final String SET_ACTIVE = """
-            UPDATE users SET is_active = ? WHERE id = ?
+            UPDATE members SET is_active = ? WHERE id = ?
             """;
 
     private static final String SET_DISCOUNT = """
-            UPDATE users SET discount_percent = ? WHERE id = ?
+            UPDATE members SET discount_percent = ? WHERE id = ?
             """;
 
     private static final String EXISTS_BY_EMAIL = """
-            SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)
+            SELECT EXISTS(SELECT 1 FROM members WHERE email = ?)
             """;
 
-    // ── DAO methods ────────────────────────────────────────────────────────
-
     @Override
-    public User save(User user) {
+    public Member save(Member member) {
         Connection conn = pool.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(INSERT_USER)) {
-            ps.setString(1, user.getFirstName());
-            ps.setString(2, user.getLastName());
-            ps.setString(3, user.getEmail());
-            ps.setString(4, user.getPhone());
-            ps.setString(5, user.getPasswordHash());
-            ps.setObject(6, user.getBirthDate());
-            ps.setString(7, user.getRole().name());
+            ps.setString(1, member.getFirstName());
+            ps.setString(2, member.getLastName());
+            ps.setString(3, member.getEmail());
+            ps.setString(4, member.getPhone());
+            ps.setString(5, member.getPasswordHash());
+            ps.setObject(6, member.getBirthDate());
+            ps.setString(7, member.getRole().name());
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    user.setId(rs.getLong("id"));
+                    member.setId(rs.getLong("id"));
                 }
             }
-            log.debug("User saved: id={}, email={}", user.getId(), user.getEmail());
-            return user;
+            log.debug("User saved: id={}, email={}", member.getId(), member.getEmail());
+            return member;
         } catch (SQLException e) {
             log.error("Error saving user: {}", e.getMessage());
             throw new RuntimeException("Failed to save user", e);
@@ -139,7 +135,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<Member> findById(Long id) {
         Connection conn = pool.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_ID)) {
             ps.setLong(1, id);
@@ -158,7 +154,7 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public Optional<User> findByEmail(String email) {
+    public Optional<Member> findByEmail(String email) {
         Connection conn = pool.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_EMAIL)) {
             ps.setString(1, email);
@@ -177,43 +173,43 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public List<User> findAll() {
+    public List<Member> findAll() {
         Connection conn = pool.getConnection();
-        List<User> users = new ArrayList<>();
+        List<Member> members = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(SELECT_ALL);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                users.add(mapRow(rs));
+                members.add(mapRow(rs));
             }
         } catch (SQLException e) {
-            log.error("Error fetching all users: {}", e.getMessage());
-            throw new RuntimeException("Failed to fetch users", e);
+            log.error("Error fetching all members: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch members", e);
         } finally {
             pool.releaseConnection(conn);
         }
-        return users;
+        return members;
     }
 
     @Override
-    public List<User> findByRole(Role role, int offset, int limit) {
+    public List<Member> findByRole(Role role, int offset, int limit) {
         Connection conn = pool.getConnection();
-        List<User> users = new ArrayList<>();
+        List<Member> members = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_ROLE)) {
             ps.setString(1, role.name());
             ps.setInt(2, limit);
             ps.setInt(3, offset);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    users.add(mapRow(rs));
+                    members.add(mapRow(rs));
                 }
             }
         } catch (SQLException e) {
-            log.error("Error finding users by role {}: {}", role, e.getMessage());
-            throw new RuntimeException("Failed to find users by role", e);
+            log.error("Error finding members by role {}: {}", role, e.getMessage());
+            throw new RuntimeException("Failed to find members by role", e);
         } finally {
             pool.releaseConnection(conn);
         }
-        return users;
+        return members;
     }
 
     @Override
@@ -225,8 +221,8 @@ public class UserDaoImpl implements UserDao {
                 if (rs.next()) return rs.getInt(1);
             }
         } catch (SQLException e) {
-            log.error("Error counting users by role: {}", e.getMessage());
-            throw new RuntimeException("Failed to count users", e);
+            log.error("Error counting members by role: {}", e.getMessage());
+            throw new RuntimeException("Failed to count members", e);
         } finally {
             pool.releaseConnection(conn);
         }
@@ -234,18 +230,18 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
-    public void update(User user) {
+    public void update(Member member) {
         Connection conn = pool.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(UPDATE_USER)) {
-            ps.setString(1, user.getFirstName());
-            ps.setString(2, user.getLastName());
-            ps.setString(3, user.getPhone());
-            ps.setObject(4, user.getBirthDate());
-            ps.setLong(5, user.getId());
+            ps.setString(1, member.getFirstName());
+            ps.setString(2, member.getLastName());
+            ps.setString(3, member.getPhone());
+            ps.setObject(4, member.getBirthDate());
+            ps.setLong(5, member.getId());
             ps.executeUpdate();
-            log.debug("User updated: id={}", user.getId());
+            log.debug("User updated: id={}", member.getId());
         } catch (SQLException e) {
-            log.error("Error updating user {}: {}", user.getId(), e.getMessage());
+            log.error("Error updating user {}: {}", member.getId(), e.getMessage());
             throw new RuntimeException("Failed to update user", e);
         } finally {
             pool.releaseConnection(conn);
@@ -313,17 +309,15 @@ public class UserDaoImpl implements UserDao {
         }
     }
 
-    // ── Row mapper ─────────────────────────────────────────────────────────
-
     /**
-     * Maps a ResultSet row to a {@link User} object.
+     * Maps a ResultSet row to a {@link Member} object.
      *
      * @param rs the result set positioned at the current row
      * @return a populated User object
      * @throws SQLException if a column cannot be read
      */
-    private User mapRow(ResultSet rs) throws SQLException {
-        return User.builder()
+    private Member mapRow(ResultSet rs) throws SQLException {
+        return Member.builder()
                 .id(rs.getLong("id"))
                 .firstName(rs.getString("first_name"))
                 .lastName(rs.getString("last_name"))

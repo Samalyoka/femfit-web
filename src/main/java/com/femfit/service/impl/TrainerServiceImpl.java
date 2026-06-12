@@ -4,7 +4,7 @@ import com.femfit.dao.AssignmentDao;
 import com.femfit.dao.TrainerDao;
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.model.Assignment;
-import com.femfit.model.User;
+import com.femfit.model.Member;
 import com.femfit.service.TrainerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +29,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public List<User> getClientsByTrainerUserId(long userId) {
+    public List<Member> getClientsByTrainerUserId(long userId) {
         long trainerId = trainerDao.findTrainerIdByUserId(userId);
         return trainerDao.findClientsByTrainerId(trainerId);
     }
@@ -68,5 +68,10 @@ public class TrainerServiceImpl implements TrainerService {
     public void updateAssignmentStatus(Long assignmentId, String status) {
         assignmentDao.updateStatus(assignmentId, status);
         log.debug("Assignment status set: id={}, status={}", assignmentId, status);
+    }
+
+    @Override
+    public List<Member> getAllTrainers() {
+        return trainerDao.findAllTrainers();
     }
 }

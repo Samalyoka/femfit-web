@@ -31,7 +31,7 @@ public class RegisterDto {
     @Size(min = 8, max = 255, message = "{error.password.short}")
     private String password;
 
-    // Fixed: Allowed phone to be null or empty during initial form binding
+    // Allowed phone to be null or empty during initial form binding
     @Pattern(regexp = "^(\\+?[0-9]{10,15})?$", message = "Invalid phone format")
     private String phone;
 

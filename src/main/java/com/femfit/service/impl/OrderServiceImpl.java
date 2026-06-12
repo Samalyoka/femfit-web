@@ -77,15 +77,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order placeOrder(Long userId, Integer cycleId, java.math.BigDecimal price) {
+    public Order placeOrder(Long userId, Integer cycleId, java.math.BigDecimal price, Long trainerId) {
         Order order = Order.builder()
                 .userId(userId)
                 .cycleId(cycleId)
                 .paidAmount(price)
-                .status("PENDING")
+                .trainerId(trainerId)
+                .status("ACTIVE")
                 .build();
         Order saved = orderDao.save(order);
-        log.info("Order placed: userId={}, cycleId={}, orderId={}", userId, cycleId, saved.getId());
+        log.info("Order placed: userId={}, cycleId={}, trainerId={}, orderId={}",
+                userId, cycleId, trainerId, saved.getId());
         return saved;
+    }
+
+    @Override
+    public List<Order> findAll(int offset, int limit) {
+        return orderDao.findAll(offset, limit);
+    }
+
+    @Override
+    public int countAll() {
+        return orderDao.countAll();
     }
 }

@@ -23,8 +23,6 @@ public class AssignmentDaoImpl implements AssignmentDao {
         this.pool = pool;
     }
 
-    // ─── SQL ──────────────────────────────────────────────────────────────────
-
     private static final String INSERT = """
             INSERT INTO assignments (order_id, exercises, equipment, nutrition_plan,
                                      schedule_info, status, created_at, updated_at)
@@ -65,8 +63,6 @@ public class AssignmentDaoImpl implements AssignmentDao {
     private static final String DELETE_BY_ORDER = """
             DELETE FROM assignments WHERE order_id = ?
             """;
-
-    // ─── Interface methods ────────────────────────────────────────────────────
 
     @Override
     public Assignment save(Assignment assignment) {
@@ -183,8 +179,6 @@ public class AssignmentDaoImpl implements AssignmentDao {
             pool.releaseConnection(conn);
         }
     }
-
-    // ─── Mapping ──────────────────────────────────────────────────────────────
 
     private Assignment mapRow(ResultSet rs) throws SQLException {
         return Assignment.builder()

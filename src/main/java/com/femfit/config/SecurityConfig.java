@@ -42,6 +42,9 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .headers(headers -> headers
+                        .cacheControl(cache -> cache.disable())
+                )
                 .authenticationManager(authenticationManager())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
@@ -53,12 +56,12 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/auth/login"),
                                 new AntPathRequestMatcher("/auth/register"),
                                 new AntPathRequestMatcher("/static/**"),
-                                new AntPathRequestMatcher("/error")
+                                new AntPathRequestMatcher("/error"),
+                                new AntPathRequestMatcher("/error/**")
                         ).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                         .requestMatchers(new AntPathRequestMatcher("/trainer/**")).hasRole("TRAINER")
                         .requestMatchers(new AntPathRequestMatcher("/client/**")).hasRole("CLIENT")
-                        .requestMatchers(new AntPathRequestMatcher("/trainer/**")).hasRole("TRAINER")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -75,7 +78,11 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/auth/login?logout=true")
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
+                        .clearAuthentication(true)
                         .permitAll()
+                )
+                .exceptionHandling(ex -> ex
+                        .accessDeniedPage("/error/403")
                 )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(

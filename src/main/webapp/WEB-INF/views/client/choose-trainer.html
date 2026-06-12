@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+<head th:replace="~{common/layout :: head}">
+  <title>Choose Trainer</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<section class="page-section">
+  <div class="container" style="max-width: 800px;">
+
+    <div class="page-header">
+      <a class="back-link" th:href="@{/client/cycles}">← Back</a>
+      <h1 class="section-title">Choose your trainer</h1>
+      <p class="section-sub"
+         th:text="${cycle?.title}">Program name</p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card" th:each="trainer : ${trainers}">
+        <div class="card__body">
+          <h3 class="card__title"
+              th:text="${trainer.firstName + ' ' + trainer.lastName}">
+            Trainer Name
+          </h3>
+          <p class="card__meta" th:text="${trainer.email}">email</p>
+        </div>
+
+        <div class="card__actions">
+          <form th:action="@{/client/cycles/{id}/order(id=${cycle.id})}"
+                method="post">
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}"/>
+            <input type="hidden" name="trainerId"
+                   th:value="${trainer.id}"/>
+            <button type="submit" class="btn btn--primary">
+              Choose & Buy
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Skip trainer selection -->
+    <div style="margin-top: 24px; text-align: center;">
+      <form th:action="@{/client/cycles/{id}/order(id=${cycle.id})}"
+            method="post">
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}"/>
+        <button type="submit" class="btn btn--outline">
+          Buy without trainer
+        </button>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>
