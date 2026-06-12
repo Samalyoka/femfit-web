@@ -1,6 +1,7 @@
 package com.femfit.service;
 
 import com.femfit.dao.MemberDao;
+import com.femfit.dto.PageDto;
 import com.femfit.dto.RegisterDto;
 import com.femfit.exception.EmailAlreadyTakenException;
 import com.femfit.exception.InvalidPasswordException;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -97,6 +99,23 @@ class MemberServiceImplTest {
         ));
     }
 
+    @Test
+    @DisplayName("register: succeeds when optional fields (phone, birthDate) are null")
+    void register_optionalFieldsNull() {
+        validDto.setPhone(null);
+        validDto.setBirthDate(null);
+
+        when(memberDao.existsByEmail(validDto.getEmail())).thenReturn(false);
+        when(passwordEncoder.encode(validDto.getPassword())).thenReturn("$2a$12$hashed");
+        when(memberDao.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Member result = userService.register(validDto);
+
+        assertThat(result.getPhone()).isNull();
+        assertThat(result.getBirthDate()).isNull();
+        assertThat(result.getEmail()).isEqualTo(validDto.getEmail());
+    }
+
     // ── findById ──────────────────────────────────────────────────────────
 
     @Test
@@ -119,6 +138,21 @@ class MemberServiceImplTest {
         Optional<Member> result = userService.findById(999L);
 
         assertThat(result).isEmpty();
+    }
+
+    // ── findByRole ────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("findByRole: returns empty page when no members have the given role")
+    void findByRole_empty() {
+        when(memberDao.findByRole(Role.TRAINER, 0, 10)).thenReturn(Collections.emptyList());
+        when(memberDao.countByRole(Role.TRAINER)).thenReturn(0);
+
+        PageDto<Member> result = userService.findByRole(Role.TRAINER, 1, 10);
+
+        assertThat(result.getContent()).isEmpty();
+        assertThat(result.getTotalItems()).isZero();
+        assertThat(result.getTotalPages()).isZero();
     }
 
     // ── changePassword ────────────────────────────────────────────────────
@@ -149,6 +183,18 @@ class MemberServiceImplTest {
         verify(memberDao, never()).updatePassword(anyLong(), anyString());
     }
 
+    @Test
+    @DisplayName("changePassword: throws RuntimeException when member not found")
+    void changePassword_memberNotFound() {
+        when(memberDao.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.changePassword(404L, "old", "new"))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("404");
+
+        verify(memberDao, never()).updatePassword(anyLong(), anyString());
+    }
+
     // ── setDiscount ───────────────────────────────────────────────────────
 
     @Test
@@ -156,6 +202,20 @@ class MemberServiceImplTest {
     void setDiscount_valid() {
         userService.setDiscount(1L, 20);
         verify(memberDao).setDiscount(1L, 20);
+    }
+
+    @Test
+    @DisplayName("setDiscount: boundary value 0 is accepted")
+    void setDiscount_zeroBoundary() {
+        userService.setDiscount(1L, 0);
+        verify(memberDao).setDiscount(1L, 0);
+    }
+
+    @Test
+    @DisplayName("setDiscount: boundary value 100 is accepted")
+    void setDiscount_hundredBoundary() {
+        userService.setDiscount(1L, 100);
+        verify(memberDao).setDiscount(1L, 100);
     }
 
     @Test
@@ -167,9 +227,25 @@ class MemberServiceImplTest {
     }
 
     @Test
+    @DisplayName("setDiscount: throws IllegalArgumentException for discount of 101 (just over boundary)")
+    void setDiscount_justOverBoundary() {
+        assertThatThrownBy(() -> userService.setDiscount(1L, 101))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(memberDao, never()).setDiscount(anyLong(), anyInt());
+    }
+
+    @Test
     @DisplayName("setDiscount: throws IllegalArgumentException for negative discount")
     void setDiscount_negative() {
         assertThatThrownBy(() -> userService.setDiscount(1L, -5))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("setDiscount: throws IllegalArgumentException for discount of -1 (just under boundary)")
+    void setDiscount_justUnderBoundary() {
+        assertThatThrownBy(() -> userService.setDiscount(1L, -1))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(memberDao, never()).setDiscount(anyLong(), anyInt());
     }
 }

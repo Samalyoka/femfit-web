@@ -3,7 +3,7 @@ package com.femfit.dao.impl;
 import com.femfit.dao.MemberDao;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
-import com.femfit.util.pool.ConnectionPool;
+import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

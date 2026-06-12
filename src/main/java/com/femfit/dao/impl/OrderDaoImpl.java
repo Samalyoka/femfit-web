@@ -2,7 +2,7 @@ package com.femfit.dao.impl;
 
 import com.femfit.dao.OrderDao;
 import com.femfit.model.Order;
-import com.femfit.util.pool.ConnectionPool;
+import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,46 +30,46 @@ public class OrderDaoImpl implements OrderDao {
     }
 
     private static final String INSERT = """
-            INSERT INTO orders (user_id, cycle_id, trainer_id, status, paid_amount, created_at)
+            INSERT INTO orders (member_id, cycle_id, trainer_id, status, paid_amount, created_at)
             VALUES (?, ?, ?, 'ACTIVE', ?, NOW())
             RETURNING id, created_at
             """;
 
     private static final String SELECT_BY_ID = """
-            SELECT o.id, o.user_id, o.cycle_id, o.trainer_id, o.status,
+            SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN members u ON o.user_id = u.id
+            JOIN members u ON o.member_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
             LEFT JOIN members t ON o.trainer_id = t.id
             WHERE o.id = ?
             """;
 
     private static final String SELECT_BY_USER = """
-            SELECT o.id, o.user_id, o.cycle_id, o.trainer_id, o.status,
+            SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN members u ON o.user_id = u.id
+            JOIN members u ON o.member_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
             LEFT JOIN members t ON o.trainer_id = t.id
-            WHERE o.user_id = ?
+            WHERE o.member_id = ?
             ORDER BY o.created_at DESC
             """;
 
     private static final String SELECT_ACTIVE_BY_TRAINER = """
-            SELECT o.id, o.user_id, o.cycle_id, o.trainer_id, o.status,
+            SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN members u ON o.user_id = u.id
+            JOIN members u ON o.member_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
             LEFT JOIN members t ON o.trainer_id = t.id
             WHERE o.trainer_id = ? AND o.status IN ('PENDING', 'ACTIVE')
@@ -77,13 +77,13 @@ public class OrderDaoImpl implements OrderDao {
             """;
 
     private static final String SELECT_ALL = """
-            SELECT o.id, o.user_id, o.cycle_id, o.trainer_id, o.status,
+            SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
-            JOIN members u ON o.user_id = u.id
+            JOIN members u ON o.member_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
             LEFT JOIN members t ON o.trainer_id = t.id
             ORDER BY o.created_at DESC
@@ -261,7 +261,7 @@ public class OrderDaoImpl implements OrderDao {
     private Order mapRow(ResultSet rs) throws SQLException {
         return Order.builder()
                 .id(rs.getLong("id"))
-                .userId(rs.getLong("user_id"))
+                .userId(rs.getLong("member_id"))
                 .cycleId(rs.getInt("cycle_id"))
                 .trainerId(rs.getObject("trainer_id") != null ? rs.getLong("trainer_id") : null)
                 .status(rs.getString("status"))

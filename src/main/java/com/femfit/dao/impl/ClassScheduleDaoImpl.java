@@ -2,7 +2,7 @@ package com.femfit.dao.impl;
 
 import com.femfit.dao.ClassScheduleDao;
 import com.femfit.model.ClassSchedule;
-import com.femfit.util.pool.ConnectionPool;
+import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,31 +32,29 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
             SELECT cs.id, cs.class_id, cs.trainer_id, cs.scheduled_at, cs.room, cs.is_cancelled,
                    fc.name AS class_name, fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   cc.category,
+                   fc.category,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_schedules cs
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN members u ON cs.trainer_id = u.id
-            LEFT JOIN class_categories cc ON fc.id = cc.class_id
             LEFT JOIN bookings b ON cs.id = b.schedule_id
             WHERE cs.id = ?
-            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, cc.category
+            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, fc.category
             """;
 
     private static final String SELECT_UPCOMING = """
             SELECT cs.id, cs.class_id, cs.trainer_id, cs.scheduled_at, cs.room, cs.is_cancelled,
                    fc.name AS class_name, fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   cc.category,
+                   fc.category,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_schedules cs
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN members u ON cs.trainer_id = u.id
-            LEFT JOIN class_categories cc ON fc.id = cc.class_id
             LEFT JOIN bookings b ON cs.id = b.schedule_id
             WHERE cs.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
               AND cs.is_cancelled = FALSE
-            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, cc.category
+            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, fc.category
             ORDER BY cs.scheduled_at ASC
             """;
 
@@ -64,17 +62,16 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
             SELECT cs.id, cs.class_id, cs.trainer_id, cs.scheduled_at, cs.room, cs.is_cancelled,
                    fc.name AS class_name, fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   cc.category,
+                   fc.category,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_schedules cs
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN members u ON cs.trainer_id = u.id
-            LEFT JOIN class_categories cc ON fc.id = cc.class_id
             LEFT JOIN bookings b ON cs.id = b.schedule_id
             WHERE cs.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
               AND cs.is_cancelled = FALSE
-              AND cc.category = ?
-            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, cc.category
+              AND fc.category = ?
+            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, fc.category
             ORDER BY cs.scheduled_at ASC
             """;
 

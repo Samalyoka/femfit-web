@@ -13,15 +13,21 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Set;
+
 /**
  * Handles all admin functions:
- * user management, discounts, reports.
+ * member management, discounts, reports.
  */
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
+
+    /** Whitelist of pages that activate/deactivate/discount actions may redirect back to. */
+    private static final Set<String> ALLOWED_REDIRECTS = Set.of("/admin/clients", "/admin/trainers");
+    private static final String DEFAULT_REDIRECT = "/admin/clients";
 
     private final MemberService userService;
     private final OrderService orderService;
@@ -52,7 +58,7 @@ public class AdminController {
         PageDto<Member> pageDto = userService.findByRole(Role.CLIENT, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "CLIENT");
-        return "admin/users";
+        return "admin/members";
     }
 
     /**
@@ -63,7 +69,7 @@ public class AdminController {
         PageDto<Member> pageDto = userService.findByRole(Role.TRAINER, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
-        return "admin/users";
+        return "admin/members";
     }
 
     /**
@@ -80,44 +86,60 @@ public class AdminController {
     }
 
     /**
-     * Activates a user account.
+     * Activates a member account.
      *
-     * @param userId user id to activate
+     * @param memberId   member id to activate
+     * @param redirectTo page to redirect back to (whitelisted: /admin/clients or /admin/trainers)
      */
-    @PostMapping("/user/activate/{userId}")
-    public String activate(@PathVariable Long userId, RedirectAttributes redirectAttrs) {
-        userService.setActive(userId, true);
+    @PostMapping("/member/activate/{memberId}")
+    public String activate(@PathVariable Long memberId,
+                           @RequestParam(required = false) String redirectTo,
+                           RedirectAttributes redirectAttrs) {
+        userService.setActive(memberId, true);
         redirectAttrs.addFlashAttribute("success", "msg.success.save");
-        log.info("Admin activated user id={}", userId);
-        return "redirect:/admin/clients";
+        log.info("Admin activated member id={}", memberId);
+        return "redirect:" + resolveRedirect(redirectTo);
     }
 
     /**
-     * Deactivates a user account.
+     * Deactivates a member account.
      *
-     * @param userId user id to deactivate
+     * @param memberId   member id to deactivate
+     * @param redirectTo page to redirect back to (whitelisted: /admin/clients or /admin/trainers)
      */
-    @PostMapping("/user/deactivate/{userId}")
-    public String deactivate(@PathVariable Long userId, RedirectAttributes redirectAttrs) {
-        userService.setActive(userId, false);
+    @PostMapping("/member/deactivate/{memberId}")
+    public String deactivate(@PathVariable Long memberId,
+                             @RequestParam(required = false) String redirectTo,
+                             RedirectAttributes redirectAttrs) {
+        userService.setActive(memberId, false);
         redirectAttrs.addFlashAttribute("success", "msg.success.save");
-        log.info("Admin deactivated user id={}", userId);
-        return "redirect:/admin/clients";
+        log.info("Admin deactivated member id={}", memberId);
+        return "redirect:" + resolveRedirect(redirectTo);
     }
 
     /**
-     * Sets discount for a user.
+     * Sets discount for a member.
      *
-     * @param userId          user id
+     * @param memberId        member id
      * @param discountPercent discount 0-100
+     * @param redirectTo      page to redirect back to (whitelisted: /admin/clients or /admin/trainers)
      */
-    @PostMapping("/user/discount/{userId}")
-    public String setDiscount(@PathVariable Long userId,
+    @PostMapping("/member/discount/{memberId}")
+    public String setDiscount(@PathVariable Long memberId,
                               @RequestParam(name = "discountPercent") int discountPercent,
+                              @RequestParam(required = false) String redirectTo,
                               RedirectAttributes redirectAttrs) {
-        userService.setDiscount(userId, discountPercent);
+        userService.setDiscount(memberId, discountPercent);
         redirectAttrs.addFlashAttribute("success", "msg.success.save");
-        return "redirect:/admin/clients";
+        return "redirect:" + resolveRedirect(redirectTo);
+    }
+
+    /**
+     * Validates the requested redirect target against a whitelist to prevent
+     * open-redirect vulnerabilities, falling back to /admin/clients.
+     */
+    private String resolveRedirect(String redirectTo) {
+        return ALLOWED_REDIRECTS.contains(redirectTo) ? redirectTo : DEFAULT_REDIRECT;
     }
 
     /**

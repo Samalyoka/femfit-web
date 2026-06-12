@@ -8,7 +8,7 @@ import com.femfit.model.Member;
 import java.util.Optional;
 
 /**
- * Service interface for user-related business logic.
+ * Service interface for member-related business logic.
  * All public methods are documented with Javadoc per project requirements.
  */
 public interface MemberService {
@@ -19,49 +19,49 @@ public interface MemberService {
      * Plain-text passwords are never stored.
      *
      * @param dto registration form data
-     * @return the newly created User with generated id
+     * @return the newly created Member with generated id
      * @throws com.femfit.exception.EmailAlreadyTakenException if email is already registered
      */
     Member register(RegisterDto dto);
 
     /**
-     * Finds a user by their id.
+     * Finds a member by their id.
      *
-     * @param id the user id
+     * @param id the member id
      * @return Optional with the member, or empty if not found
      */
     Optional<Member> findById(Long id);
 
     /**
-     * Finds a user by their email address.
+     * Finds a member by their email address.
      * Used during Spring Security authentication.
      *
      * @param email member's email
-     * @return Optional with the user, or empty if not found
+     * @return Optional with the member, or empty if not found
      */
     Optional<Member> findByEmail(String email);
 
     /**
-     * Returns a paginated list of users with a specific role.
+     * Returns a paginated list of members with a specific role.
      *
      * @param role the role to filter by
      * @param page page number (1-based)
      * @param size page size
-     * @return PageDto containing users and pagination metadata
+     * @return PageDto containing members and pagination metadata
      */
     PageDto<Member> findByRole(Role role, int page, int size);
 
     /**
-     * Updates a user's profile information.
+     * Updates a member's profile information.
      *
-     * @param member user with updated firstName, lastName, phone, birthDate
+     * @param member member with updated firstName, lastName, phone, birthDate
      */
     void updateProfile(Member member);
 
     /**
-     * Changes a user's password after verifying the old one.
+     * Changes a member's password after verifying the old one.
      *
-     * @param memberId      the user's id
+     * @param memberId    the member's id
      * @param oldPassword the current password (plain text, will be verified)
      * @param newPassword the new password (plain text, will be hashed)
      * @throws com.femfit.exception.InvalidPasswordException if oldPassword is wrong
@@ -69,18 +69,18 @@ public interface MemberService {
     void changePassword(Long memberId, String oldPassword, String newPassword);
 
     /**
-     * Activates or deactivates a user account (admin function).
+     * Activates or deactivates a member account (admin function).
      *
-     * @param memberId   the user's id
+     * @param memberId the member's id
      * @param isActive true to activate, false to deactivate
      */
     void setActive(Long memberId, boolean isActive);
 
     /**
-     * Sets a discount for a user (admin function).
+     * Sets a discount for a member (admin function).
      * Discount is applied to all future orders.
      *
-     * @param memberId          the user's id
+     * @param memberId        the member's id
      * @param discountPercent value from 0 to 100
      */
     void setDiscount(Long memberId, int discountPercent);

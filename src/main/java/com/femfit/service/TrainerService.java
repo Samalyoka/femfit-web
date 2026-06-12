@@ -1,6 +1,7 @@
 package com.femfit.service;
 
 import com.femfit.dto.ClientOrderDto;
+import com.femfit.dto.TrainerDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
 
@@ -15,7 +16,7 @@ public interface TrainerService {
     /** Returns a list of clients with their orders for the specified trainer. */
     List<ClientOrderDto> getClientsWithOrderByTrainerUserId(long userIdOfTrainer);
 
-    List<Member> getAllTrainers();
+    List<TrainerDto> getAllTrainers();
 
     Optional<Assignment> getAssignmentForClient(long clientId);
 

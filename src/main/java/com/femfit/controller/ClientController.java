@@ -16,8 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import com.femfit.dto.ChangePasswordDto;
-import org.springframework.web.bind.annotation.ModelAttribute;
+
 import java.util.List;
 
 /**
@@ -80,6 +79,7 @@ public class ClientController {
             bookingService.book(member.getId(), scheduleId);
             redirectAttrs.addFlashAttribute("success", "msg.success.booking");
         } catch (BookingException e) {
+            log.warn("Booking failed for member id={}, scheduleId={}: {}", member.getId(), scheduleId, e.getMessage());
             redirectAttrs.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/schedule";
@@ -141,10 +141,10 @@ public class ClientController {
         return "redirect:/client/profile";
     }
 
-    // Helper — loads full User from DB using Spring Security email
+    // Helper — loads full Member from DB using Spring Security email
     private Member getUser(UserDetails userDetails) {
         return userService.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Member not found"));
     }
 
     /**
@@ -197,7 +197,7 @@ public class ClientController {
         return "redirect:/client/orders";
     }
 
-  /**
+    /**
      * Changes the current member's password.
      * Validates new password length/match and verifies the current password
      * before delegating to the service layer.

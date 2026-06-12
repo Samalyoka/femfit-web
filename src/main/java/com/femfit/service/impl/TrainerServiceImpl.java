@@ -3,6 +3,7 @@ package com.femfit.service.impl;
 import com.femfit.dao.AssignmentDao;
 import com.femfit.dao.TrainerDao;
 import com.femfit.dto.ClientOrderDto;
+import com.femfit.dto.TrainerDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
 import com.femfit.service.TrainerService;
@@ -71,7 +72,7 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public List<Member> getAllTrainers() {
+    public List<TrainerDto> getAllTrainers() {
         return trainerDao.findAllTrainers();
     }
 }

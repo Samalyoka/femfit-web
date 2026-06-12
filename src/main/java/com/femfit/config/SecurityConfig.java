@@ -8,20 +8,25 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.core.annotation.Order;
 
 /**
  * Spring Security configuration.
  * Passwords stored as BCrypt hashes — plain-text storage is prohibited.
- * Authentication delegated to FemFitUserDetailsService (our JDBC users table).
+ * Authentication delegated to FemFitUserDetailsService (our JDBC members table).
+ *
+ * Access-denied (403) is handled here via accessDeniedPage, which renders
+ * error/403.html — this is intercepted by Spring Security's
+ * ExceptionTranslationFilter *before* the request reaches DispatcherServlet,
+ * so it cannot be handled by GlobalExceptionHandler. All other unhandled
+ * application errors (500) are handled centrally by
+ * {@link com.femfit.exception.GlobalExceptionHandler}.
  */
 @Configuration
 @EnableWebSecurity
@@ -37,7 +42,7 @@ public class SecurityConfig {
     }
 
     /**
-     * Security filter chain definition — establishes access control rules, login/logout, CSRF protection, and XSS countermeasures.
+     * Security filter chain definition — establishes access control rules, login/logout, CSRF protection, and access-denied handling.
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

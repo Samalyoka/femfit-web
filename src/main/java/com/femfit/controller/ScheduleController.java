@@ -55,7 +55,6 @@ public class ScheduleController {
                 model.addAttribute("activeCategory", "ALL");
             }
 
-            // Check and pass the user's authentication status to the view layer
             boolean isAuthenticated = (principal != null);
             model.addAttribute("isAuthenticated", isAuthenticated);
 

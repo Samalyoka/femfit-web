@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org"
       th:lang="${#locale.language}">
 <head th:replace="~{common/layout :: head}">
-    <title>Users — Admin</title>
+    <title>Members — Admin</title>
 </head>
 <body>
 
@@ -15,7 +15,7 @@
             <a class="back-link" th:href="@{/admin/dashboard}">← Dashboard</a>
             <h1 class="section-title"
                 th:text="${role == 'CLIENT'} ? #{admin.clients} : #{admin.trainers}">
-                Users
+                Members
             </h1>
         </div>
 
@@ -27,7 +27,7 @@
             <p class="section-sub">No members found.</p>
         </div>
 
-        <!-- Users table -->
+        <!-- Members table -->
         <div th:unless="${page.content.empty}" class="table-wrap">
             <table class="data-table">
                 <thead>
@@ -40,36 +40,37 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="u : ${page.content}">
+                <tr th:each="member : ${page.content}">
 
                     <td class="data-table__name"
-                        th:text="${u.firstName + ' ' + u.lastName}">Name</td>
+                        th:text="${member.firstName + ' ' + member.lastName}">Name</td>
 
                     <td class="data-table__meta"
-                        th:text="${u.email}">email</td>
+                        th:text="${member.email}">email</td>
 
                     <td>
-                        <span th:if="${u.enabled}"
+                        <span th:if="${member.enabled}"
                               class="badge badge--active"
                               th:text="#{admin.status.active}">Active</span>
-                        <span th:unless="${u.enabled}"
+                        <span th:unless="${member.enabled}"
                               class="badge badge--inactive"
                               th:text="#{admin.status.inactive}">Inactive</span>
                     </td>
 
                     <!-- Discount column — clients only -->
                     <td th:if="${role == 'CLIENT'}">
-                        <form th:action="@{/admin/member/discount/{id}(id=${u.id})}"
+                        <form th:action="@{/admin/member/discount/{id}(id=${member.id})}"
                               method="post"
                               class="discount-form">
                             <input type="hidden"
                                    th:name="${_csrf.parameterName}"
                                    th:value="${_csrf.token}"/>
+                            <input type="hidden" name="redirectTo" th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
                             <input class="discount-input"
                                    type="number"
                                    name="discountPercent"
                                    min="0" max="100"
-                                   th:value="${u.discountPercent != null ? u.discountPercent : 0}"/>
+                                   th:value="${member.discountPercent != null ? member.discountPercent : 0}"/>
                             <span class="discount-pct">%</span>
                             <button class="btn btn--outline btn--sm" type="submit"
                                     th:text="#{admin.discount.apply}">Apply</button>
@@ -80,22 +81,24 @@
                     <td>
                         <div class="action-row">
                             <!-- Activate -->
-                            <form th:if="${!u.enabled}"
-                                  th:action="@{/admin/member/activate/{id}(id=${u.id})}"
+                            <form th:if="${!member.enabled}"
+                                  th:action="@{/admin/member/activate/{id}(id=${member.id})}"
                                   method="post">
                                 <input type="hidden"
                                        th:name="${_csrf.parameterName}"
                                        th:value="${_csrf.token}"/>
+                                <input type="hidden" name="redirectTo" th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
                                 <button class="btn btn--primary btn--sm" type="submit"
                                         th:text="#{admin.status.activate}">Activate</button>
                             </form>
                             <!-- Deactivate -->
-                            <form th:if="${u.enabled}"
-                                  th:action="@{/admin/member/deactivate/{id}(id=${u.id})}"
+                            <form th:if="${member.enabled}"
+                                  th:action="@{/admin/member/deactivate/{id}(id=${member.id})}"
                                   method="post">
                                 <input type="hidden"
                                        th:name="${_csrf.parameterName}"
                                        th:value="${_csrf.token}"/>
+                                <input type="hidden" name="redirectTo" th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
                                 <button class="btn btn--outline btn--sm" type="submit"
                                         th:text="#{admin.status.deactivate}">Deactivate</button>
                             </form>
@@ -111,7 +114,7 @@
         <div th:if="${page.totalPages > 1}" class="pagination">
             <a class="pagination__btn"
                th:if="${page.currentPage > 1}"
-               th:href="@{/admin/clients(page=${page.currentPage - 1})}"
+               th:href="@{${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'}(page=${page.currentPage - 1})"
                th:text="#{pagination.prev}">Previous</a>
 
             <span class="pagination__info"
@@ -121,7 +124,7 @@
 
             <a class="pagination__btn"
                th:if="${page.currentPage < page.totalPages}"
-               th:href="@{/admin/clients(page=${page.currentPage + 1})}"
+               th:href="@{${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'}(page=${page.currentPage + 1})"
                th:text="#{pagination.next}">Next</a>
         </div>
 

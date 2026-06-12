@@ -2,7 +2,7 @@ package com.femfit.dao.impl;
 
 import com.femfit.dao.BookingDao;
 import com.femfit.model.Booking;
-import com.femfit.util.pool.ConnectionPool;
+import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

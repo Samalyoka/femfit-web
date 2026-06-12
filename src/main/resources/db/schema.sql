@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS class_schedules (
                                                class_id     INT       NOT NULL REFERENCES fitness_classes(id),
                                                trainer_id   BIGINT    NOT NULL REFERENCES trainers(id),
                                                scheduled_at TIMESTAMP NOT NULL,
-                                               room         VARCHAR(50)
+                                               room         VARCHAR(50),
+                                               is_cancelled BOOLEAN   NOT NULL DEFAULT FALSE
 );
 
 -- ══════════════════════════════════════

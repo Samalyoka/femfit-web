@@ -2,9 +2,10 @@ package com.femfit.dao.impl;
 
 import com.femfit.dao.TrainerDao;
 import com.femfit.dto.ClientOrderDto;
+import com.femfit.dto.TrainerDto;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
-import com.femfit.util.pool.ConnectionPool;
+import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class TrainerDaoImpl implements TrainerDao {
                             u.phone, u.is_active AS enabled, r.name AS role
             FROM members u
             JOIN roles r  ON r.id  = u.role_id
-            JOIN orders o ON o.user_id = u.id
+            JOIN orders o ON o.member_id = u.id
             WHERE o.trainer_id = ?
               AND o.status IN ('ACTIVE', 'IN_PROGRESS')
             ORDER BY u.last_name, u.first_name
@@ -56,15 +57,17 @@ public class TrainerDaoImpl implements TrainerDao {
                    o.id          AS order_id,
                    o.status      AS order_status
             FROM members u
-            JOIN orders o ON o.user_id = u.id
+            JOIN orders o ON o.member_id = u.id
             WHERE o.trainer_id = ?
               AND o.status IN ('ACTIVE', 'IN_PROGRESS')
             ORDER BY u.id, o.created_at DESC
             """;
 
+    /**
+     * Lightweight projection — only fields needed for trainer-selection UI.
+     */
     private static final String FIND_ALL_TRAINERS = """
-            SELECT u.id, u.first_name, u.last_name, u.email,
-                   u.phone, u.is_active AS enabled, r.name AS role
+            SELECT u.id, u.first_name, u.last_name, u.email
             FROM members u
             JOIN roles r ON r.id = u.role_id
             WHERE r.name = 'TRAINER'
@@ -74,8 +77,8 @@ public class TrainerDaoImpl implements TrainerDao {
 
     @Override
     public long findTrainerIdByUserId(long userId) {
-        try (Connection con = pool.getConnection();
-             PreparedStatement ps = con.prepareStatement(FIND_TRAINER_ID)) {
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_TRAINER_ID)) {
             ps.setLong(1, userId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getLong("id");
@@ -83,20 +86,24 @@ public class TrainerDaoImpl implements TrainerDao {
             throw new RuntimeException("Trainer record not found for userId=" + userId);
         } catch (SQLException e) {
             throw new RuntimeException("TrainerDao.findTrainerIdByUserId failed", e);
+        } finally {
+            pool.releaseConnection(con);
         }
     }
 
     @Override
     public List<Member> findClientsByTrainerId(long trainerId) {
         List<Member> clients = new ArrayList<>();
-        try (Connection con = pool.getConnection();
-             PreparedStatement ps = con.prepareStatement(FIND_CLIENTS)) {
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_CLIENTS)) {
             ps.setLong(1, trainerId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) clients.add(mapUser(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("TrainerDao.findClientsByTrainerId failed", e);
+        } finally {
+            pool.releaseConnection(con);
         }
         return clients;
     }
@@ -104,8 +111,8 @@ public class TrainerDaoImpl implements TrainerDao {
     @Override
     public List<ClientOrderDto> findClientsWithOrderByTrainerId(long trainerId) {
         List<ClientOrderDto> result = new ArrayList<>();
-        try (Connection con = pool.getConnection();
-             PreparedStatement ps = con.prepareStatement(FIND_CLIENTS_WITH_ORDER)) {
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_CLIENTS_WITH_ORDER)) {
             ps.setLong(1, trainerId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) result.add(mapClientOrder(rs));
@@ -113,19 +120,23 @@ public class TrainerDaoImpl implements TrainerDao {
         } catch (SQLException e) {
             log.error("TrainerDao.findClientsWithOrderByTrainerId failed: trainerId={}", trainerId, e);
             throw new RuntimeException("TrainerDao.findClientsWithOrderByTrainerId failed", e);
+        } finally {
+            pool.releaseConnection(con);
         }
         return result;
     }
 
     @Override
-    public List<Member> findAllTrainers() {
-        List<Member> trainers = new ArrayList<>();
-        try (Connection con = pool.getConnection();
-             PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINERS);
+    public List<TrainerDto> findAllTrainers() {
+        List<TrainerDto> trainers = new ArrayList<>();
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINERS);
              ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) trainers.add(mapUser(rs));
+            while (rs.next()) trainers.add(mapTrainer(rs));
         } catch (SQLException e) {
             throw new RuntimeException("TrainerDao.findAllTrainers failed", e);
+        } finally {
+            pool.releaseConnection(con);
         }
         return trainers;
     }
@@ -140,6 +151,15 @@ public class TrainerDaoImpl implements TrainerDao {
         u.setEnabled(rs.getBoolean("enabled"));
         u.setRole(Role.valueOf(rs.getString("role")));
         return u;
+    }
+
+    private TrainerDto mapTrainer(ResultSet rs) throws SQLException {
+        return TrainerDto.builder()
+                .id(rs.getLong("id"))
+                .firstName(rs.getString("first_name"))
+                .lastName(rs.getString("last_name"))
+                .email(rs.getString("email"))
+                .build();
     }
 
     private ClientOrderDto mapClientOrder(ResultSet rs) throws SQLException {
