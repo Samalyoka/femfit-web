@@ -27,7 +27,7 @@ import static org.mockito.Mockito.*;
  * Covers positive, negative, and edge-case scenarios.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("UserServiceImpl tests")
+@DisplayName("MemberServiceImpl tests")
 class MemberServiceImplTest {
 
     @Mock

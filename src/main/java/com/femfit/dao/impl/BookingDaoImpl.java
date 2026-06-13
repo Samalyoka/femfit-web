@@ -1,6 +1,7 @@
 package com.femfit.dao.impl;
 
 import com.femfit.dao.BookingDao;
+import com.femfit.exception.BookingException;
 import com.femfit.model.Booking;
 import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
@@ -97,11 +98,26 @@ public class BookingDaoImpl implements BookingDao {
             WHERE id = ? AND member_id = ?
             """;
 
+    /**
+     * Locks the class_schedules row for the given slot and returns the
+     * class capacity (from fitness_classes). FOR UPDATE OF cs ensures
+     * concurrent bookWithLock() calls for the same schedule_id are
+     * serialized — the second caller blocks until the first commits
+     * or rolls back.
+     */
+    private static final String LOCK_SCHEDULE_AND_GET_CAPACITY = """
+            SELECT fc.capacity
+            FROM class_schedules cs
+            JOIN fitness_classes fc ON cs.class_id = fc.id
+            WHERE cs.id = ?
+            FOR UPDATE OF cs
+            """;
+
     @Override
     public Booking save(Booking booking) {
         Connection conn = pool.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(INSERT)) {
-            ps.setLong(1, booking.getUserId());
+            ps.setLong(1, booking.getMemberId());
             ps.setLong(2, booking.getScheduleId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -116,6 +132,96 @@ public class BookingDaoImpl implements BookingDao {
             throw new RuntimeException("Failed to save booking", e);
         } finally {
             pool.releaseConnection(conn);
+        }
+    }
+
+    @Override
+    public Booking bookWithLock(Long userId, Long scheduleId) {
+        Connection conn = pool.getConnection();
+        try {
+            conn.setAutoCommit(false);
+
+            // 1. Lock the schedule row and read capacity.
+            //    Any other transaction calling bookWithLock() for the same
+            //    scheduleId will block here until this transaction commits/rolls back.
+            int capacity;
+            try (PreparedStatement ps = conn.prepareStatement(LOCK_SCHEDULE_AND_GET_CAPACITY)) {
+                ps.setLong(1, scheduleId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (!rs.next()) {
+                        throw new BookingException("Class schedule not found");
+                    }
+                    capacity = rs.getInt("capacity");
+                }
+            }
+
+            // 2. Duplicate booking check (sees a consistent snapshot under the lock).
+            try (PreparedStatement ps = conn.prepareStatement(EXISTS_BY_USER_SCHEDULE)) {
+                ps.setLong(1, userId);
+                ps.setLong(2, scheduleId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next() && rs.getBoolean(1)) {
+                        throw new BookingException("You have already booked this class");
+                    }
+                }
+            }
+
+            // 3. Capacity check.
+            int confirmed = 0;
+            try (PreparedStatement ps = conn.prepareStatement(COUNT_CONFIRMED)) {
+                ps.setLong(1, scheduleId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) confirmed = rs.getInt(1);
+                }
+            }
+            if (confirmed >= capacity) {
+                throw new BookingException("This class is fully booked");
+            }
+
+            // 4. Insert booking.
+            Booking booking = Booking.builder()
+                    .memberId(userId)
+                    .scheduleId(scheduleId)
+                    .status("CONFIRMED")
+                    .build();
+            try (PreparedStatement ps = conn.prepareStatement(INSERT)) {
+                ps.setLong(1, userId);
+                ps.setLong(2, scheduleId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        booking.setId(rs.getLong("id"));
+                        booking.setBookedAt(rs.getTimestamp("booked_at").toLocalDateTime());
+                    }
+                }
+            }
+
+            conn.commit();
+            log.info("Booking created (locked): id={}, userId={}, scheduleId={}",
+                    booking.getId(), userId, scheduleId);
+            return booking;
+
+        } catch (BookingException e) {
+            rollbackQuietly(conn);
+            throw e;
+        } catch (SQLException e) {
+            rollbackQuietly(conn);
+            log.error("Error in bookWithLock for userId={}, scheduleId={}: {}", userId, scheduleId, e.getMessage());
+            throw new RuntimeException("Failed to book class", e);
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+            } catch (SQLException e) {
+                log.error("Failed to reset autoCommit: {}", e.getMessage());
+            }
+            pool.releaseConnection(conn);
+        }
+    }
+
+    private void rollbackQuietly(Connection conn) {
+        try {
+            conn.rollback();
+        } catch (SQLException ex) {
+            log.error("Rollback failed: {}", ex.getMessage());
         }
     }
 
@@ -240,7 +346,7 @@ public class BookingDaoImpl implements BookingDao {
     private Booking mapRow(ResultSet rs) throws SQLException {
         return Booking.builder()
                 .id(rs.getLong("id"))
-                .userId(rs.getLong("member_id"))
+                .memberId(rs.getLong("member_id"))
                 .scheduleId(rs.getLong("schedule_id"))
                 .bookedAt(rs.getTimestamp("booked_at") != null
                         ? rs.getTimestamp("booked_at").toLocalDateTime() : null)

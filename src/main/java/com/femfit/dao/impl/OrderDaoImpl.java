@@ -109,7 +109,7 @@ public class OrderDaoImpl implements OrderDao {
         try {
             conn.setAutoCommit(false);
             try (PreparedStatement ps = conn.prepareStatement(INSERT)) {
-                ps.setLong(1, order.getUserId());
+                ps.setLong(1, order.getMemberId());
                 ps.setInt(2, order.getCycleId());
                 if (order.getTrainerId() != null) {
                     ps.setLong(3, order.getTrainerId());
@@ -261,7 +261,7 @@ public class OrderDaoImpl implements OrderDao {
     private Order mapRow(ResultSet rs) throws SQLException {
         return Order.builder()
                 .id(rs.getLong("id"))
-                .userId(rs.getLong("member_id"))
+                .memberId(rs.getLong("member_id"))
                 .cycleId(rs.getInt("cycle_id"))
                 .trainerId(rs.getObject("trainer_id") != null ? rs.getLong("trainer_id") : null)
                 .status(rs.getString("status"))

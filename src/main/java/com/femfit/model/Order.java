@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 public class Order {
 
     private Long id;
-    private Long userId;
+    private Long memberId;
     private Integer cycleId;
     private Long trainerId;
 

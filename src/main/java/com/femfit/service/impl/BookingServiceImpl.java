@@ -1,10 +1,7 @@
 package com.femfit.service.impl;
 
 import com.femfit.dao.BookingDao;
-import com.femfit.dao.ClassScheduleDao;
-import com.femfit.exception.BookingException;
 import com.femfit.model.Booking;
-import com.femfit.model.ClassSchedule;
 import com.femfit.service.BookingService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +12,12 @@ import java.util.List;
 
 /**
  * Implementation of {@link BookingService}.
- * Validates capacity and duplicate bookings before persisting.
+ *
+ * <p>Capacity/duplicate validation and persistence are delegated to
+ * {@link BookingDao#bookWithLock}, which performs them atomically within
+ * a single database transaction (row-level lock on the schedule slot).
+ * This avoids a check-then-act race condition where two concurrent
+ * requests could both pass the capacity check and overbook the last spot.</p>
  */
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -23,39 +25,16 @@ public class BookingServiceImpl implements BookingService {
     private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
 
     private final BookingDao bookingDao;
-    private final ClassScheduleDao scheduleDao;
 
     @Autowired
-    public BookingServiceImpl(BookingDao bookingDao, ClassScheduleDao scheduleDao) {
+    public BookingServiceImpl(BookingDao bookingDao) {
         this.bookingDao = bookingDao;
-        this.scheduleDao = scheduleDao;
     }
 
     @Override
     public Booking book(Long userId, Long scheduleId) {
         log.info("Booking request: userId={}, scheduleId={}", userId, scheduleId);
-
-        // Check duplicate booking
-        if (bookingDao.existsByUserAndSchedule(userId, scheduleId)) {
-            throw new BookingException("You have already booked this class");
-        }
-
-        // Check capacity
-        ClassSchedule schedule = scheduleDao.findById(scheduleId)
-                .orElseThrow(() -> new BookingException("Class schedule not found"));
-
-        int confirmed = bookingDao.countConfirmedByScheduleId(scheduleId);
-        if (confirmed >= schedule.getCapacity()) {
-            throw new BookingException("This class is fully booked");
-        }
-
-        Booking booking = Booking.builder()
-                .userId(userId)
-                .scheduleId(scheduleId)
-                .status("CONFIRMED")
-                .build();
-
-        Booking saved = bookingDao.save(booking);
+        Booking saved = bookingDao.bookWithLock(userId, scheduleId);
         log.info("Booking created: id={}", saved.getId());
         return saved;
     }

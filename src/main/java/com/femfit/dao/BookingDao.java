@@ -20,6 +20,29 @@ public interface BookingDao {
     Booking save(Booking booking);
 
     /**
+     * Books a class atomically and safely under concurrency.
+     *
+     * <p>Performs all of the following within a single database transaction:
+     * <ol>
+     *   <li>Acquires a row-level lock on the {@code class_schedules} row
+     *       ({@code SELECT ... FOR UPDATE}), so concurrent booking attempts
+     *       for the same slot are serialized rather than racing.</li>
+     *   <li>Checks for a duplicate booking by the same member.</li>
+     *   <li>Checks remaining capacity against confirmed bookings.</li>
+     *   <li>Inserts the new booking.</li>
+     * </ol>
+     * On any failure the transaction is rolled back and no partial state
+     * is persisted.</p>
+     *
+     * @param userId     the member's id
+     * @param scheduleId the schedule slot id
+     * @return the saved booking with generated id
+     * @throws com.femfit.exception.BookingException if the schedule does not exist,
+     *         the member already has a confirmed booking for it, or the class is full
+     */
+    Booking bookWithLock(Long userId, Long scheduleId);
+
+    /**
      * Finds a booking by id.
      *
      * @param id booking id

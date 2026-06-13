@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class Booking {
 
     private Long id;
-    private Long userId;
+    private Long memberId;
     private Long scheduleId;
     private LocalDateTime bookedAt;
 

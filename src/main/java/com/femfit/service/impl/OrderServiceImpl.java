@@ -79,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order placeOrder(Long userId, Integer cycleId, java.math.BigDecimal price, Long trainerId) {
         Order order = Order.builder()
-                .userId(userId)
+                .memberId(userId)
                 .cycleId(cycleId)
                 .paidAmount(price)
                 .trainerId(trainerId)
