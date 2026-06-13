@@ -60,6 +60,94 @@
       </a>
     </div>
   </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+     STATS SECTION
+     ══════════════════════════════════════════════════════════════ -->
+  <div class="section stats-section">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 40px;">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" th:text="#{home.stats.members}">2,400+</div>
+          <div class="stat-label" th:text="#{home.stats.members.label}">Active Members</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" th:text="#{home.stats.classes}">35+</div>
+          <div class="stat-label" th:text="#{home.stats.classes.label}">Classes per week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" th:text="#{home.stats.trainers}">15+</div>
+          <div class="stat-label" th:text="#{home.stats.trainers.label}">Expert trainers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" th:text="#{home.stats.studios}">6</div>
+          <div class="stat-label" th:text="#{home.stats.studios.label}">Modern studios</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+     WHY US SECTION
+     ══════════════════════════════════════════════════════════════ -->
+  <div class="section why-us-section">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 40px;">
+      <h2 class="section-title" th:text="#{home.whyus.title}">Why choose FemFit</h2>
+
+      <div class="whyus-grid">
+        <!-- Personal trainers -->
+        <div class="whyus-card">
+          <svg class="whyus-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="50" cy="28" r="14" fill="var(--rose)"/>
+            <path d="M30 50 Q30 45 35 42 Q40 40 50 40 Q60 40 65 42 Q70 45 70 50 L70 70 Q70 75 65 78 L35 78 Q30 75 30 70 Z" fill="var(--rose)"/>
+            <circle cx="30" cy="35" r="8" fill="var(--rose-light)"/>
+            <circle cx="70" cy="35" r="8" fill="var(--rose-light)"/>
+          </svg>
+          <h3 class="whyus-name" th:text="#{home.whyus.personal}">Personal trainers</h3>
+          <p class="whyus-desc" th:text="#{home.whyus.personal.desc}">Expert guidance tailored to your goals</p>
+        </div>
+
+        <!-- Premium equipment -->
+        <div class="whyus-card">
+          <svg class="whyus-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M50 20 L70 40 L60 50 L70 60 L50 80 L30 60 L40 50 L30 40 Z" fill="var(--rose)" opacity="0.8"/>
+            <path d="M50 30 L65 42 L58 50 L65 58 L50 70 L35 58 L42 50 L35 42 Z" fill="var(--rose)"/>
+          </svg>
+          <h3 class="whyus-name" th:text="#{home.whyus.equipment}">Premium equipment</h3>
+          <p class="whyus-desc" th:text="#{home.whyus.equipment.desc}">Latest technology and facilities</p>
+        </div>
+
+        <!-- Women's community -->
+        <div class="whyus-card">
+          <svg class="whyus-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="35" cy="30" r="10" fill="var(--rose)"/>
+            <circle cx="65" cy="30" r="10" fill="var(--rose)"/>
+            <circle cx="50" cy="45" r="11" fill="var(--rose)"/>
+            <path d="M25 45 Q25 42 30 40 Q35 38 40 40 L35 60 Q30 65 20 68 L25 50 Z" fill="var(--rose-light)"/>
+            <path d="M75 45 Q75 42 70 40 Q65 38 60 40 L65 60 Q70 65 80 68 L75 50 Z" fill="var(--rose-light)"/>
+            <path d="M45 58 Q40 65 35 70 L65 70 Q60 65 55 58" fill="var(--rose)"/>
+          </svg>
+          <h3 class="whyus-name" th:text="#{home.whyus.community}">Women's community</h3>
+          <p class="whyus-desc" th:text="#{home.whyus.community.desc}">Supportive space for growth</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       CTA SECTION
+       ══════════════════════════════════════════════════════════════ -->
+  <div class="section cta-section">
+    <div style="max-width: 800px; margin: 0 auto; padding: 0 40px; text-align: center;">
+      <h2 class="section-title" th:text="#{home.cta.title}">Start your wellness journey today</h2>
+      <p class="cta-subtitle" th:text="#{home.cta.subtitle}">Join 2,400+ women transforming their lives</p>
+
+      <div class="cta-buttons">
+        <a th:href="@{/auth/register}" class="btn-primary" th:text="#{home.cta.join}">Join Now</a>
+        <a th:href="@{/schedule}" class="btn-outline" th:text="#{home.cta.explore}">Explore Classes</a>
+      </div>
+    </div>
+  </div>
 </main>
 
 <footer th:replace="~{common/layout :: footer}"></footer>

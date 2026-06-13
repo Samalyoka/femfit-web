@@ -34,11 +34,9 @@ public class HomeController {
      */
     @GetMapping("/home")
     public String home(Model model, HttpSession session, HttpServletRequest request) {
-        // Получаем flashError из session
         Object flashError = session.getAttribute("flashError");
         if (flashError != null) {
             model.addAttribute("flashError", flashError);
-            // Удаляем сразу после прочтения
             session.removeAttribute("flashError");
         }
         return "home";
