@@ -42,7 +42,7 @@ public class AssignmentDaoImpl implements AssignmentDao {
                    a.schedule_info, a.status, a.created_at, a.updated_at
             FROM assignments a
             JOIN orders o ON o.id = a.order_id
-            WHERE o.user_id = ?
+            WHERE o.member_id = ?
             ORDER BY a.updated_at DESC
             LIMIT 1
             """;

@@ -30,13 +30,13 @@ public class BookingDaoImpl implements BookingDao {
     }
 
     private static final String INSERT = """
-            INSERT INTO bookings (user_id, schedule_id, booked_at, status)
+            INSERT INTO bookings (member_id, schedule_id, booked_at, status)
             VALUES (?, ?, NOW(), 'CONFIRMED')
             RETURNING id, booked_at
             """;
 
     private static final String SELECT_BY_ID = """
-            SELECT b.id, b.user_id, b.schedule_id, b.booked_at, b.status,
+            SELECT b.id, b.member_id, b.schedule_id, b.booked_at, b.status,
                    fc.name AS class_name,
                    u.first_name || ' ' || u.last_name AS trainer_name,
                    cs.scheduled_at, cs.room
@@ -49,7 +49,7 @@ public class BookingDaoImpl implements BookingDao {
             """;
 
     private static final String SELECT_UPCOMING_BY_USER = """
-            SELECT b.id, b.user_id, b.schedule_id, b.booked_at, b.status,
+            SELECT b.id, b.member_id, b.schedule_id, b.booked_at, b.status,
                    fc.name AS class_name,
                    u.first_name || ' ' || u.last_name AS trainer_name,
                    cs.scheduled_at, cs.room
@@ -58,14 +58,14 @@ public class BookingDaoImpl implements BookingDao {
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
             JOIN members u ON t.id = u.id
-            WHERE b.user_id = ?
+            WHERE b.member_id = ?
               AND b.status = 'CONFIRMED'
               AND cs.scheduled_at > NOW()
             ORDER BY cs.scheduled_at ASC
             """;
 
     private static final String SELECT_BY_SCHEDULE = """
-            SELECT b.id, b.user_id, b.schedule_id, b.booked_at, b.status,
+            SELECT b.id, b.member_id, b.schedule_id, b.booked_at, b.status,
                    fc.name AS class_name, cs.scheduled_at, cs.room,
                    u.first_name || ' ' || u.last_name AS trainer_name
             FROM bookings b
@@ -84,7 +84,7 @@ public class BookingDaoImpl implements BookingDao {
     private static final String EXISTS_BY_USER_SCHEDULE = """
             SELECT EXISTS(
                 SELECT 1 FROM bookings
-                WHERE user_id = ? AND schedule_id = ? AND status = 'CONFIRMED'
+                WHERE member_id = ? AND schedule_id = ? AND status = 'CONFIRMED'
             )
             """;
 
@@ -94,7 +94,7 @@ public class BookingDaoImpl implements BookingDao {
 
     private static final String CANCEL = """
             UPDATE bookings SET status = 'CANCELLED'
-            WHERE id = ? AND user_id = ?
+            WHERE id = ? AND member_id = ?
             """;
 
     @Override
@@ -240,7 +240,7 @@ public class BookingDaoImpl implements BookingDao {
     private Booking mapRow(ResultSet rs) throws SQLException {
         return Booking.builder()
                 .id(rs.getLong("id"))
-                .userId(rs.getLong("user_id"))
+                .userId(rs.getLong("member_id"))
                 .scheduleId(rs.getLong("schedule_id"))
                 .bookedAt(rs.getTimestamp("booked_at") != null
                         ? rs.getTimestamp("booked_at").toLocalDateTime() : null)

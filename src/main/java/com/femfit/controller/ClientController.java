@@ -1,6 +1,7 @@
 package com.femfit.controller;
 
 import com.femfit.dto.ChangePasswordDto;
+import com.femfit.dto.UpdateProfileDto;
 import com.femfit.exception.BookingException;
 import com.femfit.exception.InvalidPasswordException;
 import com.femfit.model.*;
@@ -49,7 +50,9 @@ public class ClientController {
     }
 
     /**
-     * Client profile page with stats and upcoming bookings.
+     * Client profile page with stats, upcoming bookings, and edit forms.
+     * Pre-fills the profile-edit form with the member's current data,
+     * unless a flash attribute (from a failed POST /profile/edit) is present.
      */
     @GetMapping("/profile")
     public String profile(@AuthenticationPrincipal UserDetails userDetails, Model model) {
@@ -62,6 +65,13 @@ public class ClientController {
         model.addAttribute("orders", orders);
         model.addAttribute("visitCount", bookingService.countVisitsThisMonth(member.getId()));
         model.addAttribute("changePasswordDto", new ChangePasswordDto());
+
+        if (!model.containsAttribute("updateProfileDto")) {
+            model.addAttribute("updateProfileDto", new UpdateProfileDto(
+                    member.getFirstName(), member.getLastName(),
+                    member.getPhone(), member.getBirthDate()));
+        }
+
         return "client/profile";
     }
 
@@ -226,6 +236,38 @@ public class ClientController {
             log.warn("Password change failed for member id={}: {}", member.getId(), e.getMessage());
             redirectAttrs.addFlashAttribute("error", "msg.error.password.current.wrong");
         }
+        return "redirect:/client/profile";
+    }
+
+    /**
+     * Updates the current member's profile (firstName, lastName, phone, birthDate).
+     * Email and password are not editable through this endpoint.
+     * On validation failure, redirects back with flash BindingResult and dto
+     * (Post-Redirect-Get pattern) so the form re-displays entered values and errors.
+     */
+    @PostMapping("/profile/edit")
+    public String updateProfile(@Valid @ModelAttribute("updateProfileDto") UpdateProfileDto dto,
+                                BindingResult bindingResult,
+                                @AuthenticationPrincipal UserDetails userDetails,
+                                RedirectAttributes redirectAttrs) {
+        if (bindingResult.hasErrors()) {
+            log.warn("Profile update rejected due to {} validation errors", bindingResult.getErrorCount());
+            redirectAttrs.addFlashAttribute(
+                    "org.springframework.validation.BindingResult.updateProfileDto", bindingResult);
+            redirectAttrs.addFlashAttribute("updateProfileDto", dto);
+            redirectAttrs.addFlashAttribute("error", "msg.error.profile.invalid");
+            return "redirect:/client/profile";
+        }
+
+        Member member = getUser(userDetails);
+        member.setFirstName(dto.getFirstName());
+        member.setLastName(dto.getLastName());
+        member.setPhone(dto.getPhone());
+        member.setBirthDate(dto.getBirthDate());
+
+        userService.updateProfile(member);
+        log.info("Profile updated for member id={}", member.getId());
+        redirectAttrs.addFlashAttribute("success", "msg.success.profile.updated");
         return "redirect:/client/profile";
     }
 }

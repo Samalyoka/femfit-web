@@ -7,13 +7,15 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDate;
 
 /**
- * DTO for user registration form.
+ * DTO for editing a member's own profile (firstName, lastName, phone, birthDate).
+ * Email and password are not editable here — email is the login identifier,
+ * password is changed via a separate {@link ChangePasswordDto} form.
  * Validated with Bean Validation (jakarta.validation).
  */
 @Data
-@NoArgsConstructor  // Ensures clean default initialization without pre-filled data
+@NoArgsConstructor
 @AllArgsConstructor
-public class RegisterDto {
+public class UpdateProfileDto {
 
     @NotBlank(message = "{error.required}")
     @Size(min = 2, max = 100)
@@ -25,15 +27,7 @@ public class RegisterDto {
     @Pattern(regexp = "^[\\p{L} '-]+$", message = "{error.name.invalid}")
     private String lastName;
 
-    @NotBlank(message = "{error.required}")
-    @Email(message = "{error.email.invalid}")
-    private String email;
-
-    @NotBlank(message = "{error.required}")
-    @Size(min = 8, max = 255, message = "{error.password.short}")
-    private String password;
-
-    // Allowed phone to be null or empty during initial form binding
+    // Allowed to be null or empty
     @Pattern(regexp = "^(\\+?[0-9]{10,15})?$", message = "Invalid phone format")
     private String phone;
 

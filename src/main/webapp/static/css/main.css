@@ -369,6 +369,52 @@ footer .footer-logo {
     padding: 6px 16px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
 .btn-cancel:hover { border-color: var(--rose); color: var(--rose); }
+/* === Edit Profile collapsible section === */
+
+.profile-edit-details {
+    cursor: default;
+}
+
+.profile-edit-summary {
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    list-style: none;
+}
+
+/* Hide default browser triangle marker */
+.profile-edit-summary::-webkit-details-marker {
+    display: none;
+}
+.profile-edit-summary::marker {
+    content: "";
+}
+
+/* Custom arrow indicator, rotates when open */
+.profile-edit-summary::before {
+    content: "▸";
+    color: var(--muted);
+    font-size: 14px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.profile-edit-details[open] .profile-edit-summary::before {
+    transform: rotate(90deg);
+}
+
+.profile-edit-hint {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.profile-edit-body {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+}
 @media (max-width: 768px) {
     .profile-grid { grid-template-columns: 1fr; }
     .profile-stats { grid-template-columns: repeat(3, 1fr); }
