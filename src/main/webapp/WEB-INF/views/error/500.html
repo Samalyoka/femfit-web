@@ -9,20 +9,22 @@
 <nav th:replace="~{common/layout :: nav}"></nav>
 
 <section class="page-section">
-    <div class="container" style="text-align: center; padding: 80px 20px;">
+    <div class="container" style="text-align: center; padding: 80px 20px; max-width: 560px; margin: 0 auto;">
 
         <div style="font-family: 'Cormorant Garamond', serif;
-                    font-size: 6rem; font-weight: 300;
-                    color: #C4687A; line-height: 1;">500</div>
+                    font-size: 0.95rem; letter-spacing: 0.15em; text-transform: uppercase;
+                    color: #C4687A; margin-bottom: 12px;">Error 500</div>
 
-        <h1 class="section-title" style="margin: 16px 0 12px;"
-            th:text="#{error.500.title}">Something Went Wrong</h1>
+        <h1 class="section-title" style="margin: 0 0 16px;"
+            th:text="#{error.500.title}">Something went wrong on our end</h1>
 
-        <p class="section-sub" style="margin-bottom: 32px;"
-           th:text="#{error.500.message}">An unexpected error occurred. Please try again later.</p>
+        <p class="section-sub" style="margin-bottom: 36px; line-height: 1.6;"
+           th:text="#{error.500.message}">We're sorry — an unexpected error occurred while processing your request. This is on us, not you. Please try again in a moment, and if the problem continues, contact our support team.</p>
 
-        <a class="btn btn--primary" th:href="@{/home}"
-           th:text="#{error.back.home}">Back to Home</a>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a class="btn btn--primary" th:href="@{/home}"
+               th:text="#{error.back.home}">Back to Home</a>
+        </div>
 
     </div>
 </section>

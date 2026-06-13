@@ -369,12 +369,11 @@ footer .footer-logo {
     padding: 6px 16px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
 .btn-cancel:hover { border-color: var(--rose); color: var(--rose); }
-/* === Edit Profile collapsible section === */
 
+/* === Edit Profile collapsible section === */
 .profile-edit-details {
     cursor: default;
 }
-
 .profile-edit-summary {
     cursor: pointer;
     display: flex;
@@ -382,16 +381,12 @@ footer .footer-logo {
     gap: 10px;
     list-style: none;
 }
-
-/* Hide default browser triangle marker */
 .profile-edit-summary::-webkit-details-marker {
     display: none;
 }
 .profile-edit-summary::marker {
     content: "";
 }
-
-/* Custom arrow indicator, rotates when open */
 .profile-edit-summary::before {
     content: "▸";
     color: var(--muted);
@@ -399,22 +394,20 @@ footer .footer-logo {
     transition: transform 0.2s ease;
     display: inline-block;
 }
-
 .profile-edit-details[open] .profile-edit-summary::before {
     transform: rotate(90deg);
 }
-
 .profile-edit-hint {
     font-size: 13px;
     color: var(--muted);
     font-weight: 400;
 }
-
 .profile-edit-body {
     margin-top: 18px;
     padding-top: 18px;
     border-top: 1px solid var(--border);
 }
+
 @media (max-width: 768px) {
     .profile-grid { grid-template-columns: 1fr; }
     .profile-stats { grid-template-columns: repeat(3, 1fr); }
@@ -870,9 +863,13 @@ footer .footer-logo {
 .pagination__btn:hover { background: #fdf5f6; }
 .pagination__info { font-size: 0.875rem; color: #888; }
 
+/* ============================================================ */
+/* BASE BODY + LAYOUT (background-color only — NOT shorthand,   */
+/* so it doesn't reset the background-image defined below)      */
+/* ============================================================ */
 body {
     font-family: var(--sans);
-    background: var(--warm-white);
+    background-color: var(--warm-white);
     color: var(--charcoal);
     font-size: 15px;
     line-height: 1.6;
@@ -884,4 +881,75 @@ body {
     background: white;
     color: var(--rose-dark);
     font-weight: 500;
+}
+
+/* ============================================================ */
+/* HOME PAGE REFRESH — soft gradients, entrance animations,     */
+/* glassmorphism hero card, hover lift on class cards           */
+/* ============================================================ */
+
+body {
+    background-image:
+            radial-gradient(circle 420px at 100% 0%, var(--rose-mid) 0%, transparent 100%),
+            radial-gradient(circle 480px at 0% 100%, var(--rose-light) 0%, transparent 100%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* ── Hero entrance animation ─────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-eyebrow,
+.hero-h1,
+.hero-sub,
+.hero-btns {
+    animation: fadeUp 0.6s ease-out both;
+}
+.hero-h1   { animation-delay: 0.05s; }
+.hero-sub  { animation-delay: 0.15s; }
+.hero-btns { animation-delay: 0.25s; }
+
+/* ── Hero visual: glass card + floating stat badge ───────────── */
+.hero-card-big {
+    background: rgba(245, 232, 234, 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 12px 40px rgba(196, 104, 122, 0.12);
+    animation: fadeUp 0.7s ease-out 0.2s both;
+}
+
+.hero-stat-card {
+    box-shadow: 0 12px 32px rgba(122, 48, 64, 0.25);
+    animation: fadeUp 0.7s ease-out 0.4s both;
+}
+
+/* ── Class grid: staggered entrance + lift on hover ──────────── */
+.class-card {
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    animation: fadeUp 0.5s ease-out both;
+}
+.class-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(196, 104, 122, 0.12);
+}
+.class-card:nth-child(1) { animation-delay: 0.05s; }
+.class-card:nth-child(2) { animation-delay: 0.10s; }
+.class-card:nth-child(3) { animation-delay: 0.15s; }
+.class-card:nth-child(4) { animation-delay: 0.20s; }
+.class-card:nth-child(5) { animation-delay: 0.25s; }
+.class-card:nth-child(6) { animation-delay: 0.30s; }
+
+.alert--error {
+    background: #FDECEF;
+    color: #C4687A;
+    border: 1px solid #C4687A;
+    border-radius: 8px;
+    padding: 14px 20px;
+    text-align: center;
+    font-size: 0.95rem;
+    max-width: 800px;
+    margin: 0 auto;
 }

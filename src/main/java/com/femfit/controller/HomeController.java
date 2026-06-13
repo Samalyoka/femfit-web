@@ -2,6 +2,7 @@ package com.femfit.controller;
 
 import com.femfit.dao.ClassScheduleDao;
 import com.femfit.model.ClassSchedule;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Handles public-facing pages: home, schedule, membership plans.
@@ -28,9 +29,18 @@ public class HomeController {
 
     /**
      * Home page.
+     * If the user was redirected here after a 403 (access denied),
+     * reads the flashError from session and displays it once.
      */
-    @GetMapping({"/", "/home"})
-    public String home(Model model) {
+    @GetMapping("/home")
+    public String home(Model model, HttpSession session, HttpServletRequest request) {
+        // Получаем flashError из session
+        Object flashError = session.getAttribute("flashError");
+        if (flashError != null) {
+            model.addAttribute("flashError", flashError);
+            // Удаляем сразу после прочтения
+            session.removeAttribute("flashError");
+        }
         return "home";
     }
 
@@ -49,4 +59,5 @@ public class HomeController {
     public String accessDenied() {
         return "error/403";
     }
+
 }

@@ -1,6 +1,7 @@
 package com.femfit.config;
 
 import com.femfit.service.FemFitUserDetailsService;
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +22,9 @@ import org.springframework.core.annotation.Order;
  * Passwords stored as BCrypt hashes — plain-text storage is prohibited.
  * Authentication delegated to FemFitUserDetailsService (our JDBC members table).
  *
- * Access-denied (403) is handled here via accessDeniedPage, which renders
- * error/403.html — this is intercepted by Spring Security's
+ * Access-denied (403) is handled via a custom AccessDeniedHandler that
+ * stores an i18n key in the session and redirects to "/home", where it
+ * is shown as a dismissible banner (see HomeController).
  * ExceptionTranslationFilter *before* the request reaches DispatcherServlet,
  * so it cannot be handled by GlobalExceptionHandler. All other unhandled
  * application errors (500) are handled centrally by
@@ -86,9 +88,11 @@ public class SecurityConfig {
                         .clearAuthentication(true)
                         .permitAll()
                 )
-                .exceptionHandling(ex -> ex
-                        .accessDeniedPage("/error/403")
-                )
+                .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, accessDeniedException) -> {
+                    HttpSession session = request.getSession();
+                    session.setAttribute("flashError", "error.access.denied");
+                    response.sendRedirect(request.getContextPath() + "/home");
+                }))
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
                                 new AntPathRequestMatcher("/auth/login"),

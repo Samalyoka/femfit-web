@@ -9,20 +9,24 @@
 <nav th:replace="~{common/layout :: nav}"></nav>
 
 <section class="page-section">
-    <div class="container" style="text-align: center; padding: 80px 20px;">
+    <div class="container" style="text-align: center; padding: 80px 20px; max-width: 560px; margin: 0 auto;">
 
         <div style="font-family: 'Cormorant Garamond', serif;
-                    font-size: 6rem; font-weight: 300;
-                    color: #C4687A; line-height: 1;">403</div>
+                    font-size: 0.95rem; letter-spacing: 0.15em; text-transform: uppercase;
+                    color: #C4687A; margin-bottom: 12px;">Error 403</div>
 
-        <h1 class="section-title" style="margin: 16px 0 12px;"
-            th:text="#{error.403.title}">Access Denied</h1>
+        <h1 class="section-title" style="margin: 0 0 16px;"
+            th:text="#{error.403.title}">Oops, this area is off-limits</h1>
 
-        <p class="section-sub" style="margin-bottom: 32px;"
-           th:text="#{error.403.message}">You do not have permission to view this page.</p>
+        <p class="section-sub" style="margin-bottom: 36px; line-height: 1.6;"
+           th:text="#{error.403.message}">It looks like you don't have access to this page. This might happen if you're logged in with the wrong account, or if this section is reserved for trainers/admins. Try going back to your dashboard, or log in with a different account.</p>
 
-        <a class="btn btn--primary" th:href="@{/home}"
-           th:text="#{error.back.home}">Back to Home</a>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <a class="btn btn--primary" th:href="@{/home}"
+               th:text="#{error.back.home}">Back to Home</a>
+            <a class="btn btn--secondary" th:href="@{/auth/login}"
+               th:text="#{auth.login.btn}">Log In</a>
+        </div>
 
     </div>
 </section>

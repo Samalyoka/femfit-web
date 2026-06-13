@@ -6,21 +6,48 @@ import com.femfit.model.Member;
 
 import java.util.List;
 
+/**
+ * DAO interface for trainer-related queries.
+ *
+ * <p>Trainers are members with role {@code TRAINER} that additionally have
+ * a row in the {@code trainers} table. This DAO provides queries that join
+ * across {@code members}, {@code trainers} and {@code orders} to support
+ * the trainer dashboard and trainer-selection UI.</p>
+ */
 public interface TrainerDao {
 
+    /**
+     * Resolves the {@code trainers.id} for a given member id.
+     *
+     * @param userId the member id of the trainer (members.id)
+     * @return the trainer id (trainers.id, same value as members.id)
+     * @throws RuntimeException if no trainer record exists for the given member id
+     */
     long findTrainerIdByUserId(long userId);
 
+    /**
+     * Returns all clients (members) who currently have an active or
+     * in-progress order assigned to the given trainer.
+     *
+     * @param trainerId the trainer's id
+     * @return list of clients, possibly empty
+     */
     List<Member> findClientsByTrainerId(long trainerId);
 
     /**
      * Returns a lightweight projection of all active trainers
      * (id, name, email) for trainer-selection UI.
+     *
+     * @return list of active trainers as {@link TrainerDto}, possibly empty
      */
     List<TrainerDto> findAllTrainers();
 
     /**
      * Get last active order for each client of the trainer.
      * One row per client, with order details if exists, otherwise nulls for order fields.
+     *
+     * @param trainerId the trainer's id
+     * @return list of client/order projections, possibly empty
      */
     List<ClientOrderDto> findClientsWithOrderByTrainerId(long trainerId);
 }

@@ -64,11 +64,26 @@ public class Member {
         return (f + l).toUpperCase();
     }
 
+    /**
+     * Alternate setter for the {@code active} field, named to match the
+     * {@code enabled} column alias used by some queries
+     * (e.g. {@code u.is_active AS enabled} in {@code TrainerDaoImpl}).
+     * Equivalent to {@link #setActive(boolean)}.
+     *
+     * @param enabled true if the member account is active
+     */
     public void setEnabled(boolean enabled) {
         this.active = enabled;
     }
 
-     public boolean isEnabled() {
+    /**
+     * Alternate getter for the {@code active} field, named to match the
+     * {@code enabled} column alias used by some queries.
+     * Equivalent to {@link #isActive()}.
+     *
+     * @return true if the member account is active
+     */
+    public boolean isEnabled() {
         return active;
     }
 }

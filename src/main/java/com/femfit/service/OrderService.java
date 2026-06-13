@@ -79,11 +79,17 @@ public interface OrderService {
 
     /**
      * Returns all orders with pagination (admin).
+     *
+     * @param offset SQL offset
+     * @param limit  page size
+     * @return list of orders
      */
     List<Order> findAll(int offset, int limit);
 
     /**
      * Counts total orders (admin pagination).
+     *
+     * @return total number of orders
      */
     int countAll();
 }
