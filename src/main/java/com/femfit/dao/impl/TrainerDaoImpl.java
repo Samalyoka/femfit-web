@@ -15,6 +15,16 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JDBC implementation of {@link TrainerDao}.
+ *
+ * Provides trainer-specific data access including:
+ * - Finding clients assigned to a trainer
+ * - Retrieving client-order relationships
+ * - Listing all active trainers
+ *
+ * Uses PostgreSQL-specific DISTINCT ON for efficient client listing.
+ */
 @Repository
 public class TrainerDaoImpl implements TrainerDao {
 
@@ -44,7 +54,8 @@ public class TrainerDaoImpl implements TrainerDao {
 
     /**
      * DISTINCT ON (u.id) — PostgreSQL-specific.
-     * Берёт одну строку на клиента: самый свежий активный заказ.
+     * Returns one row per client, with their most recent active/in-progress order if exists,
+     * otherwise nulls for order fields.
      */
     private static final String FIND_CLIENTS_WITH_ORDER = """
             SELECT DISTINCT ON (u.id)
@@ -75,6 +86,14 @@ public class TrainerDaoImpl implements TrainerDao {
             ORDER BY u.first_name
             """;
 
+    /**
+     * Finds the trainer ID for a given user ID.
+     * Used to resolve the trainer record from the user/member record.
+     *
+     * @param userId the user ID (must correspond to a trainer)
+     * @return the trainer ID
+     * @throws RuntimeException if the trainer record is not found
+     */
     @Override
     public long findTrainerIdByUserId(long userId) {
         Connection con = pool.getConnection();
@@ -87,10 +106,19 @@ public class TrainerDaoImpl implements TrainerDao {
         } catch (SQLException e) {
             throw new RuntimeException("TrainerDao.findTrainerIdByUserId failed", e);
         } finally {
+            con = pool.getConnection();
             pool.releaseConnection(con);
         }
     }
 
+    /**
+     * Finds all clients assigned to a trainer with active or in-progress orders.
+     * Results are ordered by last name, then first name.
+     *
+     * @param trainerId the trainer ID
+     * @return list of members who have orders with this trainer, empty list if none found
+     * @throws RuntimeException if the query fails
+     */
     @Override
     public List<Member> findClientsByTrainerId(long trainerId) {
         List<Member> clients = new ArrayList<>();
@@ -108,6 +136,15 @@ public class TrainerDaoImpl implements TrainerDao {
         return clients;
     }
 
+    /**
+     * Finds all clients assigned to a trainer, including their most recent order details.
+     * Uses PostgreSQL DISTINCT ON to return one row per client with latest order.
+     * Results are ordered by client ID.
+     *
+     * @param trainerId the trainer ID
+     * @return list of client-order DTOs, empty list if none found
+     * @throws RuntimeException if the query fails
+     */
     @Override
     public List<ClientOrderDto> findClientsWithOrderByTrainerId(long trainerId) {
         List<ClientOrderDto> result = new ArrayList<>();
@@ -126,6 +163,14 @@ public class TrainerDaoImpl implements TrainerDao {
         return result;
     }
 
+    /**
+     * Finds all active trainers in the system.
+     * Returns lightweight DTO with only essential fields.
+     * Results are ordered by first name.
+     *
+     * @return list of all active trainers, empty list if none found
+     * @throws RuntimeException if the query fails
+     */
     @Override
     public List<TrainerDto> findAllTrainers() {
         List<TrainerDto> trainers = new ArrayList<>();
@@ -141,6 +186,13 @@ public class TrainerDaoImpl implements TrainerDao {
         return trainers;
     }
 
+    /**
+     * Maps a ResultSet row to a {@link Member} object.
+     *
+     * @param rs the result set positioned at the current row
+     * @return a populated Member object
+     * @throws SQLException if a column cannot be read
+     */
     private Member mapUser(ResultSet rs) throws SQLException {
         Member u = new Member();
         u.setId(rs.getLong("id"));
@@ -153,6 +205,13 @@ public class TrainerDaoImpl implements TrainerDao {
         return u;
     }
 
+    /**
+     * Maps a ResultSet row to a {@link TrainerDto} object.
+     *
+     * @param rs the result set positioned at the current row
+     * @return a populated TrainerDto object
+     * @throws SQLException if a column cannot be read
+     */
     private TrainerDto mapTrainer(ResultSet rs) throws SQLException {
         return TrainerDto.builder()
                 .id(rs.getLong("id"))
@@ -162,6 +221,13 @@ public class TrainerDaoImpl implements TrainerDao {
                 .build();
     }
 
+    /**
+     * Maps a ResultSet row to a {@link ClientOrderDto} object.
+     *
+     * @param rs the result set positioned at the current row
+     * @return a populated ClientOrderDto object
+     * @throws SQLException if a column cannot be read
+     */
     private ClientOrderDto mapClientOrder(ResultSet rs) throws SQLException {
         return ClientOrderDto.builder()
                 .clientId(rs.getLong("client_id"))

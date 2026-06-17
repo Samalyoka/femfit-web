@@ -11,6 +11,13 @@ import org.springframework.stereotype.Repository;
 import java.sql.*;
 import java.util.Optional;
 
+/**
+ * JDBC implementation of {@link AssignmentDao}.
+ *
+ * Manages training assignments created by trainers for clients' orders.
+ * Each assignment contains workout routines, equipment needs, nutrition plans, and schedules.
+ * Uses manual transaction management for data integrity.
+ */
 @Repository
 public class AssignmentDaoImpl implements AssignmentDao {
 
@@ -64,6 +71,14 @@ public class AssignmentDaoImpl implements AssignmentDao {
             DELETE FROM assignments WHERE order_id = ?
             """;
 
+    /**
+     * Saves a new assignment to the database with transaction support.
+     * Sets the assignment ID and timestamps from the database response.
+     *
+     * @param assignment the assignment to save (orderId and content fields must be set)
+     * @return the saved assignment with ID and timestamps populated
+     * @throws RuntimeException if the save operation fails
+     */
     @Override
     public Assignment save(Assignment assignment) {
         Connection conn = pool.getConnection();
@@ -96,6 +111,13 @@ public class AssignmentDaoImpl implements AssignmentDao {
         }
     }
 
+    /**
+     * Finds an assignment by order ID.
+     *
+     * @param orderId the order ID
+     * @return Optional containing the assignment if found, empty otherwise
+     * @throws RuntimeException if the query fails
+     */
     @Override
     public Optional<Assignment> findByOrderId(Long orderId) {
         Connection conn = pool.getConnection();
@@ -113,6 +135,14 @@ public class AssignmentDaoImpl implements AssignmentDao {
         return Optional.empty();
     }
 
+    /**
+     * Finds the most recently updated assignment for a client.
+     * Used to display the latest training plan to the client.
+     *
+     * @param clientId the member/client ID
+     * @return Optional containing the latest assignment if found, empty otherwise
+     * @throws RuntimeException if the query fails
+     */
     @Override
     public Optional<Assignment> findLatestByClientId(long clientId) {
         Connection conn = pool.getConnection();
@@ -130,6 +160,13 @@ public class AssignmentDaoImpl implements AssignmentDao {
         return Optional.empty();
     }
 
+    /**
+     * Updates an assignment's content (exercises, equipment, nutrition plan, schedule).
+     * Sets the updated_at timestamp to current time.
+     *
+     * @param assignment the assignment with updated content (id must be set)
+     * @throws RuntimeException if the update fails
+     */
     @Override
     public void update(Assignment assignment) {
         Connection conn = pool.getConnection();
@@ -149,6 +186,14 @@ public class AssignmentDaoImpl implements AssignmentDao {
         }
     }
 
+    /**
+     * Updates the status of an assignment (e.g., ACTIVE → COMPLETED or REVISION_REQUESTED).
+     * Sets the updated_at timestamp to current time.
+     *
+     * @param assignmentId the assignment ID
+     * @param status the new status (e.g., 'COMPLETED', 'REVISION_REQUESTED')
+     * @throws RuntimeException if the update fails
+     */
     @Override
     public void updateStatus(Long assignmentId, String status) {
         Connection conn = pool.getConnection();
@@ -165,6 +210,13 @@ public class AssignmentDaoImpl implements AssignmentDao {
         }
     }
 
+    /**
+     * Deletes all assignments for a given order.
+     * Typically used when an order is cancelled.
+     *
+     * @param orderId the order ID
+     * @throws RuntimeException if the delete fails
+     */
     @Override
     public void deleteByOrderId(Long orderId) {
         Connection conn = pool.getConnection();
@@ -180,6 +232,13 @@ public class AssignmentDaoImpl implements AssignmentDao {
         }
     }
 
+    /**
+     * Maps a ResultSet row to an {@link Assignment} object.
+     *
+     * @param rs the result set positioned at the current row
+     * @return a populated Assignment object
+     * @throws SQLException if a column cannot be read
+     */
     private Assignment mapRow(ResultSet rs) throws SQLException {
         return Assignment.builder()
                 .id(rs.getLong("id"))

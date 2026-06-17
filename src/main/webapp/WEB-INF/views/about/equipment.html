@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Equipment — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="about-hero">
+    <div class="container">
+        <div class="section-eyebrow" th:text="#{about.equipment.eyebrow}">Premium facilities</div>
+        <h1 class="section-title" th:text="#{about.equipment.title}">Equipment and facilities</h1>
+        <p class="about-hero__sub" th:text="#{about.equipment.sub}">Your trainer provides a personalised equipment guide for your programme — whether you're training at our club or at home. No guesswork, just clear guidance on everything you need.</p>
+    </div>
+</div>
+
+<div class="about-content">
+    <div class="container">
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.equipment.club.title}">At our studios</h2>
+            <div class="about-features">
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="18" width="30" height="4" rx="2" fill="var(--rose)"/>
+                            <rect x="3" y="14" width="5" height="12" rx="2.5" fill="var(--rose)"/>
+                            <rect x="32" y="14" width="5" height="12" rx="2.5" fill="var(--rose)"/>
+                            <rect x="9" y="16" width="4" height="8" rx="1.5" fill="var(--rose-dark)"/>
+                            <rect x="27" y="16" width="4" height="8" rx="1.5" fill="var(--rose-dark)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.equipment.f1.title}">Free weights area</div>
+                    <div class="about-feature__desc" th:text="#{about.equipment.f1.desc}">Full range of dumbbells, barbells, kettlebells and weight plates — from beginner to advanced levels.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="10" y="8" width="20" height="26" rx="4" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <rect x="14" y="14" width="12" height="8" rx="2" fill="var(--rose)" opacity="0.7"/>
+                            <circle cx="20" cy="28" r="3" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.equipment.f2.title}">Cardio machines</div>
+                    <div class="about-feature__desc" th:text="#{about.equipment.f2.desc}">Treadmills, rowing machines, stationary bikes and ellipticals — all latest generation with integrated tracking.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="28" width="24" height="4" rx="2" fill="var(--rose)"/>
+                            <rect x="12" y="16" width="16" height="14" rx="3" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <line x1="16" y1="16" x2="16" y2="32" stroke="var(--rose)" stroke-width="1"/>
+                            <line x1="20" y1="16" x2="20" y2="32" stroke="var(--rose)" stroke-width="1"/>
+                            <line x1="24" y1="16" x2="24" y2="32" stroke="var(--rose)" stroke-width="1"/>
+                            <rect x="14" y="8" width="12" height="10" rx="2" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.equipment.f3.title}">Functional training zone</div>
+                    <div class="about-feature__desc" th:text="#{about.equipment.f3.desc}">Resistance bands, TRX suspension trainers, medicine balls and gymnastic rings for functional movement training.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="20" cy="30" rx="14" ry="5" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <path d="M12 30 Q12 18 20 14 Q28 18 28 30" fill="var(--rose)" opacity="0.5"/>
+                            <line x1="20" y1="14" x2="20" y2="30" stroke="var(--rose-dark)" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.equipment.f4.title}">Yoga and stretching studio</div>
+                    <div class="about-feature__desc" th:text="#{about.equipment.f4.desc}">Dedicated studio with mats, blocks, straps and bolsters — designed for yoga, Pilates and stretching classes.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.equipment.home.title}">For home training</h2>
+            <p class="about-hero__sub" th:text="#{about.equipment.home.sub}">Your trainer will include a list of equipment needed for your specific programme — with home-friendly alternatives wherever possible.</p>
+            <div class="about-steps">
+                <div class="about-step">
+                    <div class="about-step__num">✓</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.equipment.home1.title}">Essential kit list</div>
+                        <div class="about-step__desc" th:text="#{about.equipment.home1.desc}">A clear list of what you'll need — resistance bands, a mat, dumbbells — with suggested alternatives using household items.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">✓</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.equipment.home2.title}">Equipment substitutions</div>
+                        <div class="about-step__desc" th:text="#{about.equipment.home2.desc}">Don't have a specific piece of equipment? Your trainer suggests alternatives so your programme stays effective regardless.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">✓</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.equipment.home3.title}">Budget-friendly options</div>
+                        <div class="about-step__desc" th:text="#{about.equipment.home3.desc}">We recommend affordable yet quality equipment that will last and support your training long-term.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-cta">
+            <h2 class="about-cta__title" th:text="#{about.equipment.cta.title}">Train with the best equipment</h2>
+            <p class="about-cta__sub" th:text="#{about.equipment.cta.sub}">Join a programme and get your personalised equipment guide from your trainer.</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a th:href="@{/client/cycles}" class="btn-primary" th:text="#{about.exercises.cta.btn}">Browse programmes</a>
+                <a th:href="@{/home}" class="btn-outline" th:text="#{nav.home}">Back to home</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Personal Trainers — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="about-hero">
+    <div class="container">
+        <div class="section-eyebrow" th:text="#{about.trainers.eyebrow}">Our team</div>
+        <h1 class="section-title" th:text="#{about.trainers.title}">Personal trainers</h1>
+        <p class="about-hero__sub" th:text="#{about.trainers.sub}">Every FemFit member is paired with a certified personal trainer who designs a programme around your unique goals, body, and lifestyle.</p>
+    </div>
+</div>
+
+<div class="about-content">
+    <div class="container">
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.trainers.how.title}">What your trainer does for you</h2>
+            <div class="about-steps">
+                <div class="about-step">
+                    <div class="about-step__num">01</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.trainers.step1.title}">Gets to know you</div>
+                        <div class="about-step__desc" th:text="#{about.trainers.step1.desc}">Your trainer begins with a full assessment of your current fitness level, health history, goals and schedule.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">02</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.trainers.step2.title}">Builds your personal programme</div>
+                        <div class="about-step__desc" th:text="#{about.trainers.step2.desc}">Based on your assessment, your trainer creates a complete training plan covering workouts, nutrition, equipment and schedule.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">03</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.trainers.step3.title}">Tracks your progress</div>
+                        <div class="about-step__desc" th:text="#{about.trainers.step3.desc}">Your trainer monitors your results and adjusts the programme as you improve.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">04</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.trainers.step4.title}">Supports you along the way</div>
+                        <div class="about-step__desc" th:text="#{about.trainers.step4.desc}">If something isn't working, request a revision. Your trainer will update your plan at any time.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.trainers.features.title}">What makes a FemFit trainer different</h2>
+            <div class="about-features">
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="14" r="6" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <path d="M10 34 Q10 26 20 26 Q30 26 30 34" fill="var(--rose)" opacity="0.4"/>
+                            <path d="M14 34 Q15 28 20 28 Q25 28 26 34" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.trainers.f1.title}">Women-only specialists</div>
+                    <div class="about-feature__desc" th:text="#{about.trainers.f1.desc}">All our trainers are experienced in women's physiology, hormonal considerations and strength training for every stage of life.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="10" width="24" height="22" rx="3" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <rect x="8" y="10" width="24" height="8" rx="3" fill="var(--rose)"/>
+                            <path d="M14 26 L18 29 L26 22" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.trainers.f2.title}">Fully certified</div>
+                    <div class="about-feature__desc" th:text="#{about.trainers.f2.desc}">Every trainer holds recognised fitness certifications and undergoes ongoing professional development.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 30 L18 18 L24 24 L30 12" stroke="var(--rose)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="10" cy="30" r="2.5" fill="var(--rose)"/>
+                            <circle cx="30" cy="12" r="2.5" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.trainers.f3.title}">Results-focused</div>
+                    <div class="about-feature__desc" th:text="#{about.trainers.f3.desc}">Your trainer is invested in your progress — measuring outcomes, celebrating milestones and keeping you accountable.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="20" r="12" fill="none" stroke="var(--rose)" stroke-width="2"/>
+                            <path d="M14 20 L18 24 L26 14" stroke="var(--rose)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.trainers.f4.title}">Flexible and adaptable</div>
+                    <div class="about-feature__desc" th:text="#{about.trainers.f4.desc}">Your trainer adapts your plan if your schedule shifts, your goals evolve, or you simply need something different.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-cta">
+            <h2 class="about-cta__title" th:text="#{about.trainers.cta.title}">Meet your trainer today</h2>
+            <p class="about-cta__sub" th:text="#{about.trainers.cta.sub}">Choose a training programme and select the trainer you'd like to work with.</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a th:href="@{/client/cycles}" class="btn-primary" th:text="#{about.exercises.cta.btn}">Browse programmes</a>
+                <a th:href="@{/home}" class="btn-outline" th:text="#{nav.home}">Back to home</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,80 +1,175 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Assignment — FemFit</title>
-  <link rel="stylesheet" th:href="@{/static/css/main.css}">
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<head th:replace="~{common/layout :: head}">
+  <title>My Assignment — FemFit</title>
 </head>
 <body>
 <nav th:replace="~{common/layout :: nav}"></nav>
 
 <div class="page-wrap">
+
   <div class="profile-hero">
-    <p class="section-eyebrow">My Training</p>
-    <h1 class="section-title" th:text="${order?.cycleTitle} ?: 'Assignment'"></h1>
+    <a th:href="@{/client/orders}" class="back-link">← <span th:text="#{client.orders}">My Orders</span></a>
+    <p class="section-eyebrow" th:text="#{assignment.eyebrow}">My Training Plan</p>
+    <h1 class="section-title" th:text="${order?.cycleTitle} ?: #{assignment.title}">Assignment</h1>
   </div>
 
+  <!-- Order info bar -->
+  <div class="assignment-order-bar" th:if="${order != null}">
+    <div class="assignment-order-item">
+      <span class="assignment-order-label" th:text="#{assignment.trainer}">Trainer</span>
+      <span class="assignment-order-value" th:text="${order.trainerName} ?: #{assignment.no.trainer}">—</span>
+    </div>
+    <div class="assignment-order-item">
+      <span class="assignment-order-label" th:text="#{assignment.status}">Status</span>
+      <span th:class="'order-status status-' + ${order.status.toLowerCase()}"
+            th:text="${order.status}">ACTIVE</span>
+    </div>
+    <div class="assignment-order-item">
+      <span class="assignment-order-label" th:text="#{assignment.ordered}">Ordered</span>
+      <span class="assignment-order-value"
+            th:text="${#temporals.format(order.createdAt,'d MMM yyyy')}">—</span>
+    </div>
+    <div class="assignment-order-item" th:if="${assignment != null}">
+      <span class="assignment-order-label" th:text="#{assignment.plan.status}">Plan status</span>
+      <span th:if="${assignment.status == 'ACTIVE'}"
+            class="order-status status-active" th:text="#{assignment.plan.active}">Active</span>
+      <span th:if="${assignment.status == 'COMPLETED'}"
+            class="order-status status-completed" th:text="#{assignment.plan.completed}">Completed</span>
+      <span th:if="${assignment.status == 'REVISION_REQUESTED'}"
+            class="order-status status-pending" th:text="#{assignment.plan.revision}">Revision requested</span>
+    </div>
+  </div>
+
+  <!-- Assignment exists -->
   <div th:if="${assignment != null}">
-    <div class="profile-grid">
-      <div class="profile-card">
-        <div class="profile-section-title" style="text-align:left;">Order Info</div>
-        <div class="profile-meta">
-          <div class="profile-meta-row">
-            <span>Program</span>
-            <span th:text="${order.cycleTitle}"></span>
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="#{${error}}"></div>
+
+    <!-- 4 cards grid -->
+    <div class="assignment-grid">
+
+      <!-- Exercises -->
+      <div class="assignment-card">
+        <div class="assignment-card__header">
+          <div class="assignment-card__icon">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="21" width="36" height="6" rx="3" fill="var(--rose)"/>
+              <rect x="3" y="16" width="7" height="16" rx="3.5" fill="var(--rose)"/>
+              <rect x="38" y="16" width="7" height="16" rx="3.5" fill="var(--rose)"/>
+              <rect x="11" y="19" width="5" height="10" rx="2" fill="var(--rose-dark)"/>
+              <rect x="32" y="19" width="5" height="10" rx="2" fill="var(--rose-dark)"/>
+            </svg>
           </div>
-          <div class="profile-meta-row">
-            <span>Status</span>
-            <span th:text="${order.status}"></span>
-          </div>
-          <div class="profile-meta-row">
-            <span>Trainer</span>
-            <span th:text="${order.trainerName} ?: 'Not assigned'"></span>
-          </div>
-          <div class="profile-meta-row">
-            <span>Ordered</span>
-            <span th:text="${#temporals.format(order.createdAt,'dd MMM yyyy')}"></span>
-          </div>
+          <h2 class="assignment-card__title" th:text="#{assignment.exercises}">Workout Routines</h2>
+        </div>
+        <div class="assignment-card__body">
+          <p class="assignment-card__text" th:text="${assignment.exercises} ?: #{assignment.not.specified}">—</p>
         </div>
       </div>
 
-      <div class="profile-main">
-        <div class="profile-section-card">
-          <h2 class="profile-section-title">Exercises</h2>
-          <p class="assignment-text" th:text="${assignment.exercises} ?: 'Not specified'"></p>
+      <!-- Equipment -->
+      <div class="assignment-card">
+        <div class="assignment-card__header">
+          <div class="assignment-card__icon">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="24" cy="24" r="13" fill="none" stroke="var(--rose)" stroke-width="2.5"/>
+              <circle cx="24" cy="24" r="7" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="2"/>
+              <circle cx="24" cy="24" r="3" fill="var(--rose)"/>
+              <line x1="11" y1="24" x2="4" y2="24" stroke="var(--rose)" stroke-width="3.5" stroke-linecap="round"/>
+              <line x1="37" y1="24" x2="44" y2="24" stroke="var(--rose)" stroke-width="3.5" stroke-linecap="round"/>
+              <rect x="1" y="19" width="6" height="10" rx="3" fill="var(--rose-dark)"/>
+              <rect x="41" y="19" width="6" height="10" rx="3" fill="var(--rose-dark)"/>
+            </svg>
+          </div>
+          <h2 class="assignment-card__title" th:text="#{assignment.equipment}">Equipment</h2>
         </div>
-        <div class="profile-section-card">
-          <h2 class="profile-section-title">Required Equipment</h2>
-          <p class="assignment-text" th:text="${assignment.equipment} ?: 'Not specified'"></p>
-        </div>
-        <div class="profile-section-card">
-          <h2 class="profile-section-title">Nutrition Plan</h2>
-          <p class="assignment-text" th:text="${assignment.nutritionPlan} ?: 'Not specified'"></p>
-        </div>
-
-        <div th:if="${assignment.status != 'REVISION_REQUESTED'}">
-          <form th:action="@{/client/assignment/revision/{id}(id=${assignment.id})}" method="post">
-            <button type="submit" class="btn-outline">Request Revision</button>
-          </form>
-        </div>
-        <div th:if="${assignment.status == 'REVISION_REQUESTED'}">
-          <span class="cycle-badge">Revision requested</span>
+        <div class="assignment-card__body">
+          <p class="assignment-card__text" th:text="${assignment.equipment} ?: #{assignment.not.specified}">—</p>
         </div>
       </div>
+
+      <!-- Nutrition -->
+      <div class="assignment-card">
+        <div class="assignment-card__header">
+          <div class="assignment-card__icon">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="24" cy="34" rx="16" ry="9" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="2"/>
+              <path d="M14 34 Q17 22 24 18 Q31 22 34 34" fill="var(--rose)" opacity="0.6"/>
+              <circle cx="19" cy="28" r="3" fill="var(--rose-dark)"/>
+              <circle cx="29" cy="26" r="3" fill="var(--rose-dark)"/>
+              <circle cx="24" cy="23" r="3" fill="var(--rose-dark)"/>
+              <path d="M24 18 Q26 11 24 7" stroke="var(--rose)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="assignment-card__title" th:text="#{assignment.nutrition}">Nutrition Plan</h2>
+        </div>
+        <div class="assignment-card__body">
+          <p class="assignment-card__text" th:text="${assignment.nutritionPlan} ?: #{assignment.not.specified}">—</p>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="assignment-card">
+        <div class="assignment-card__header">
+          <div class="assignment-card__icon">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <rect x="6" y="10" width="36" height="32" rx="4" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="2"/>
+              <rect x="6" y="10" width="36" height="13" rx="4" fill="var(--rose)"/>
+              <line x1="16" y1="7" x2="16" y2="15" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="32" y1="7" x2="32" y2="15" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="12" y="28" width="8" height="7" rx="1.5" fill="var(--rose)" opacity="0.5"/>
+              <rect x="22" y="28" width="8" height="7" rx="1.5" fill="var(--rose)"/>
+              <rect x="32" y="28" width="8" height="7" rx="1.5" fill="var(--rose)" opacity="0.5"/>
+            </svg>
+          </div>
+          <h2 class="assignment-card__title" th:text="#{assignment.schedule}">Training Schedule</h2>
+        </div>
+        <div class="assignment-card__body">
+          <p class="assignment-card__text" th:text="${assignment.scheduleInfo} ?: #{assignment.not.specified}">—</p>
+        </div>
+      </div>
+
     </div>
+
+    <!-- Actions -->
+    <div class="assignment-actions">
+      <div th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}">
+        <form th:action="@{/client/assignment/revision/{id}(id=${assignment.id})}" method="post">
+          <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+          <button type="submit" class="btn-outline" th:text="#{assignment.request.revision}">
+            Request a revision
+          </button>
+        </form>
+      </div>
+      <div th:if="${assignment.status == 'REVISION_REQUESTED'}">
+        <span class="assignment-revision-badge" th:text="#{assignment.revision.pending}">
+          ✓ Revision requested — your trainer will update your plan shortly
+        </span>
+      </div>
+    </div>
+
   </div>
 
-  <div th:unless="${assignment != null}" class="profile-section-card">
-    <div class="profile-empty">
-      No assignment yet. Your trainer will create one soon.
+  <!-- No assignment yet -->
+  <div th:unless="${assignment != null}" class="assignment-empty">
+    <div class="assignment-empty__icon">
+      <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+        <rect x="15" y="10" width="50" height="60" rx="6" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="2"/>
+        <line x1="25" y1="28" x2="55" y2="28" stroke="var(--rose-mid)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="25" y1="36" x2="55" y2="36" stroke="var(--rose-mid)" stroke-width="2" stroke-linecap="round"/>
+        <line x1="25" y1="44" x2="45" y2="44" stroke="var(--rose-mid)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
     </div>
+    <h2 class="assignment-empty__title" th:text="#{assignment.empty.title}">No plan yet</h2>
+    <p class="assignment-empty__desc" th:text="#{assignment.empty.desc}">
+      Your trainer will create your personalised plan soon. Check back shortly.
+    </p>
+    <a th:href="@{/client/orders}" class="btn-outline" th:text="#{client.orders}">Back to orders</a>
   </div>
 
-  <div style="margin-top:24px;">
-    <a th:href="@{/client/orders}" class="btn-outline">← Back to Orders</a>
-  </div>
 </div>
 
 <footer th:replace="~{common/layout :: footer}"></footer>

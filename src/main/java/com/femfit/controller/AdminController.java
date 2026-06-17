@@ -1,10 +1,10 @@
 package com.femfit.controller;
 
 import com.femfit.dto.PageDto;
-import com.femfit.model.Role;
 import com.femfit.model.Member;
-import com.femfit.service.OrderService;
+import com.femfit.model.Role;
 import com.femfit.service.MemberService;
+import com.femfit.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,8 @@ import java.util.Set;
 /**
  * Handles all admin functions:
  * member management, discounts, reports.
+ *
+ * All exceptions bubble to GlobalExceptionHandler — no try/catch here.
  */
 @Controller
 @RequestMapping("/admin")
@@ -26,8 +28,8 @@ public class AdminController {
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
     /** Whitelist of pages that activate/deactivate/discount actions may redirect back to. */
-    private static final Set<String> ALLOWED_REDIRECTS = Set.of("/admin/clients", "/admin/trainers");
-    private static final String DEFAULT_REDIRECT = "/admin/clients";
+    private static final Set<String> ALLOWED_REDIRECTS = Set.of("/femfit/admin/clients", "/femfit/admin/trainers");
+    private static final String DEFAULT_REDIRECT = "/femfit/admin/clients";
 
     private final MemberService userService;
     private final OrderService orderService;
@@ -135,14 +137,6 @@ public class AdminController {
     }
 
     /**
-     * Validates the requested redirect target against a whitelist to prevent
-     * open-redirect vulnerabilities, falling back to /admin/clients.
-     */
-    private String resolveRedirect(String redirectTo) {
-        return ALLOWED_REDIRECTS.contains(redirectTo) ? redirectTo : DEFAULT_REDIRECT;
-    }
-
-    /**
      * Marks order as completed.
      */
     @PostMapping("/order/complete/{orderId}")
@@ -150,7 +144,7 @@ public class AdminController {
                                 RedirectAttributes ra) {
         orderService.updateStatus(orderId, "COMPLETED");
         ra.addFlashAttribute("success", "Order marked as completed.");
-        return "redirect:/admin/orders";
+        return "redirect:/femfit/admin/orders";
     }
 
     /**
@@ -161,6 +155,14 @@ public class AdminController {
                               RedirectAttributes ra) {
         orderService.updateStatus(orderId, "CANCELLED");
         ra.addFlashAttribute("success", "Order cancelled.");
-        return "redirect:/admin/orders";
+        return "redirect:/femfit/admin/orders";
+    }
+
+    /**
+     * Validates the requested redirect target against a whitelist to prevent
+     * open-redirect vulnerabilities, falling back to /admin/clients.
+     */
+    private String resolveRedirect(String redirectTo) {
+        return ALLOWED_REDIRECTS.contains(redirectTo) ? redirectTo : DEFAULT_REDIRECT;
     }
 }

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Training Schedule — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="about-hero">
+    <div class="container">
+        <div class="section-eyebrow" th:text="#{about.schedule.eyebrow}">Your routine</div>
+        <h1 class="section-title" th:text="#{about.schedule.title}">Structured training schedule</h1>
+        <p class="about-hero__sub" th:text="#{about.schedule.sub}">A clear, realistic weekly schedule that fits around your life — not the other way around. Your trainer builds a plan you can actually stick to.</p>
+    </div>
+</div>
+
+<div class="about-content">
+    <div class="container">
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.schedule.example.title}">Example weekly structure</h2>
+            <div class="schedule-week">
+                <div class="schedule-day schedule-day--active">
+                    <div class="schedule-day__name" th:text="#{about.schedule.mon}">Monday</div>
+                    <div class="schedule-day__type schedule-day__type--strength" th:text="#{about.schedule.strength}">Strength</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.lower.body}">Lower body · 60 min</div>
+                </div>
+                <div class="schedule-day">
+                    <div class="schedule-day__name" th:text="#{about.schedule.tue}">Tuesday</div>
+                    <div class="schedule-day__type schedule-day__type--rest" th:text="#{about.schedule.rest}">Rest</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.rest.desc}">Active recovery</div>
+                </div>
+                <div class="schedule-day schedule-day--active">
+                    <div class="schedule-day__name" th:text="#{about.schedule.wed}">Wednesday</div>
+                    <div class="schedule-day__type schedule-day__type--cardio" th:text="#{about.schedule.cardio}">Cardio</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.cardio.desc}">Interval training · 45 min</div>
+                </div>
+                <div class="schedule-day schedule-day--active">
+                    <div class="schedule-day__name" th:text="#{about.schedule.thu}">Thursday</div>
+                    <div class="schedule-day__type schedule-day__type--strength" th:text="#{about.schedule.strength}">Strength</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.upper.body}">Upper body · 60 min</div>
+                </div>
+                <div class="schedule-day">
+                    <div class="schedule-day__name" th:text="#{about.schedule.fri}">Friday</div>
+                    <div class="schedule-day__type schedule-day__type--rest" th:text="#{about.schedule.rest}">Rest</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.rest.desc}">Active recovery</div>
+                </div>
+                <div class="schedule-day schedule-day--active">
+                    <div class="schedule-day__name" th:text="#{about.schedule.sat}">Saturday</div>
+                    <div class="schedule-day__type schedule-day__type--full" th:text="#{about.schedule.full}">Full body</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.full.desc}">Full body · 75 min</div>
+                </div>
+                <div class="schedule-day">
+                    <div class="schedule-day__name" th:text="#{about.schedule.sun}">Sunday</div>
+                    <div class="schedule-day__type schedule-day__type--rest" th:text="#{about.schedule.rest}">Rest</div>
+                    <div class="schedule-day__detail" th:text="#{about.schedule.rest.full}">Full rest</div>
+                </div>
+            </div>
+            <p class="about-hero__sub" style="margin-top: 16px; font-size: 14px;" th:text="#{about.schedule.example.note}">* This is an example — your actual schedule is tailored by your trainer to your specific goals and availability.</p>
+        </div>
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.schedule.features.title}">What makes your schedule work</h2>
+            <div class="about-features">
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="10" width="24" height="24" rx="3" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <rect x="8" y="10" width="24" height="8" rx="3" fill="var(--rose)"/>
+                            <line x1="13" y1="8" x2="13" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <line x1="27" y1="8" x2="27" y2="14" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            <rect x="12" y="22" width="5" height="5" rx="1" fill="var(--rose)" opacity="0.6"/>
+                            <rect x="23" y="22" width="5" height="5" rx="1" fill="var(--rose)" opacity="0.6"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.schedule.f1.title}">Fits your lifestyle</div>
+                    <div class="about-feature__desc" th:text="#{about.schedule.f1.desc}">Your trainer designs the schedule around your work hours, family commitments and personal preferences.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 30 L18 18 L24 24 L30 12" stroke="var(--rose)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            <circle cx="10" cy="30" r="2.5" fill="var(--rose)"/>
+                            <circle cx="30" cy="12" r="2.5" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.schedule.f2.title}">Progressive intensity</div>
+                    <div class="about-feature__desc" th:text="#{about.schedule.f2.desc}">Each week builds on the last — with planned deload weeks to prevent overtraining and keep you progressing safely.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="20" r="12" fill="none" stroke="var(--rose)" stroke-width="2"/>
+                            <path d="M20 20 C20 20 24 16 28 18" stroke="var(--rose)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <path d="M20 20 C18 24 14 26 12 24" stroke="var(--rose-dark)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <circle cx="20" cy="20" r="2" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.schedule.f3.title}">Balanced recovery</div>
+                    <div class="about-feature__desc" th:text="#{about.schedule.f3.desc}">Strategic rest days and active recovery sessions are built in — so you train hard without burning out.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 8 C12 8 8 14 8 20 C8 28 14 34 20 34 C26 34 32 28 32 20 C32 14 28 8 20 8Z" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <path d="M15 20 L18 23 L25 16" stroke="var(--rose)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.schedule.f4.title}">Flexible adjustments</div>
+                    <div class="about-feature__desc" th:text="#{about.schedule.f4.desc}">Life happens. Request a schedule revision anytime and your trainer will update the plan to keep you on track.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-cta">
+            <h2 class="about-cta__title" th:text="#{about.schedule.cta.title}">Get your personalised schedule</h2>
+            <p class="about-cta__sub" th:text="#{about.schedule.cta.sub}">Join a programme today and receive a training schedule built around your life — by a trainer who knows your goals.</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a th:href="@{/client/cycles}" class="btn-primary" th:text="#{about.exercises.cta.btn}">Browse programmes</a>
+                <a th:href="@{/home}" class="btn-outline" th:text="#{nav.home}">Back to home</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

@@ -45,7 +45,7 @@
       <div th:if="${error}" class="alert alert-error" th:text="#{${error}}"></div>
       <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
 
-      <!-- Edit profile (collapsible) -->
+      <!-- Edit Profile + Change Password (collapsible) -->
       <details class="profile-section-card profile-edit-details">
         <summary class="profile-edit-summary">
           <span class="profile-section-title" th:text="#{profile.edit.title}">Edit Profile</span>
@@ -53,6 +53,8 @@
         </summary>
 
         <div class="profile-edit-body">
+
+          <!-- Edit profile form -->
           <form th:action="@{/client/profile/edit}" method="post" th:object="${updateProfileDto}">
             <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
 
@@ -91,6 +93,39 @@
 
             <button type="submit" class="btn btn--primary" th:text="#{profile.edit.submit}">Save Changes</button>
           </form>
+
+          <!-- Divider between forms -->
+          <div class="profile-divider" style="margin: 32px 0;"></div>
+
+          <!-- Change password form (inside same collapsible) -->
+          <h3 class="profile-section-title" style="font-size: 18px; margin-bottom: 20px;"
+              th:text="#{profile.change.password}">Change Password</h3>
+
+          <form th:action="@{/client/profile/password}" method="post" th:object="${changePasswordDto}">
+            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+
+            <div class="mb">
+              <label class="form-label" th:text="#{profile.password.current}">Current password</label>
+              <input type="password" th:field="*{currentPassword}" class="form-control"
+                     autocomplete="current-password" required>
+            </div>
+
+            <div class="row-2 mb">
+              <div>
+                <label class="form-label" th:text="#{profile.password.new}">New password</label>
+                <input type="password" th:field="*{newPassword}" class="form-control"
+                       autocomplete="new-password" required minlength="8">
+              </div>
+              <div>
+                <label class="form-label" th:text="#{profile.password.confirm}">Confirm new password</label>
+                <input type="password" th:field="*{confirmPassword}" class="form-control"
+                       autocomplete="new-password" required minlength="8">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn--primary" th:text="#{profile.password.submit}">Update Password</button>
+          </form>
+
         </div>
       </details>
 
@@ -114,7 +149,7 @@
         </a>
       </div>
 
-      <!-- Bookings -->
+      <!-- Upcoming bookings -->
       <div class="profile-section-card">
         <h2 class="profile-section-title" th:text="#{profile.upcoming}">Upcoming bookings</h2>
 
@@ -129,41 +164,32 @@
                  th:text="${#temporals.format(b.scheduledAt,'EEE, d MMM · HH:mm')}"></div>
           </div>
           <form th:action="@{/client/booking/cancel/{id}(id=${b.id})}" method="post">
+            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
             <button type="submit" class="btn-cancel"
                     th:text="#{profile.cancel.booking}">Cancel</button>
           </form>
         </div>
       </div>
-      <!-- === Add as a new section card, e.g. after the bookings profile-section-card === -->
 
-      <!-- Change password -->
-      <div class="profile-section-card">
-        <h2 class="profile-section-title" th:text="#{profile.change.password}">Change Password</h2>
+      <!-- Active training plans (assignments) -->
+      <div class="profile-section-card" th:if="${not #lists.isEmpty(orders)}">
+        <h2 class="profile-section-title" th:text="#{profile.my.plans}">My Training Plans</h2>
 
-        <form th:action="@{/client/profile/password}" method="post" th:object="${changePasswordDto}">
-          <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-
-          <div class="mb">
-            <label class="form-label" th:text="#{profile.password.current}">Current password</label>
-            <input type="password" th:field="*{currentPassword}" class="form-control"
-                   autocomplete="current-password" required>
-          </div>
-
-          <div class="row-2 mb">
-            <div>
-              <label class="form-label" th:text="#{profile.password.new}">New password</label>
-              <input type="password" th:field="*{newPassword}" class="form-control"
-                     autocomplete="new-password" required minlength="8">
-            </div>
-            <div>
-              <label class="form-label" th:text="#{profile.password.confirm}">Confirm new password</label>
-              <input type="password" th:field="*{confirmPassword}" class="form-control"
-                     autocomplete="new-password" required minlength="8">
+        <div th:each="o : ${orders}" class="booking-row">
+          <div class="booking-info">
+            <div class="booking-name" th:text="${o.cycleTitle}"></div>
+            <div class="booking-time">
+              <span th:class="'order-status status-' + ${o.status.toLowerCase()}"
+                    th:text="${o.status}"></span>
+              <span th:if="${o.trainerName != null}"
+                    style="margin-left: 8px;"
+                    th:text="'· ' + ${o.trainerName}"></span>
             </div>
           </div>
-
-          <button type="submit" class="btn btn--primary" th:text="#{profile.password.submit}">Update Password</button>
-        </form>
+          <a th:href="@{/client/assignment/{id}(id=${o.id})}"
+             class="btn-cancel"
+             th:text="#{profile.view.plan}">View Plan</a>
+        </div>
       </div>
 
     </div>

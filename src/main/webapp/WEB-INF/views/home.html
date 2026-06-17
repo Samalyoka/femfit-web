@@ -16,7 +16,7 @@
   <!-- HERO -->
   <div class="hero">
     <div>
-      <div class="hero-eyebrow">Premium Women's Fitness</div>
+      <div class="hero-eyebrow" th:text="#{home.hero.eyebrow}">Premium Women's Fitness</div>
       <h1 class="hero-h1">
         Your strength.<br><em>Your space.</em>
       </h1>
@@ -28,22 +28,17 @@
     </div>
     <div class="hero-visual">
       <div class="hero-card-big">
-        <div style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;"
-             th:text="#{home.hero.card.label}">Next class</div>
-        <div style="font-family:var(--serif);font-size:22px;color:var(--rose-deep);margin-bottom:4px;"
-             th:text="#{home.hero.card.class}">Morning Yoga</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;"
-             th:text="#{home.hero.card.meta}">07:00 · Studio A · Elena M.</div>
-        <div style="height:1px;background:var(--border);margin-bottom:16px;width:100%;"></div>
-        <div style="font-size:28px;font-family:var(--serif);color:var(--rose);"
-             th:text="#{home.hero.card.stat}">2,400+</div>
-        <div style="font-size:12px;color:var(--muted);" th:text="#{home.hero.card.statlabel}">Active members</div>
+        <div class="hero-card-label" th:text="#{home.hero.card.label}">Next class</div>
+        <div class="hero-card-class" th:text="#{home.hero.card.class}">Morning Yoga</div>
+        <div class="hero-card-meta" th:text="#{home.hero.card.meta}">07:00 · Studio A · Elena M.</div>
+        <div class="hero-card-divider"></div>
+        <div class="hero-card-stat" th:text="#{home.hero.card.stat}">2,400+</div>
+        <div class="hero-card-statlabel" th:text="#{home.hero.card.statlabel}">Active members</div>
       </div>
       <div class="hero-stat-card">
-        <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:0.8;margin-bottom:4px;"
-             th:text="#{home.hero.week.label}">This week</div>
-        <div style="font-family:var(--serif);font-size:24px;line-height:1;" th:text="#{home.hero.week.stat}">35 classes</div>
-        <div style="font-size:12px;opacity:0.8;margin-top:4px;" th:text="#{home.hero.week.sub}">across 6 studios</div>
+        <div class="hero-week-label" th:text="#{home.hero.week.label}">This week</div>
+        <div class="hero-week-stat" th:text="#{home.hero.week.stat}">35 classes</div>
+        <div class="hero-week-sub" th:text="#{home.hero.week.sub}">across 6 studios</div>
       </div>
     </div>
   </div>
@@ -61,42 +56,45 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════════
-     STATS SECTION
-     ══════════════════════════════════════════════════════════════ -->
-  <div class="section stats-section">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 40px;">
+  <!-- STATS -->
+  <div class="stats-section">
+    <div class="container">
       <div class="stats-grid">
-        <div class="stat-card">
+
+        <a th:href="@{/about/community}" class="stat-card stat-card--link">
           <div class="stat-number" th:text="#{home.stats.members}">2,400+</div>
           <div class="stat-label" th:text="#{home.stats.members.label}">Active Members</div>
-        </div>
-        <div class="stat-card">
+        </a>
+
+        <a th:href="@{/schedule}" class="stat-card stat-card--link">
           <div class="stat-number" th:text="#{home.stats.classes}">35+</div>
           <div class="stat-label" th:text="#{home.stats.classes.label}">Classes per week</div>
-        </div>
-        <div class="stat-card">
+        </a>
+
+        <a th:href="@{/about/trainers}" class="stat-card stat-card--link">
           <div class="stat-number" th:text="#{home.stats.trainers}">15+</div>
           <div class="stat-label" th:text="#{home.stats.trainers.label}">Expert trainers</div>
-        </div>
-        <div class="stat-card">
+        </a>
+
+        <a th:href="@{/about/equipment}" class="stat-card stat-card--link">
           <div class="stat-number" th:text="#{home.stats.studios}">6</div>
           <div class="stat-label" th:text="#{home.stats.studios.label}">Modern studios</div>
-        </div>
+        </a>
+
       </div>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════
-     WHY US SECTION
-     ══════════════════════════════════════════════════════════════ -->
-  <div class="section why-us-section">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 40px;">
+         WHY US SECTION
+         ══════════════════════════════════════════════════════════════ -->
+  <div class="why-us-section">
+    <div class="container">
       <h2 class="section-title" th:text="#{home.whyus.title}">Why choose FemFit</h2>
-
       <div class="whyus-grid">
+
         <!-- Personal trainers -->
-        <div class="whyus-card">
+        <a th:href="@{/about/trainers}" class="whyus-card whyus-card--link">
           <svg class="whyus-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <circle cx="50" cy="28" r="14" fill="var(--rose)"/>
             <path d="M30 50 Q30 45 35 42 Q40 40 50 40 Q60 40 65 42 Q70 45 70 50 L70 70 Q70 75 65 78 L35 78 Q30 75 30 70 Z" fill="var(--rose)"/>
@@ -105,20 +103,22 @@
           </svg>
           <h3 class="whyus-name" th:text="#{home.whyus.personal}">Personal trainers</h3>
           <p class="whyus-desc" th:text="#{home.whyus.personal.desc}">Expert guidance tailored to your goals</p>
-        </div>
+          <span class="whyus-link" th:text="#{home.whyus.learn.more}">Learn more →</span>
+        </a>
 
         <!-- Premium equipment -->
-        <div class="whyus-card">
+        <a th:href="@{/about/equipment}" class="whyus-card whyus-card--link">
           <svg class="whyus-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <path d="M50 20 L70 40 L60 50 L70 60 L50 80 L30 60 L40 50 L30 40 Z" fill="var(--rose)" opacity="0.8"/>
             <path d="M50 30 L65 42 L58 50 L65 58 L50 70 L35 58 L42 50 L35 42 Z" fill="var(--rose)"/>
           </svg>
           <h3 class="whyus-name" th:text="#{home.whyus.equipment}">Premium equipment</h3>
           <p class="whyus-desc" th:text="#{home.whyus.equipment.desc}">Latest technology and facilities</p>
-        </div>
+          <span class="whyus-link" th:text="#{home.whyus.learn.more}">Learn more →</span>
+        </a>
 
         <!-- Women's community -->
-        <div class="whyus-card">
+        <a th:href="@{/about/community}" class="whyus-card whyus-card--link">
           <svg class="whyus-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <circle cx="35" cy="30" r="10" fill="var(--rose)"/>
             <circle cx="65" cy="30" r="10" fill="var(--rose)"/>
@@ -129,19 +129,135 @@
           </svg>
           <h3 class="whyus-name" th:text="#{home.whyus.community}">Women's community</h3>
           <p class="whyus-desc" th:text="#{home.whyus.community.desc}">Supportive space for growth</p>
-        </div>
+          <span class="whyus-link" th:text="#{home.whyus.learn.more}">Learn more →</span>
+        </a>
+
       </div>
     </div>
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════
-       CTA SECTION
+       PROGRAM SECTION
        ══════════════════════════════════════════════════════════════ -->
-  <div class="section cta-section">
-    <div style="max-width: 800px; margin: 0 auto; padding: 0 40px; text-align: center;">
+  <div class="program-section">
+    <div class="container">
+      <div class="section-eyebrow" th:text="#{home.program.eyebrow}">Your personal plan</div>
+      <h2 class="section-title" th:text="#{home.program.title}">What's included in every program</h2>
+      <div class="program-grid">
+
+        <!-- Exercises -->
+        <a th:href="@{/about/exercises}" class="program-card">
+          <div class="program-card__icon">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <rect x="8" y="27" width="44" height="6" rx="3" fill="var(--rose)"/>
+              <rect x="4" y="22" width="8" height="16" rx="4" fill="var(--rose)"/>
+              <rect x="48" y="22" width="8" height="16" rx="4" fill="var(--rose)"/>
+              <rect x="14" y="24" width="6" height="12" rx="2" fill="var(--rose-dark)"/>
+              <rect x="40" y="24" width="6" height="12" rx="2" fill="var(--rose-dark)"/>
+            </svg>
+          </div>
+          <h3 class="program-card__title" th:text="#{home.program.exercises.title}">Workout Routines</h3>
+          <p class="program-card__desc" th:text="#{home.program.exercises.desc}">Personalised exercise plans tailored to your fitness level, goals and schedule — designed by your trainer just for you.</p>
+          <span class="program-card__link" th:text="#{home.program.learn.more}">Learn more →</span>
+        </a>
+
+        <!-- Nutrition -->
+        <a th:href="@{/about/nutrition}" class="program-card">
+          <div class="program-card__icon">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="30" cy="38" rx="18" ry="10" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="2"/>
+              <path d="M20 38 Q22 28 30 24 Q38 28 40 38" fill="var(--rose)" opacity="0.7"/>
+              <circle cx="24" cy="32" r="3" fill="var(--rose-dark)"/>
+              <circle cx="36" cy="30" r="3" fill="var(--rose-dark)"/>
+              <circle cx="30" cy="28" r="3" fill="var(--rose-dark)"/>
+              <path d="M30 24 Q32 18 30 14" stroke="var(--rose)" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3 class="program-card__title" th:text="#{home.program.nutrition.title}">Nutrition Plan</h3>
+          <p class="program-card__desc" th:text="#{home.program.nutrition.desc}">A personalised diet plan with meal recommendations, calorie targets and dietary guidance aligned with your training goals.</p>
+          <span class="program-card__link" th:text="#{home.program.learn.more}">Learn more →</span>
+        </a>
+
+        <!-- Equipment -->
+        <a th:href="@{/about/equipment}" class="program-card">
+          <div class="program-card__icon">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="30" r="14" fill="none" stroke="var(--rose)" stroke-width="2.5"/>
+              <circle cx="30" cy="30" r="8" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+              <circle cx="30" cy="30" r="3" fill="var(--rose)"/>
+              <line x1="16" y1="30" x2="8" y2="30" stroke="var(--rose)" stroke-width="3" stroke-linecap="round"/>
+              <line x1="44" y1="30" x2="52" y2="30" stroke="var(--rose)" stroke-width="3" stroke-linecap="round"/>
+              <rect x="5" y="26" width="6" height="8" rx="3" fill="var(--rose-dark)"/>
+              <rect x="49" y="26" width="6" height="8" rx="3" fill="var(--rose-dark)"/>
+            </svg>
+          </div>
+          <h3 class="program-card__title" th:text="#{home.program.equipment.title}">Equipment Guide</h3>
+          <p class="program-card__desc" th:text="#{home.program.equipment.desc}">A curated list of equipment you'll need for your programme — from gym machines to home workout essentials, with alternatives suggested.</p>
+          <span class="program-card__link" th:text="#{home.program.learn.more}">Learn more →</span>
+        </a>
+
+        <!-- Schedule -->
+        <a th:href="@{/about/schedule-info}" class="program-card">
+          <div class="program-card__icon">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+              <rect x="10" y="14" width="40" height="36" rx="4" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="2"/>
+              <rect x="10" y="14" width="40" height="12" rx="4" fill="var(--rose)"/>
+              <line x1="20" y1="10" x2="20" y2="18" stroke="var(--rose-dark)" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="40" y1="10" x2="40" y2="18" stroke="var(--rose-dark)" stroke-width="2.5" stroke-linecap="round"/>
+              <rect x="16" y="32" width="8" height="6" rx="1" fill="var(--rose)" opacity="0.6"/>
+              <rect x="26" y="32" width="8" height="6" rx="1" fill="var(--rose)"/>
+              <rect x="36" y="32" width="8" height="6" rx="1" fill="var(--rose)" opacity="0.6"/>
+              <rect x="16" y="40" width="8" height="4" rx="1" fill="var(--rose)" opacity="0.4"/>
+              <rect x="26" y="40" width="8" height="4" rx="1" fill="var(--rose)" opacity="0.6"/>
+            </svg>
+          </div>
+          <h3 class="program-card__title" th:text="#{home.program.schedule.title}">Training Schedule</h3>
+          <p class="program-card__desc" th:text="#{home.program.schedule.desc}">A structured weekly training plan that fits around your lifestyle — with rest days, progression milestones and flexible adjustments.</p>
+          <span class="program-card__link" th:text="#{home.program.learn.more}">Learn more →</span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════
+         REVIEWS SECTION
+         ══════════════════════════════════════════════════════════════ -->
+  <div class="reviews-section" th:if="${not #lists.isEmpty(recentReviews)}">
+    <div class="container">
+      <div class="section-eyebrow" th:text="#{home.reviews.eyebrow}">Member stories</div>
+      <h2 class="section-title" th:text="#{home.reviews.title}">What our members say</h2>
+      <div class="reviews-grid">
+        <div th:each="review : ${recentReviews}" class="review-card">
+
+          <!-- Star rating -->
+          <div class="review-stars">
+            <span th:each="i : ${#numbers.sequence(1, 5)}"
+                  th:class="${i <= review.rating} ? 'review-star filled' : 'review-star'">★</span>
+          </div>
+
+          <!-- Comment -->
+          <p class="review-comment" th:text="${review.comment} ?: ''"></p>
+
+          <!-- Member info -->
+          <div class="review-meta">
+            <div class="review-avatar" th:text="${#strings.substring(review.memberName, 0, 1)}">A</div>
+            <div>
+              <div class="review-author" th:text="${review.memberName}">Member</div>
+              <div class="review-programme" th:text="${review.cycleTitle}">Programme</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="container cta-container">
       <h2 class="section-title" th:text="#{home.cta.title}">Start your wellness journey today</h2>
       <p class="cta-subtitle" th:text="#{home.cta.subtitle}">Join 2,400+ women transforming their lives</p>
-
       <div class="cta-buttons">
         <a th:href="@{/auth/register}" class="btn-primary" th:text="#{home.cta.join}">Join Now</a>
         <a th:href="@{/schedule}" class="btn-outline" th:text="#{home.cta.explore}">Explore Classes</a>

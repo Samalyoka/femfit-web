@@ -64,11 +64,13 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/auth/register"),
                                 new AntPathRequestMatcher("/static/**"),
                                 new AntPathRequestMatcher("/error"),
-                                new AntPathRequestMatcher("/error/**")
+                                new AntPathRequestMatcher("/error/**"),
+                                new AntPathRequestMatcher("/about/**")
                         ).permitAll()
                         .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
                         .requestMatchers(new AntPathRequestMatcher("/trainer/**")).hasRole("TRAINER")
                         .requestMatchers(new AntPathRequestMatcher("/client/**")).hasRole("CLIENT")
+                        .requestMatchers(new AntPathRequestMatcher("/client/review/**")).hasRole("CLIENT")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form

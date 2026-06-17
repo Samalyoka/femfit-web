@@ -1,5 +1,6 @@
 package com.femfit.controller;
 
+import com.femfit.dao.BookingDao;
 import com.femfit.dao.ClassScheduleDao;
 import com.femfit.model.ClassSchedule;
 import org.slf4j.Logger;
@@ -17,21 +18,27 @@ import java.util.List;
 /**
  * Controller responsible for handling fitness class schedules,
  * filtering by categories, and managing user authentication state for bookings.
+ *
+ * Shows which classes the current user has already booked.
  */
 @Controller
 public class ScheduleController {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleController.class);
+
     private final ClassScheduleDao scheduleDao;
+    private final BookingDao bookingDao;
 
     @Autowired
-    public ScheduleController(ClassScheduleDao scheduleDao) {
+    public ScheduleController(ClassScheduleDao scheduleDao, BookingDao bookingDao) {
         this.scheduleDao = scheduleDao;
+        this.bookingDao = bookingDao;
     }
 
     /**
      * Displays the fitness class schedule page.
      * Integrates optional category filtering and checks if the current user is authorized.
+     * Shows which classes the user has already booked.
      *
      * @param category  optional filter parameter (e.g., YOGA, CARDIO, STRENGTH, PILATES, DANCE)
      * @param model     Spring MVC model to pass attributes to the Thymeleaf view
@@ -45,32 +52,29 @@ public class ScheduleController {
         log.info("Schedule page requested. Filter category: {}, Authenticated user: {}",
                 category, (principal != null ? principal.getName() : "GUEST"));
 
-        try {
-            List<ClassSchedule> schedules;
-            if (category != null && !category.isBlank() && !category.equalsIgnoreCase("ALL")) {
-                schedules = scheduleDao.findUpcomingByCategory(category.toUpperCase());
-                model.addAttribute("activeCategory", category.toUpperCase());
-            } else {
-                schedules = scheduleDao.findUpcoming();
-                model.addAttribute("activeCategory", "ALL");
-            }
-
-            boolean isAuthenticated = (principal != null);
-            model.addAttribute("isAuthenticated", isAuthenticated);
-
-            // TODO: Integrate BookingDao here in the future to fetch real booking records
-            // Example: List<Long> bookedIds = bookingDao.findBookedScheduleIdsByEmail(principal.getName());
-            // model.addAttribute("bookedScheduleIds", bookedIds);
-            model.addAttribute("bookedScheduleIds", Collections.emptyList());
-
-            model.addAttribute("schedules", schedules);
-            return "schedule";
-
-        } catch (Exception e) {
-            log.error("Failed to load class schedules: {}", e.getMessage(), e);
-            model.addAttribute("schedules", Collections.emptyList());
+        List<ClassSchedule> schedules;
+        if (category != null && !category.isBlank() && !category.equalsIgnoreCase("ALL")) {
+            schedules = scheduleDao.findUpcomingByCategory(category.toUpperCase());
+            model.addAttribute("activeCategory", category.toUpperCase());
+        } else {
+            schedules = scheduleDao.findUpcoming();
             model.addAttribute("activeCategory", "ALL");
-            return "schedule";
         }
+
+        boolean isAuthenticated = (principal != null);
+        model.addAttribute("isAuthenticated", isAuthenticated);
+
+        // Fetch user's booked schedule IDs if authenticated
+        List<Long> bookedIds;
+        if (isAuthenticated) {
+            bookedIds = bookingDao.findBookedScheduleIdsByEmail(principal.getName());
+            log.debug("User {} has booked {} classes", principal.getName(), bookedIds.size());
+        } else {
+            bookedIds = Collections.emptyList();
+        }
+        model.addAttribute("bookedScheduleIds", bookedIds);
+
+        model.addAttribute("schedules", schedules);
+        return "schedule";
     }
 }

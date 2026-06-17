@@ -7,21 +7,35 @@
 <nav th:replace="~{common/layout :: nav}"></nav>
 
 <div class="section">
-    <div class="section-eyebrow">Book your spot</div>
+    <div class="section-eyebrow" th:text="#{schedule.eyebrow}">Book your spot</div>
     <h1 class="section-title" th:text="#{schedule.title}">Class Schedule</h1>
 
-    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-    <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
+    <div th:if="${error}" class="alert alert--error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert--success" th:text="#{${success}}"></div>
 
+    <!-- Category filter pills -->
     <div class="filter-bar">
-        <a th:href="@{/schedule}" th:class="${activeCategory == 'ALL'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.all}">All</a>
-        <a th:href="@{/schedule(category='CARDIO')}" th:class="${activeCategory == 'CARDIO'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.cardio}">Cardio</a>
-        <a th:href="@{/schedule(category='YOGA')}" th:class="${activeCategory == 'YOGA'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.yoga}">Yoga</a>
-        <a th:href="@{/schedule(category='STRENGTH')}" th:class="${activeCategory == 'STRENGTH'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.strength}">Strength</a>
-        <a th:href="@{/schedule(category='PILATES')}" th:class="${activeCategory == 'PILATES'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.pilates}">Pilates</a>
-        <a th:href="@{/schedule(category='DANCE')}" th:class="${activeCategory == 'DANCE'} ? 'fpill active' : 'fpill'" th:text="#{schedule.filter.dance}">Dance</a>
+        <a th:href="@{/schedule}"
+           th:class="${activeCategory == 'ALL'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.all}">All</a>
+        <a th:href="@{/schedule(category='CARDIO')}"
+           th:class="${activeCategory == 'CARDIO'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.cardio}">Cardio</a>
+        <a th:href="@{/schedule(category='YOGA')}"
+           th:class="${activeCategory == 'YOGA'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.yoga}">Yoga</a>
+        <a th:href="@{/schedule(category='STRENGTH')}"
+           th:class="${activeCategory == 'STRENGTH'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.strength}">Strength</a>
+        <a th:href="@{/schedule(category='PILATES')}"
+           th:class="${activeCategory == 'PILATES'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.pilates}">Pilates</a>
+        <a th:href="@{/schedule(category='DANCE')}"
+           th:class="${activeCategory == 'DANCE'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.dance}">Dance</a>
     </div>
 
+    <!-- Schedule table -->
     <div class="sched-table">
         <div class="sched-head">
             <span th:text="#{schedule.col.time}">Time</span>
@@ -31,26 +45,42 @@
             <span></span>
         </div>
 
+        <!-- Empty state -->
         <div th:if="${#lists.isEmpty(schedules)}"
              style="padding:32px;text-align:center;color:var(--muted);font-size:14px;"
              th:text="#{schedule.no.classes}">No classes found</div>
 
+        <!-- Schedule rows -->
         <div th:each="s : ${schedules}" class="sched-row">
             <span class="time-c" th:text="${#temporals.format(s.scheduledAt,'HH:mm')}">07:00</span>
             <span class="class-n" th:text="${s.className}">Morning Yoga</span>
             <span class="trainer-c" th:text="${s.trainerName}">Elena M.</span>
+
+            <!-- Spots badge -->
             <span th:class="${s.spotsLeft == 0} ? 'spots-badge full' : 'spots-badge'"
-                  th:text="${s.spotsLeft == 0} ? #{schedule.full} : ${s.spotsLeft} + ' left'">3 left</span>
+                  th:text="${s.spotsLeft == 0} ? #{schedule.full} : ${s.spotsLeft} + ' ' + #{schedule.spots.left}">3 left</span>
+
+            <!-- Action buttons -->
             <div>
-                <th:block th:if="${isAuthenticated and s.spotsLeft > 0}">
+                <!-- User already booked this class -->
+                <th:block th:if="${isAuthenticated and bookedScheduleIds.contains(s.id)}">
+                    <span class="booked-badge" th:text="#{schedule.booked}">✓ Booked</span>
+                </th:block>
+
+                <!-- User can book (authenticated, spots available, not booked) -->
+                <th:block th:if="${isAuthenticated and !bookedScheduleIds.contains(s.id) and s.spotsLeft > 0}">
                     <form th:action="@{/client/book/{id}(id=${s.id})}" method="post" style="display:inline;">
                         <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
                         <button type="submit" class="book-btn" th:text="#{schedule.book}">Book</button>
                     </form>
                 </th:block>
+
+                <!-- Class is full -->
                 <th:block th:if="${isAuthenticated and s.spotsLeft == 0}">
                     <span style="font-size:12px;color:var(--muted);" th:text="#{schedule.full}">Full</span>
                 </th:block>
+
+                <!-- Not authenticated - show login link -->
                 <th:block th:unless="${isAuthenticated}">
                     <a th:href="@{/auth/login}" class="book-btn" th:text="#{schedule.book}">Book</a>
                 </th:block>

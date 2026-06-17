@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Leave a Review — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="page-wrap">
+
+    <div class="profile-hero">
+        <a th:href="@{/client/orders}" class="back-link">← <span th:text="#{client.orders}">My Orders</span></a>
+        <p class="section-eyebrow" th:text="#{review.eyebrow}">Share your experience</p>
+        <h1 class="section-title" th:text="#{review.title}">Leave a Review</h1>
+    </div>
+
+    <!-- Order summary -->
+    <div class="review-order-card" th:if="${order != null}">
+        <div class="review-order-info">
+            <div class="review-order-title" th:text="${order.cycleTitle}">Programme</div>
+            <div class="review-order-meta">
+                <span th:if="${order.trainerName != null}" th:text="#{review.with.trainer} + ' ' + ${order.trainerName}">with Trainer</span>
+                <span th:text="'· ' + #{review.completed} + ' ' + ${#temporals.format(order.completedAt ?: order.createdAt,'d MMM yyyy')}">· Completed</span>
+            </div>
+        </div>
+        <span class="order-status status-completed" th:text="#{review.status.completed}">Completed</span>
+    </div>
+
+    <!-- Review form -->
+    <div class="profile-section-card" style="max-width: 680px; margin: 0 auto;">
+
+        <form th:action="@{/client/review/{id}(id=${order.id})}"
+              method="post"
+              th:object="${reviewDto}">
+            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+
+            <!-- Star rating -->
+            <div class="review-rating-section">
+                <div class="form-label" th:text="#{review.rating.label}">Your rating</div>
+                <div class="star-rating">
+                    <input type="radio" id="star5" th:field="*{rating}" value="5"/>
+                    <label for="star5" title="5 stars">★</label>
+                    <input type="radio" id="star4" th:field="*{rating}" value="4"/>
+                    <label for="star4" title="4 stars">★</label>
+                    <input type="radio" id="star3" th:field="*{rating}" value="3"/>
+                    <label for="star3" title="3 stars">★</label>
+                    <input type="radio" id="star2" th:field="*{rating}" value="2"/>
+                    <label for="star2" title="2 stars">★</label>
+                    <input type="radio" id="star1" th:field="*{rating}" value="1"/>
+                    <label for="star1" title="1 star">★</label>
+                </div>
+                <div class="review-rating-hint" th:text="#{review.rating.hint}">Click a star to rate</div>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></div>
+            </div>
+
+            <!-- Comment -->
+            <div class="mb" style="margin-top: 24px;">
+                <label class="form-label" th:text="#{review.comment.label}">Your comment (optional)</label>
+                <textarea th:field="*{comment}"
+                          class="form-textarea"
+                          rows="5"
+                          th:placeholder="#{review.comment.placeholder}"
+                          maxlength="1000"></textarea>
+                <div class="review-char-hint" th:text="#{review.comment.hint}">Max 1000 characters</div>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}"></div>
+            </div>
+
+            <!-- Submit -->
+            <div style="display: flex; gap: 16px; align-items: center; margin-top: 8px;">
+                <button type="submit" class="btn-primary" th:text="#{review.submit}">Submit Review</button>
+                <a th:href="@{/client/orders}" class="btn-outline" th:text="#{review.cancel}">Cancel</a>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

@@ -3,8 +3,8 @@ package com.femfit.controller;
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
-import com.femfit.service.TrainerService;
 import com.femfit.service.MemberService;
+import com.femfit.service.TrainerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Trainer panel for managing client assignments.
+ * All exceptions bubble to GlobalExceptionHandler — no try/catch here.
+ */
 @Controller
 @RequestMapping("/trainer")
 public class TrainerController {
@@ -25,22 +29,17 @@ public class TrainerController {
     private static final Logger log = LoggerFactory.getLogger(TrainerController.class);
 
     private final TrainerService trainerService;
-    private final MemberService    userService;
+    private final MemberService userService;
 
     @Autowired
     public TrainerController(TrainerService trainerService, MemberService userService) {
         this.trainerService = trainerService;
-        this.userService    = userService;
-    }
-
-    private Member resolveCurrentUser(UserDetails principal) {
-        return userService.findByEmail(principal.getUsername())
-                .orElseThrow(() -> new IllegalStateException(
-                        "Authenticated user not found: " + principal.getUsername()));
+        this.userService = userService;
     }
 
     /**
      * GET /trainer/dashboard
+     * Shows all clients assigned to this trainer.
      */
     @GetMapping("/dashboard")
     public String dashboard(@AuthenticationPrincipal UserDetails principal,
@@ -56,6 +55,7 @@ public class TrainerController {
 
     /**
      * GET /trainer/client/{clientId}/assignment
+     * View current assignment for a client.
      */
     @GetMapping("/client/{clientId}/assignment")
     public String viewAssignment(@PathVariable long clientId,
@@ -64,15 +64,16 @@ public class TrainerController {
         Optional<Assignment> assignment =
                 trainerService.getAssignmentForClient(clientId);
 
-        model.addAttribute("assignment",     assignment.orElse(null));
-        model.addAttribute("clientId",       clientId);
-        model.addAttribute("orderId",        orderId);
-        model.addAttribute("hasAssignment",  assignment.isPresent());
+        model.addAttribute("assignment", assignment.orElse(null));
+        model.addAttribute("clientId", clientId);
+        model.addAttribute("orderId", orderId);
+        model.addAttribute("hasAssignment", assignment.isPresent());
         return "trainer/assignment-view";
     }
 
     /**
      * GET /trainer/client/{clientId}/assignment/form?orderId={orderId}
+     * Shows form to create/edit assignment.
      */
     @GetMapping("/client/{clientId}/assignment/form")
     public String assignmentForm(@PathVariable long clientId,
@@ -88,18 +89,16 @@ public class TrainerController {
                         .build());
 
         model.addAttribute("assignment", assignment);
-        model.addAttribute("clientId",   clientId);
-        model.addAttribute("orderId",    orderId);
-        model.addAttribute("editMode",   existing.isPresent());
+        model.addAttribute("clientId", clientId);
+        model.addAttribute("orderId", orderId);
+        model.addAttribute("editMode", existing.isPresent());
         return "trainer/assignment-form";
     }
 
     /**
      * POST /trainer/assignment/save
-     *
-     * Поля приходят из формы. orderId и clientId — hidden-поля.
-     * @ModelAttribute не используем — Assignment имеет getClientId()
-     * возвращающий orderId, что сбивает Spring при binding.
+     * Creates or updates an assignment.
+     * Receives form data as request parameters (not @ModelAttribute due to binding issues).
      */
     @PostMapping("/assignment/save")
     public String saveAssignment(@RequestParam long clientId,
@@ -118,15 +117,17 @@ public class TrainerController {
                 .status("ACTIVE")
                 .build();
 
+        // May throw exceptions — bubble to GlobalExceptionHandler
         trainerService.saveOrUpdateAssignment(assignment);
         log.info("Assignment saved: orderId={}, clientId={}", orderId, clientId);
 
         ra.addFlashAttribute("successMsg", "assignment.saved");
-        return "redirect:/trainer/dashboard";
+        return "redirect:/femfit/trainer/dashboard";
     }
 
     /**
      * POST /trainer/assignment/{assignmentId}/status
+     * Updates assignment status (ACTIVE, COMPLETED, REVISION_REQUESTED).
      */
     @PostMapping("/assignment/{assignmentId}/status")
     public String updateStatus(@PathVariable long assignmentId,
@@ -137,29 +138,39 @@ public class TrainerController {
         if (!isValidStatus(status)) {
             log.warn("Invalid assignment status attempted: '{}'", status);
             ra.addFlashAttribute("errorMsg", "assignment.status.invalid");
-            return "redirect:/trainer/client/" + clientId +
+            return "redirect:/femfit/trainer/client/" + clientId +
                     "/assignment?orderId=" + orderId;
         }
 
+        // May throw exceptions — bubble to GlobalExceptionHandler
         trainerService.updateAssignmentStatus(assignmentId, status);
         log.info("Assignment status updated: id={}, status={}", assignmentId, status);
 
         ra.addFlashAttribute("successMsg", "assignment.status.updated");
-        return "redirect:/trainer/client/" + clientId +
+        return "redirect:/femfit/trainer/client/" + clientId +
                 "/assignment?orderId=" + orderId;
     }
 
     /**
      * POST /trainer/assignment/delete
+     * Deletes an assignment.
      */
     @PostMapping("/assignment/delete")
     public String deleteAssignment(@RequestParam long orderId,
                                    RedirectAttributes ra) {
+        // May throw exceptions — bubble to GlobalExceptionHandler
         trainerService.deleteAssignment(orderId);
         log.info("Assignment deleted: orderId={}", orderId);
 
         ra.addFlashAttribute("successMsg", "assignment.deleted");
-        return "redirect:/trainer/dashboard";
+        return "redirect:/femfit/trainer/dashboard";
+    }
+
+    // Helper — loads full Member from DB using Spring Security email
+    private Member resolveCurrentUser(UserDetails principal) {
+        return userService.findByEmail(principal.getUsername())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Authenticated user not found: " + principal.getUsername()));
     }
 
     private boolean isValidStatus(String status) {

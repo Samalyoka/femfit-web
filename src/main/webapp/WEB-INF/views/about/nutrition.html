@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Nutrition Plan — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="about-hero">
+    <div class="container">
+        <div class="section-eyebrow" th:text="#{about.nutrition.eyebrow}">Fuel your goals</div>
+        <h1 class="section-title" th:text="#{about.nutrition.title}">Personalised nutrition plan</h1>
+        <p class="about-hero__sub" th:text="#{about.nutrition.sub}">Good training starts in the kitchen. Your trainer designs a nutrition plan to complement your workouts — helping you recover faster, feel energised and reach your goals sooner.</p>
+    </div>
+</div>
+
+<div class="about-content">
+    <div class="container">
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.nutrition.includes.title}">What your nutrition plan includes</h2>
+            <div class="about-features">
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="20" cy="26" rx="12" ry="7" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <path d="M13 26 Q15 19 20 16 Q25 19 27 26" fill="var(--rose)" opacity="0.6"/>
+                            <circle cx="16" cy="22" r="2" fill="var(--rose-dark)"/>
+                            <circle cx="24" cy="21" r="2" fill="var(--rose-dark)"/>
+                            <circle cx="20" cy="19" r="2" fill="var(--rose-dark)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.nutrition.f1.title}">Meal recommendations</div>
+                    <div class="about-feature__desc" th:text="#{about.nutrition.f1.desc}">Practical meal ideas tailored to your taste preferences, dietary requirements and cooking habits.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="8" y="10" width="24" height="26" rx="3" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <line x1="13" y1="18" x2="27" y2="18" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"/>
+                            <line x1="13" y1="23" x2="27" y2="23" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"/>
+                            <line x1="13" y1="28" x2="21" y2="28" stroke="var(--rose)" stroke-width="1.5" stroke-linecap="round"/>
+                            <rect x="13" y="6" width="14" height="7" rx="3" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.nutrition.f2.title}">Calorie and macro targets</div>
+                    <div class="about-feature__desc" th:text="#{about.nutrition.f2.desc}">Daily calorie goals and macronutrient breakdowns — protein, carbs and fats — aligned with your training intensity and body goals.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="20" cy="20" r="13" fill="none" stroke="var(--rose)" stroke-width="2"/>
+                            <path d="M20 20 L20 8" stroke="var(--rose-dark)" stroke-width="2.5" stroke-linecap="round"/>
+                            <path d="M20 20 L29 25" stroke="var(--rose)" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="20" cy="20" r="2.5" fill="var(--rose)"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.nutrition.f3.title}">Pre and post-workout nutrition</div>
+                    <div class="about-feature__desc" th:text="#{about.nutrition.f3.desc}">Specific guidance on what to eat before and after training sessions to maximise performance and recovery.</div>
+                </div>
+                <div class="about-feature">
+                    <div class="about-feature__icon">
+                        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 8 C12 8 8 14 8 20 C8 28 14 34 20 34 C26 34 32 28 32 20 C32 14 28 8 20 8Z" fill="var(--rose-light)" stroke="var(--rose)" stroke-width="1.5"/>
+                            <path d="M15 20 L18 23 L25 16" stroke="var(--rose)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="about-feature__title" th:text="#{about.nutrition.f4.title}">Dietary adaptations</div>
+                    <div class="about-feature__desc" th:text="#{about.nutrition.f4.desc}">Plans that accommodate dietary preferences — vegetarian, dairy-free, gluten-free or any other requirements you have.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.nutrition.why.title}">Why nutrition matters</h2>
+            <div class="about-steps">
+                <div class="about-step">
+                    <div class="about-step__num">70%</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.nutrition.why1.title}">Results come from nutrition</div>
+                        <div class="about-step__desc" th:text="#{about.nutrition.why1.desc}">Studies consistently show that up to 70% of your physical transformation comes from what you eat — not just how you train.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">2×</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.nutrition.why2.title}">Faster recovery</div>
+                        <div class="about-step__desc" th:text="#{about.nutrition.why2.desc}">Proper post-workout nutrition can cut recovery time in half — meaning you can train more effectively and more frequently.</div>
+                    </div>
+                </div>
+                <div class="about-step">
+                    <div class="about-step__num">∞</div>
+                    <div>
+                        <div class="about-step__title" th:text="#{about.nutrition.why3.title}">Sustainable habits</div>
+                        <div class="about-step__desc" th:text="#{about.nutrition.why3.desc}">We focus on building long-term healthy eating habits — not crash diets or unsustainable restrictions.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-cta">
+            <h2 class="about-cta__title" th:text="#{about.nutrition.cta.title}">Start eating for your goals</h2>
+            <p class="about-cta__sub" th:text="#{about.nutrition.cta.sub}">Join a training programme and receive your personalised nutrition plan from day one.</p>
+            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                <a th:href="@{/client/cycles}" class="btn-primary" th:text="#{about.exercises.cta.btn}">Browse programmes</a>
+                <a th:href="@{/home}" class="btn-outline" th:text="#{nav.home}">Back to home</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

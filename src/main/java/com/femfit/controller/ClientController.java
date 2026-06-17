@@ -2,8 +2,6 @@ package com.femfit.controller;
 
 import com.femfit.dto.ChangePasswordDto;
 import com.femfit.dto.UpdateProfileDto;
-import com.femfit.exception.BookingException;
-import com.femfit.exception.InvalidPasswordException;
 import com.femfit.model.*;
 import com.femfit.service.*;
 import jakarta.validation.Valid;
@@ -19,10 +17,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Handles all client-specific actions:
  * profile, bookings, orders, assignments.
+ *
+ * All business exceptions (BookingException, InvalidPasswordException, etc.)
+ * bubble up to GlobalExceptionHandler — no try/catch here.
  */
 @Controller
 @RequestMapping("/client")
@@ -35,18 +37,21 @@ public class ClientController {
     private final OrderService orderService;
     private final TrainingCycleService trainingCycleService;
     private final TrainerService trainerService;
+    private final ReviewService reviewService;
 
     @Autowired
     public ClientController(MemberService userService,
                             BookingService bookingService,
                             OrderService orderService,
                             TrainingCycleService trainingCycleService,
-                            TrainerService trainerService) {
+                            TrainerService trainerService,
+                            ReviewService reviewService) {
         this.userService = userService;
         this.bookingService = bookingService;
         this.orderService = orderService;
         this.trainingCycleService = trainingCycleService;
         this.trainerService = trainerService;
+        this.reviewService = reviewService;
     }
 
     /**
@@ -77,6 +82,7 @@ public class ClientController {
 
     /**
      * Books a class for the current member.
+     * BookingException bubbles to GlobalExceptionHandler.
      *
      * @param scheduleId the schedule slot to book
      */
@@ -85,14 +91,12 @@ public class ClientController {
                        @AuthenticationPrincipal UserDetails userDetails,
                        RedirectAttributes redirectAttrs) {
         Member member = getUser(userDetails);
-        try {
-            bookingService.book(member.getId(), scheduleId);
-            redirectAttrs.addFlashAttribute("success", "msg.success.booking");
-        } catch (BookingException e) {
-            log.warn("Booking failed for member id={}, scheduleId={}: {}", member.getId(), scheduleId, e.getMessage());
-            redirectAttrs.addFlashAttribute("error", e.getMessage());
-        }
-        return "redirect:/schedule";
+
+        // BookingException bubbles to GlobalExceptionHandler
+        bookingService.book(member.getId(), scheduleId);
+        redirectAttrs.addFlashAttribute("success", "msg.success.booking");
+
+        return "redirect:/femfit/schedule";
     }
 
     /**
@@ -107,7 +111,7 @@ public class ClientController {
         Member member = getUser(userDetails);
         bookingService.cancel(bookingId, member.getId());
         redirectAttrs.addFlashAttribute("success", "msg.success.cancel");
-        return "redirect:/client/profile";
+        return "redirect:/femfit/client/profile";
     }
 
     /**
@@ -116,7 +120,15 @@ public class ClientController {
     @GetMapping("/orders")
     public String orders(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         Member member = getUser(userDetails);
-        model.addAttribute("orders", orderService.findByUserId(member.getId()));
+        List<Order> orders = orderService.findByUserId(member.getId());
+
+        List<Long> reviewedOrderIds = orders.stream()
+                .map(Order::getId)
+                .filter(reviewService::hasReview)
+                .toList();
+
+        model.addAttribute("orders", orders);
+        model.addAttribute("reviewedOrderIds", reviewedOrderIds);
         return "client/orders";
     }
 
@@ -148,13 +160,7 @@ public class ClientController {
         log.info("Revision requested for assignment id={}", assignmentId);
         orderService.requestRevision(assignmentId);
         redirectAttrs.addFlashAttribute("success", "msg.success.revision.requested");
-        return "redirect:/client/profile";
-    }
-
-    // Helper — loads full Member from DB using Spring Security email
-    private Member getUser(UserDetails userDetails) {
-        return userService.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+        return "redirect:/femfit/client/profile";
     }
 
     /**
@@ -187,6 +193,7 @@ public class ClientController {
 
     /**
      * Places an order with selected trainer.
+     * May throw ValidationException — bubbles to GlobalExceptionHandler.
      */
     @PostMapping("/cycles/{cycleId}/order")
     public String placeOrder(@PathVariable Integer cycleId,
@@ -194,23 +201,26 @@ public class ClientController {
                              @AuthenticationPrincipal UserDetails userDetails,
                              RedirectAttributes redirectAttrs) {
         Member member = getUser(userDetails);
-        trainingCycleService.findById(cycleId).ifPresentOrElse(
-                cycle -> {
-                    orderService.placeOrder(member.getId(), cycleId,
-                            cycle.getPrice(), trainerId);
-                    redirectAttrs.addFlashAttribute("success",
-                            "Order placed successfully!");
-                },
-                () -> redirectAttrs.addFlashAttribute("error",
-                        "Training cycle not found.")
-        );
+
+        Optional<TrainingCycle> cycleOpt = trainingCycleService.findById(cycleId);
+        if (cycleOpt.isEmpty()) {
+            redirectAttrs.addFlashAttribute("error", "Training cycle not found.");
+            return "redirect:/femfit/client/cycles";
+        }
+
+        TrainingCycle cycle = cycleOpt.get();
+
+        // May throw ValidationException — bubbles to GlobalExceptionHandler
+        orderService.placeOrder(member.getId(), cycleId, cycle.getPrice(), trainerId);
+        redirectAttrs.addFlashAttribute("success", "Order placed successfully!");
+
         return "redirect:/client/orders";
     }
 
     /**
      * Changes the current member's password.
-     * Validates new password length/match and verifies the current password
-     * before delegating to the service layer.
+     * Validates new password length/match and verifies the current password.
+     * InvalidPasswordException bubbles to GlobalExceptionHandler.
      */
     @PostMapping("/profile/password")
     public String changePassword(@Valid @ModelAttribute("changePasswordDto") ChangePasswordDto dto,
@@ -220,28 +230,28 @@ public class ClientController {
         if (bindingResult.hasErrors()) {
             log.warn("Password change rejected due to {} validation errors", bindingResult.getErrorCount());
             redirectAttrs.addFlashAttribute("error", "msg.error.password.invalid");
-            return "redirect:/client/profile";
+            return "redirect:/femfit/client/profile";
         }
 
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             redirectAttrs.addFlashAttribute("error", "msg.error.password.mismatch");
-            return "redirect:/client/profile";
+            return "redirect:/femfit/client/profile";
         }
 
         Member member = getUser(userDetails);
-        try {
-            userService.changePassword(member.getId(), dto.getCurrentPassword(), dto.getNewPassword());
-            redirectAttrs.addFlashAttribute("success", "msg.success.password.changed");
-        } catch (InvalidPasswordException e) {
-            log.warn("Password change failed for member id={}: {}", member.getId(), e.getMessage());
-            redirectAttrs.addFlashAttribute("error", "msg.error.password.current.wrong");
-        }
-        return "redirect:/client/profile";
+
+        // InvalidPasswordException bubbles to GlobalExceptionHandler
+        userService.changePassword(member.getId(), dto.getCurrentPassword(), dto.getNewPassword());
+        redirectAttrs.addFlashAttribute("success", "msg.success.password.changed");
+
+        return "redirect:/femfit/client/profile";
     }
 
     /**
      * Updates the current member's profile (firstName, lastName, phone, birthDate).
      * Email and password are not editable through this endpoint.
+     * EmailAlreadyTakenException bubbles to GlobalExceptionHandler.
+     *
      * On validation failure, redirects back with flash BindingResult and dto
      * (Post-Redirect-Get pattern) so the form re-displays entered values and errors.
      */
@@ -256,7 +266,7 @@ public class ClientController {
                     "org.springframework.validation.BindingResult.updateProfileDto", bindingResult);
             redirectAttrs.addFlashAttribute("updateProfileDto", dto);
             redirectAttrs.addFlashAttribute("error", "msg.error.profile.invalid");
-            return "redirect:/client/profile";
+            return "redirect:/femfit/client/profile";
         }
 
         Member member = getUser(userDetails);
@@ -265,9 +275,17 @@ public class ClientController {
         member.setPhone(dto.getPhone());
         member.setBirthDate(dto.getBirthDate());
 
+        // May throw EmailAlreadyTakenException — bubbles to GlobalExceptionHandler
         userService.updateProfile(member);
         log.info("Profile updated for member id={}", member.getId());
         redirectAttrs.addFlashAttribute("success", "msg.success.profile.updated");
-        return "redirect:/client/profile";
+
+        return "redirect:/femfit/client/profile";
+    }
+
+    // Helper — loads full Member from DB using Spring Security email
+    private Member getUser(UserDetails userDetails) {
+        return userService.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Member not found"));
     }
 }
