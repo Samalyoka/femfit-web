@@ -30,26 +30,26 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
     }
 
     private static final String SELECT_ALL = """
-            SELECT id, title, description, duration_weeks, price, active, created_at
+            SELECT id, title, description, duration_weeks, price, is_active, created_at
             FROM training_cycles
             ORDER BY created_at DESC
             """;
 
     private static final String SELECT_ACTIVE = """
-            SELECT id, title, description, duration_weeks, price, active, created_at
+            SELECT id, title, description, duration_weeks, price, is_active, created_at
             FROM training_cycles
-            WHERE active = true
+            WHERE is_active = true
             ORDER BY created_at DESC
             """;
 
     private static final String SELECT_BY_ID = """
-            SELECT id, title, description, duration_weeks, price, active, created_at
+            SELECT id, title, description, duration_weeks, price, is_active, created_at
             FROM training_cycles
             WHERE id = ?
             """;
 
     private static final String INSERT = """
-            INSERT INTO training_cycles (title, description, duration_weeks, price, active, created_at)
+            INSERT INTO training_cycles (title, description, duration_weeks, price, is_active, created_at)
             VALUES (?, ?, ?, ?, true, NOW())
             RETURNING id, created_at
             """;
@@ -61,11 +61,11 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
             """;
 
     private static final String SET_ACTIVE = """
-            UPDATE training_cycles SET active = ? WHERE id = ?
+            UPDATE training_cycles SET is_active = ? WHERE id = ?
             """;
 
     private static final String COUNT_ACTIVE = """
-            SELECT COUNT(*) FROM training_cycles WHERE active = true
+            SELECT COUNT(*) FROM training_cycles WHERE is_active = true
             """;
 
     private static final String COUNT_ALL = """
@@ -242,7 +242,7 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
                 .description(rs.getString("description"))
                 .durationWeeks(rs.getInt("duration_weeks"))
                 .price(rs.getBigDecimal("price"))
-                .active(rs.getBoolean("active"))
+                .active(rs.getBoolean("is_active"))
                 .createdAt(rs.getTimestamp("created_at") != null
                         ? rs.getTimestamp("created_at").toLocalDateTime() : null)
                 .build();

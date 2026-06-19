@@ -15,7 +15,7 @@
 <main>
   <!-- HERO -->
   <div class="hero">
-    <div>
+    <div class="hero-content">
       <div class="hero-eyebrow" th:text="#{home.hero.eyebrow}">Premium Women's Fitness</div>
       <h1 class="hero-h1">
         Your strength.<br><em>Your space.</em>
@@ -27,6 +27,9 @@
       </div>
     </div>
     <div class="hero-visual">
+      <div class="hero-image-container">
+        <img th:src="@{/static/img/img.png}" alt="FemFit community">
+      </div>
       <div class="hero-card-big">
         <div class="hero-card-label" th:text="#{home.hero.card.label}">Next class</div>
         <div class="hero-card-class" th:text="#{home.hero.card.class}">Morning Yoga</div>

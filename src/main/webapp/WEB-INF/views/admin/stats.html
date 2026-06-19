@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Statistics — Admin — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <a th:href="@{/admin/dashboard}" class="back-link">← Dashboard</a>
+        <h1 class="section-title">Statistics &amp; Reports</h1>
+    </div>
+
+    <!-- Key metrics inline summary -->
+    <div class="profile-section-card" style="margin-bottom: 28px;">
+        <h2 class="profile-section-title">Overview</h2>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 16px;">
+            <div style="text-align: center;">
+                <div class="stat-num" th:text="${totalClients}">0</div>
+                <div class="stat-label">Total Clients</div>
+            </div>
+            <div style="text-align: center;">
+                <div class="stat-num" th:text="${totalTrainers}">0</div>
+                <div class="stat-label">Total Trainers</div>
+            </div>
+            <div style="text-align: center;">
+                <div class="stat-num" th:text="${totalOrders}">0</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div style="text-align: center;">
+                <div class="stat-num" th:text="${activeCycles}">0</div>
+                <div class="stat-label">Active Cycles</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent reviews -->
+    <div class="profile-section-card">
+        <h2 class="profile-section-title">Recent Reviews</h2>
+
+        <div th:if="${#lists.isEmpty(recentReviews)}" class="profile-empty">
+            No reviews yet.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(recentReviews)}"
+               class="data-table" style="margin-top: 16px;">
+            <thead>
+            <tr>
+                <th>Member</th>
+                <th>Programme</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${recentReviews}">
+                <td class="data-table__name" th:text="${r.memberName}">Member</td>
+                <td th:text="${r.cycleTitle}">Programme</td>
+                <td>
+            <span th:each="i : ${#numbers.sequence(1, 5)}"
+                  th:style="${i <= r.rating} ? 'color: var(--rose)' : 'color: var(--border)'"
+                  style="font-size: 16px;">★</span>
+                </td>
+                <td class="data-table__meta"
+                    th:text="${r.comment != null} ? ${#strings.abbreviate(r.comment, 60)} : '—'">
+                </td>
+                <td th:text="${#temporals.format(r.createdAt, 'd MMM yyyy')}">Date</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

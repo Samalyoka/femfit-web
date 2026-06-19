@@ -3,7 +3,9 @@ package com.femfit.controller;
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
+import com.femfit.model.Order;
 import com.femfit.service.MemberService;
+import com.femfit.service.OrderService;
 import com.femfit.service.TrainerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +32,15 @@ public class TrainerController {
 
     private final TrainerService trainerService;
     private final MemberService userService;
+    private final OrderService orderService;
 
     @Autowired
-    public TrainerController(TrainerService trainerService, MemberService userService) {
+    public TrainerController(TrainerService trainerService,
+                             MemberService userService,
+                             OrderService orderService) {
         this.trainerService = trainerService;
         this.userService = userService;
+        this.orderService = orderService;
     }
 
     /**
@@ -50,7 +56,7 @@ public class TrainerController {
         model.addAttribute("clients", clients);
         log.debug("Trainer dashboard loaded: userId={}, clients={}",
                 trainer.getId(), clients.size());
-        return "trainer/trainer-dashboard";
+        return "trainer/dashboard";
     }
 
     /**
@@ -64,10 +70,14 @@ public class TrainerController {
         Optional<Assignment> assignment =
                 trainerService.getAssignmentForClient(clientId);
 
+        // Load order to show client info bar
+        Order order = orderService.findById(orderId).orElse(null);
+
         model.addAttribute("assignment", assignment.orElse(null));
         model.addAttribute("clientId", clientId);
         model.addAttribute("orderId", orderId);
         model.addAttribute("hasAssignment", assignment.isPresent());
+        model.addAttribute("order", order);
         return "trainer/assignment-view";
     }
 
@@ -88,17 +98,20 @@ public class TrainerController {
                         .status("ACTIVE")
                         .build());
 
+        // Load order to show client info bar
+        Order order = orderService.findById(orderId).orElse(null);
+
         model.addAttribute("assignment", assignment);
         model.addAttribute("clientId", clientId);
         model.addAttribute("orderId", orderId);
         model.addAttribute("editMode", existing.isPresent());
+        model.addAttribute("order", order);
         return "trainer/assignment-form";
     }
 
     /**
      * POST /trainer/assignment/save
      * Creates or updates an assignment.
-     * Receives form data as request parameters (not @ModelAttribute due to binding issues).
      */
     @PostMapping("/assignment/save")
     public String saveAssignment(@RequestParam long clientId,
@@ -117,17 +130,16 @@ public class TrainerController {
                 .status("ACTIVE")
                 .build();
 
-        // May throw exceptions — bubble to GlobalExceptionHandler
         trainerService.saveOrUpdateAssignment(assignment);
         log.info("Assignment saved: orderId={}, clientId={}", orderId, clientId);
 
         ra.addFlashAttribute("successMsg", "assignment.saved");
-        return "redirect:/femfit/trainer/dashboard";
+        return "redirect:/trainer/dashboard";
     }
 
     /**
      * POST /trainer/assignment/{assignmentId}/status
-     * Updates assignment status (ACTIVE, COMPLETED, REVISION_REQUESTED).
+     * Updates assignment status.
      */
     @PostMapping("/assignment/{assignmentId}/status")
     public String updateStatus(@PathVariable long assignmentId,
@@ -138,16 +150,15 @@ public class TrainerController {
         if (!isValidStatus(status)) {
             log.warn("Invalid assignment status attempted: '{}'", status);
             ra.addFlashAttribute("errorMsg", "assignment.status.invalid");
-            return "redirect:/femfit/trainer/client/" + clientId +
+            return "redirect:/trainer/client/" + clientId +
                     "/assignment?orderId=" + orderId;
         }
 
-        // May throw exceptions — bubble to GlobalExceptionHandler
         trainerService.updateAssignmentStatus(assignmentId, status);
         log.info("Assignment status updated: id={}, status={}", assignmentId, status);
 
         ra.addFlashAttribute("successMsg", "assignment.status.updated");
-        return "redirect:/femfit/trainer/client/" + clientId +
+        return "redirect:/trainer/client/" + clientId +
                 "/assignment?orderId=" + orderId;
     }
 
@@ -158,12 +169,11 @@ public class TrainerController {
     @PostMapping("/assignment/delete")
     public String deleteAssignment(@RequestParam long orderId,
                                    RedirectAttributes ra) {
-        // May throw exceptions — bubble to GlobalExceptionHandler
         trainerService.deleteAssignment(orderId);
         log.info("Assignment deleted: orderId={}", orderId);
 
         ra.addFlashAttribute("successMsg", "assignment.deleted");
-        return "redirect:/femfit/trainer/dashboard";
+        return "redirect:/trainer/dashboard";
     }
 
     // Helper — loads full Member from DB using Spring Security email

@@ -1,5 +1,6 @@
 package com.femfit.config;
 
+import com.femfit.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
     private MessageSource messageSource;
+
+    @Autowired
+    private MemberService memberService;
 
     // ── Thymeleaf ──────────────────────────────────────────────────────────
 
@@ -78,8 +82,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("/static/");
-        registry.addResourceHandler("/favicon.ico")
+        registry.addResourceHandler("/img/**")
                 .addResourceLocations("/static/img/");
+        registry.addResourceHandler("/css/**")
+                .addResourceLocations("/static/css/");
     }
 
     // ── Interceptors ───────────────────────────────────────────────────────
@@ -87,7 +93,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
-        registry.addInterceptor(new AuthInterceptor());
+        registry.addInterceptor(new AuthInterceptor(memberService));
     }
 
     // ── Validation ─────────────────────────────────────────────────────────

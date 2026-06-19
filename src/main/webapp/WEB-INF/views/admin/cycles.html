@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+    <title>Training Cycles — Admin — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <a th:href="@{/admin/dashboard}" class="back-link">← Dashboard</a>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <h1 class="section-title" style="margin-bottom: 0;">Training Cycles</h1>
+            <a th:href="@{/admin/cycles/new}" class="btn btn--primary">+ New Cycle</a>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Duration</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(cycles)}">
+                <td colspan="6" style="text-align:center; padding: 32px; color: var(--muted);">
+                    No training cycles yet.
+                </td>
+            </tr>
+            <tr th:each="cycle : ${cycles}">
+                <td>
+                    <div class="data-table__name" th:text="${cycle.title}">Title</div>
+                    <div class="data-table__meta"
+                         th:text="${#strings.abbreviate(cycle.description, 60)}">Description</div>
+                </td>
+                <td th:text="${cycle.durationWeeks} + ' weeks'">8 weeks</td>
+                <td th:text="${#numbers.formatDecimal(cycle.price, 0, 'COMMA', 0, 'POINT')} + ' ₸'">
+                    49,900 ₸
+                </td>
+                <td>
+                    <span th:if="${cycle.active}" class="badge badge--active">Active</span>
+                    <span th:unless="${cycle.active}" class="badge badge--inactive">Inactive</span>
+                </td>
+                <td th:text="${cycle.createdAt != null}
+              ? ${#temporals.format(cycle.createdAt, 'd MMM yyyy')}
+              : '—'">Date</td>
+                <td>
+                    <div class="action-row">
+                        <!-- Edit -->
+                        <a th:href="@{/admin/cycles/{id}/edit(id=${cycle.id})}"
+                           class="btn btn--outline btn--sm">Edit</a>
+
+                        <!-- Deactivate / Activate -->
+                        <form th:if="${cycle.active}"
+                              th:action="@{/admin/cycles/{id}/deactivate(id=${cycle.id})}"
+                              method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                            <button type="submit" class="btn btn--danger btn--sm"
+                                    onclick="return confirm('Deactivate this cycle? Clients will no longer see it.')">
+                                Deactivate
+                            </button>
+                        </form>
+
+                        <form th:unless="${cycle.active}"
+                              th:action="@{/admin/cycles/{id}/activate(id=${cycle.id})}"
+                              method="post" style="display:inline;">
+                            <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+                            <button type="submit" class="btn btn--primary btn--sm">Activate</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

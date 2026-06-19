@@ -15,7 +15,7 @@
   </div>
 
   <!-- Flash messages -->
-  <div th:if="${successMsg}" class="alert alert-success" th:text="${successMsg}"></div>
+  <div th:if="${successMsg}" class="alert alert-success" th:text="#{${successMsg}}"></div>
   <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
   <div th:if="${error}" class="alert alert-error" th:text="#{${error}}"></div>
 
@@ -48,22 +48,22 @@
              th:text="#{client.orders.trainer} + ' ' + ${order.trainerName}">Trainer</div>
       </div>
 
-      <!-- Action buttons -->
-      <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end;">
+      <!-- Action buttons — все одинакового размера -->
+      <div style="display: flex; flex-direction: column; gap: 10px; align-items: flex-end; min-width: 170px;">
 
-        <!-- ACTIVE / PENDING — View Assignment only -->
+        <!-- ACTIVE / PENDING -->
         <th:block th:if="${order.status == 'ACTIVE' or order.status == 'PENDING'}">
           <a th:href="@{/client/assignment/{id}(id=${order.id})}"
              class="btn-outline"
-             style="white-space: nowrap;"
+             style="white-space: nowrap; width: 170px; text-align: center;"
              th:text="#{client.orders.view.assignment}">View Assignment</a>
         </th:block>
 
-        <!-- COMPLETED — View Assignment + Leave a Review / Already reviewed -->
+        <!-- COMPLETED -->
         <th:block th:if="${order.status == 'COMPLETED'}">
           <a th:href="@{/client/assignment/{id}(id=${order.id})}"
              class="btn-outline"
-             style="white-space: nowrap;"
+             style="white-space: nowrap; width: 170px; text-align: center;"
              th:text="#{client.orders.view.assignment}">View Assignment</a>
 
           <th:block th:if="${reviewedOrderIds != null and reviewedOrderIds.contains(order.id)}">
@@ -72,13 +72,13 @@
 
           <th:block th:unless="${reviewedOrderIds != null and reviewedOrderIds.contains(order.id)}">
             <a th:href="@{/client/review/{id}(id=${order.id})}"
-               class="btn-primary"
-               style="white-space: nowrap;"
+               class="btn-outline"
+               style="white-space: nowrap; width: 170px; text-align: center; border-color: var(--rose); color: var(--rose);"
                th:text="#{review.leave}">Leave a Review</a>
           </th:block>
         </th:block>
 
-        <!-- CANCELLED — no buttons -->
+        <!-- CANCELLED -->
         <th:block th:if="${order.status == 'CANCELLED'}">
           <span class="review-submitted-badge" th:text="#{client.orders.cancelled}">Cancelled</span>
         </th:block>

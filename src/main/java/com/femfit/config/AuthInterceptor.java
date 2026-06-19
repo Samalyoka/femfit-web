@@ -1,9 +1,11 @@
 package com.femfit.config;
 
+import com.femfit.service.MemberService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -21,6 +23,12 @@ import org.springframework.web.servlet.ModelAndView;
  */
 public class AuthInterceptor implements HandlerInterceptor {
 
+    private final MemberService memberService;
+
+    public AuthInterceptor(MemberService memberService) {
+        this.memberService = memberService;
+    }
+
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response,
                            Object handler, ModelAndView modelAndView) {
@@ -35,6 +43,12 @@ public class AuthInterceptor implements HandlerInterceptor {
                         .findFirst()
                         .ifPresent(a -> modelAndView.addObject("userRole",
                                 a.getAuthority().replace("ROLE_", "")));
+                if (auth.getPrincipal() instanceof UserDetails ud) {
+                    String fullName = memberService.findByEmail(ud.getUsername())
+                            .map(m -> m.getFirstName() + " " + m.getLastName())
+                            .orElse(ud.getUsername());
+                    modelAndView.addObject("currentUserName", fullName);
+                }
             }
         }
     }

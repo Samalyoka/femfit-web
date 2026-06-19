@@ -1,56 +1,53 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      th:lang="${#locale.language}">
+<html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{common/layout :: head}">
-  <title>Admin Dashboard</title>
+  <title>Admin Dashboard — FemFit</title>
 </head>
 <body>
-
 <nav th:replace="~{common/layout :: nav}"></nav>
 
-<section class="page-section">
-  <div class="container">
+<div class="page-wrap">
 
-    <div class="page-header">
-      <h1 class="section-title" th:text="#{admin.dashboard.title}">Admin Dashboard</h1>
-    </div>
+  <div class="page-header">
+    <div class="section-eyebrow">Administration</div>
+    <h1 class="section-title">Dashboard</h1>
+  </div>
 
-    <div th:if="${success}" class="alert alert--success" th:text="${success}"></div>
-    <div th:if="${error}"   class="alert alert--error"   th:text="${error}"></div>
+  <!-- Navigation cards WITH stats inside -->
+  <div class="admin-nav">
 
-    <!-- Stats row -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-card__num" th:text="${clientCount}">0</div>
-        <div class="stat-card__label" th:text="#{admin.clients}">Clients</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card__num" th:text="${trainerCount}">0</div>
-        <div class="stat-card__label" th:text="#{admin.trainers}">Trainers</div>
-      </div>
-    </div>
+    <a th:href="@{/admin/clients}" class="admin-nav__card">
+      <div class="admin-nav__stat" th:text="${clientCount}">0</div>
+      <div class="admin-nav__title">Clients</div>
+      <div class="admin-nav__sub">Manage accounts, activate or deactivate, set discounts</div>
+    </a>
 
-    <!-- Quick links -->
-    <div class="admin-nav">
-      <a class="admin-nav__card"
-         th:href="@{/admin/clients}">
-        <div class="admin-nav__title" th:text="#{admin.clients}">Clients</div>
-        <div class="admin-nav__sub" th:text="#{admin.clients.sub}">Activate, deactivate, set discounts</div>
-      </a>
-      <a class="admin-nav__card"
-         th:href="@{/admin/trainers}">
-        <div class="admin-nav__title" th:text="#{admin.trainers}">Trainers</div>
-        <div class="admin-nav__sub" th:text="#{admin.trainers.sub}">View and manage trainers</div>
-      </a>
-      <a class="admin-nav__card"
-         th:href="@{/admin/orders}">
-        <div class="admin-nav__title" th:text="#{admin.orders}">All Orders</div>
-        <div class="admin-nav__sub" th:text="#{admin.orders.sub}">View all client orders</div>
-      </a>
-    </div>
+    <a th:href="@{/admin/trainers}" class="admin-nav__card">
+      <div class="admin-nav__stat" th:text="${trainerCount}">0</div>
+      <div class="admin-nav__title">Trainers</div>
+      <div class="admin-nav__sub">Manage trainer accounts and access</div>
+    </a>
+
+    <a th:href="@{/admin/cycles}" class="admin-nav__card">
+      <div class="admin-nav__stat" th:text="${activeCycles}">0</div>
+      <div class="admin-nav__title">Training Cycles</div>
+      <div class="admin-nav__sub">Create, edit and deactivate training programmes</div>
+    </a>
+
+    <a th:href="@{/admin/orders}" class="admin-nav__card">
+      <div class="admin-nav__stat" th:text="${totalOrders}">0</div>
+      <div class="admin-nav__title">Orders</div>
+      <div class="admin-nav__sub">View and manage all client orders</div>
+    </a>
+
+    <a th:href="@{/admin/stats}" class="admin-nav__card">
+      <div class="admin-nav__stat">→</div>
+      <div class="admin-nav__title">Statistics</div>
+      <div class="admin-nav__sub">Key metrics, recent reviews and reports</div>
+    </a>
 
   </div>
-</section>
+</div>
 
 <footer th:replace="~{common/layout :: footer}"></footer>
 </body>

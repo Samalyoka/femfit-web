@@ -35,4 +35,3 @@ public interface TrainingCycleService {
     /** Count of active cycles for statistics. */
     int countActive();
 }
-

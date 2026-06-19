@@ -96,7 +96,7 @@ public class ClientController {
         bookingService.book(member.getId(), scheduleId);
         redirectAttrs.addFlashAttribute("success", "msg.success.booking");
 
-        return "redirect:/femfit/schedule";
+        return "redirect:/schedule";
     }
 
     /**
@@ -111,7 +111,7 @@ public class ClientController {
         Member member = getUser(userDetails);
         bookingService.cancel(bookingId, member.getId());
         redirectAttrs.addFlashAttribute("success", "msg.success.cancel");
-        return "redirect:/femfit/client/profile";
+        return "redirect:/client/profile";
     }
 
     /**
@@ -129,6 +129,7 @@ public class ClientController {
 
         model.addAttribute("orders", orders);
         model.addAttribute("reviewedOrderIds", reviewedOrderIds);
+        model.addAttribute("member", member);
         return "client/orders";
     }
 
@@ -160,7 +161,7 @@ public class ClientController {
         log.info("Revision requested for assignment id={}", assignmentId);
         orderService.requestRevision(assignmentId);
         redirectAttrs.addFlashAttribute("success", "msg.success.revision.requested");
-        return "redirect:/femfit/client/profile";
+        return "redirect:/client/profile";
     }
 
     /**
@@ -205,15 +206,14 @@ public class ClientController {
         Optional<TrainingCycle> cycleOpt = trainingCycleService.findById(cycleId);
         if (cycleOpt.isEmpty()) {
             redirectAttrs.addFlashAttribute("error", "Training cycle not found.");
-            return "redirect:/femfit/client/cycles";
+            return "redirect:/client/cycles";
         }
 
         TrainingCycle cycle = cycleOpt.get();
 
         // May throw ValidationException — bubbles to GlobalExceptionHandler
         orderService.placeOrder(member.getId(), cycleId, cycle.getPrice(), trainerId);
-        redirectAttrs.addFlashAttribute("success", "Order placed successfully!");
-
+        redirectAttrs.addFlashAttribute("successMsg", "order.placed.successfully");
         return "redirect:/client/orders";
     }
 
@@ -230,12 +230,12 @@ public class ClientController {
         if (bindingResult.hasErrors()) {
             log.warn("Password change rejected due to {} validation errors", bindingResult.getErrorCount());
             redirectAttrs.addFlashAttribute("error", "msg.error.password.invalid");
-            return "redirect:/femfit/client/profile";
+            return "redirect:/client/profile";
         }
 
         if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
             redirectAttrs.addFlashAttribute("error", "msg.error.password.mismatch");
-            return "redirect:/femfit/client/profile";
+            return "redirect:/client/profile";
         }
 
         Member member = getUser(userDetails);
@@ -244,7 +244,7 @@ public class ClientController {
         userService.changePassword(member.getId(), dto.getCurrentPassword(), dto.getNewPassword());
         redirectAttrs.addFlashAttribute("success", "msg.success.password.changed");
 
-        return "redirect:/femfit/client/profile";
+        return "redirect:/client/profile";
     }
 
     /**
@@ -266,7 +266,7 @@ public class ClientController {
                     "org.springframework.validation.BindingResult.updateProfileDto", bindingResult);
             redirectAttrs.addFlashAttribute("updateProfileDto", dto);
             redirectAttrs.addFlashAttribute("error", "msg.error.profile.invalid");
-            return "redirect:/femfit/client/profile";
+            return "redirect:/client/profile";
         }
 
         Member member = getUser(userDetails);
@@ -280,7 +280,7 @@ public class ClientController {
         log.info("Profile updated for member id={}", member.getId());
         redirectAttrs.addFlashAttribute("success", "msg.success.profile.updated");
 
-        return "redirect:/femfit/client/profile";
+        return "redirect:/client/profile";
     }
 
     // Helper — loads full Member from DB using Spring Security email

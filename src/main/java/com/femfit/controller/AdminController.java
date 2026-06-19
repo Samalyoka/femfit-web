@@ -1,15 +1,21 @@
 package com.femfit.controller;
 
 import com.femfit.dto.PageDto;
+import com.femfit.dto.TrainingCycleDto;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
+import com.femfit.model.TrainingCycle;
 import com.femfit.service.MemberService;
 import com.femfit.service.OrderService;
+import com.femfit.service.ReviewService;
+import com.femfit.service.TrainingCycleService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -17,9 +23,7 @@ import java.util.Set;
 
 /**
  * Handles all admin functions:
- * member management, discounts, reports.
- *
- * All exceptions bubble to GlobalExceptionHandler — no try/catch here.
+ * member management, discounts, training cycle CRUD, reports.
  */
 @Controller
 @RequestMapping("/admin")
@@ -27,36 +31,50 @@ public class AdminController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
-    /** Whitelist of pages that activate/deactivate/discount actions may redirect back to. */
-    private static final Set<String> ALLOWED_REDIRECTS = Set.of("/femfit/admin/clients", "/femfit/admin/trainers");
-    private static final String DEFAULT_REDIRECT = "/femfit/admin/clients";
+    private static final Set<String> ALLOWED_REDIRECTS =
+            Set.of("/admin/clients", "/admin/trainers");
+    private static final String DEFAULT_REDIRECT = "/admin/clients";
 
     private final MemberService userService;
     private final OrderService orderService;
+    private final TrainingCycleService cycleService;
+    private final ReviewService reviewService;
 
     @Autowired
-    public AdminController(MemberService userService, OrderService orderService) {
+    public AdminController(MemberService userService,
+                           OrderService orderService,
+                           TrainingCycleService cycleService,
+                           ReviewService reviewService) {
         this.userService = userService;
         this.orderService = orderService;
+        this.cycleService = cycleService;
+        this.reviewService = reviewService;
     }
 
+    // ── Dashboard ────────────────────────────────────────────────
+
     /**
-     * Admin dashboard — overview.
+     * Admin dashboard — overview with key counts.
      */
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
-        model.addAttribute("clientCount", userService.findByRole(Role.CLIENT, 1, 1000).getTotalItems());
-        model.addAttribute("trainerCount", userService.findByRole(Role.TRAINER, 1, 1000).getTotalItems());
+        model.addAttribute("clientCount",
+                userService.findByRole(Role.CLIENT, 1, 1000).getTotalItems());
+        model.addAttribute("trainerCount",
+                userService.findByRole(Role.TRAINER, 1, 1000).getTotalItems());
+        model.addAttribute("activeCycles", cycleService.countActive());
+        model.addAttribute("totalOrders", orderService.countAll());
         return "admin/dashboard";
     }
 
+    // ── Members ──────────────────────────────────────────────────
+
     /**
      * Paginated list of clients.
-     *
-     * @param page current page number (1-based)
      */
     @GetMapping("/clients")
-    public String clients(@RequestParam(name = "page", defaultValue = "1") int page, Model model) {
+    public String clients(@RequestParam(name = "page", defaultValue = "1") int page,
+                          Model model) {
         PageDto<Member> pageDto = userService.findByRole(Role.CLIENT, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "CLIENT");
@@ -67,7 +85,8 @@ public class AdminController {
      * Paginated list of trainers.
      */
     @GetMapping("/trainers")
-    public String trainers(@RequestParam(name = "page", defaultValue = "1") int page, Model model) {
+    public String trainers(@RequestParam(name = "page", defaultValue = "1") int page,
+                           Model model) {
         PageDto<Member> pageDto = userService.findByRole(Role.TRAINER, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
@@ -75,23 +94,7 @@ public class AdminController {
     }
 
     /**
-     * All orders list with pagination.
-     */
-    @GetMapping("/orders")
-    public String orders(@RequestParam(defaultValue = "1") int page, Model model) {
-        int offset = (page - 1) * 10;
-        model.addAttribute("orders", orderService.findAll(offset, 10));
-        model.addAttribute("totalPages",
-                (int) Math.ceil(orderService.countAll() / 10.0));
-        model.addAttribute("currentPage", page);
-        return "admin/orders";
-    }
-
-    /**
      * Activates a member account.
-     *
-     * @param memberId   member id to activate
-     * @param redirectTo page to redirect back to (whitelisted: /admin/clients or /admin/trainers)
      */
     @PostMapping("/member/activate/{memberId}")
     public String activate(@PathVariable Long memberId,
@@ -105,9 +108,6 @@ public class AdminController {
 
     /**
      * Deactivates a member account.
-     *
-     * @param memberId   member id to deactivate
-     * @param redirectTo page to redirect back to (whitelisted: /admin/clients or /admin/trainers)
      */
     @PostMapping("/member/deactivate/{memberId}")
     public String deactivate(@PathVariable Long memberId,
@@ -121,10 +121,6 @@ public class AdminController {
 
     /**
      * Sets discount for a member.
-     *
-     * @param memberId        member id
-     * @param discountPercent discount 0-100
-     * @param redirectTo      page to redirect back to (whitelisted: /admin/clients or /admin/trainers)
      */
     @PostMapping("/member/discount/{memberId}")
     public String setDiscount(@PathVariable Long memberId,
@@ -136,32 +132,160 @@ public class AdminController {
         return "redirect:" + resolveRedirect(redirectTo);
     }
 
+    // ── Orders ───────────────────────────────────────────────────
+
+    /**
+     * All orders with pagination.
+     */
+    @GetMapping("/orders")
+    public String orders(@RequestParam(defaultValue = "1") int page, Model model) {
+        int offset = (page - 1) * 10;
+        model.addAttribute("orders", orderService.findAll(offset, 10));
+        model.addAttribute("totalPages",
+                (int) Math.ceil(orderService.countAll() / 10.0));
+        model.addAttribute("currentPage", page);
+        return "admin/orders";
+    }
+
     /**
      * Marks order as completed.
      */
     @PostMapping("/order/complete/{orderId}")
-    public String completeOrder(@PathVariable Long orderId,
-                                RedirectAttributes ra) {
+    public String completeOrder(@PathVariable Long orderId, RedirectAttributes ra) {
         orderService.updateStatus(orderId, "COMPLETED");
-        ra.addFlashAttribute("success", "Order marked as completed.");
-        return "redirect:/femfit/admin/orders";
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/orders";
     }
 
     /**
      * Cancels an order.
      */
     @PostMapping("/order/cancel/{orderId}")
-    public String cancelOrder(@PathVariable Long orderId,
-                              RedirectAttributes ra) {
+    public String cancelOrder(@PathVariable Long orderId, RedirectAttributes ra) {
         orderService.updateStatus(orderId, "CANCELLED");
-        ra.addFlashAttribute("success", "Order cancelled.");
-        return "redirect:/femfit/admin/orders";
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/orders";
+    }
+
+    // ── Training Cycles ──────────────────────────────────────────
+
+    /**
+     * List of all training cycles (active and inactive).
+     */
+    @GetMapping("/cycles")
+    public String cycles(Model model) {
+        model.addAttribute("cycles", cycleService.findAll());
+        return "admin/cycles";
     }
 
     /**
-     * Validates the requested redirect target against a whitelist to prevent
-     * open-redirect vulnerabilities, falling back to /admin/clients.
+     * Show create cycle form.
      */
+    @GetMapping("/cycles/new")
+    public String newCycleForm(Model model) {
+        model.addAttribute("cycleDto", new TrainingCycleDto());
+        model.addAttribute("isNew", true);
+        return "admin/cycle-form";
+    }
+
+    /**
+     * Process create cycle form submission.
+     */
+    @PostMapping("/cycles/new")
+    public String createCycle(@Valid @ModelAttribute("cycleDto") TrainingCycleDto dto,
+                              BindingResult bindingResult,
+                              Model model,
+                              RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("isNew", true);
+            return "admin/cycle-form";
+        }
+        TrainingCycle created = cycleService.create(dto);
+        log.info("Admin created training cycle id={}", created.getId());
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/cycles";
+    }
+
+    /**
+     * Show edit cycle form populated with existing data.
+     */
+    @GetMapping("/cycles/{id}/edit")
+    public String editCycleForm(@PathVariable Integer id, Model model) {
+        TrainingCycle cycle = cycleService.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cycle not found: " + id));
+        TrainingCycleDto dto = new TrainingCycleDto(
+                cycle.getTitle(),
+                cycle.getDescription(),
+                cycle.getDurationWeeks(),
+                cycle.getPrice()
+        );
+        model.addAttribute("cycleDto", dto);
+        model.addAttribute("cycle", cycle);
+        model.addAttribute("isNew", false);
+        return "admin/cycle-form";
+    }
+
+    /**
+     * Process edit cycle form submission.
+     */
+    @PostMapping("/cycles/{id}/edit")
+    public String updateCycle(@PathVariable Integer id,
+                              @Valid @ModelAttribute("cycleDto") TrainingCycleDto dto,
+                              BindingResult bindingResult,
+                              Model model,
+                              RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("isNew", false);
+            model.addAttribute("cycle", cycleService.findById(id).orElse(null));
+            return "admin/cycle-form";
+        }
+        cycleService.update(id, dto);
+        log.info("Admin updated training cycle id={}", id);
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/cycles";
+    }
+
+    /**
+     * Deactivates a training cycle.
+     */
+    @PostMapping("/cycles/{id}/deactivate")
+    public String deactivateCycle(@PathVariable Integer id, RedirectAttributes ra) {
+        cycleService.deactivate(id);
+        log.info("Admin deactivated training cycle id={}", id);
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/cycles";
+    }
+
+    /**
+     * Reactivates a training cycle.
+     */
+    @PostMapping("/cycles/{id}/activate")
+    public String activateCycle(@PathVariable Integer id, RedirectAttributes ra) {
+        cycleService.activate(id);
+        log.info("Admin activated training cycle id={}", id);
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/cycles";
+    }
+
+    // ── Statistics ───────────────────────────────────────────────
+
+    /**
+     * Admin statistics page — key metrics overview.
+     */
+    @GetMapping("/stats")
+    public String stats(Model model) {
+        model.addAttribute("totalClients",
+                userService.findByRole(Role.CLIENT, 1, 1000).getTotalItems());
+        model.addAttribute("totalTrainers",
+                userService.findByRole(Role.TRAINER, 1, 1000).getTotalItems());
+        model.addAttribute("totalOrders", orderService.countAll());
+        model.addAttribute("activeCycles", cycleService.countActive());
+        model.addAttribute("recentReviews", reviewService.getRecentReviews(10));
+        return "admin/stats";
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+
     private String resolveRedirect(String redirectTo) {
         return ALLOWED_REDIRECTS.contains(redirectTo) ? redirectTo : DEFAULT_REDIRECT;
     }

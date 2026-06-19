@@ -9,6 +9,7 @@
 
 <div class="page-wrap">
   <div class="profile-hero">
+    <a th:href="@{/client/profile}" class="back-link">← <span th:text="#{nav.profile}">My Profile</span></a>
     <p class="section-eyebrow" th:text="#{cycles.eyebrow}">Training Programs</p>
     <h1 class="section-title" th:text="#{cycles.title}">Choose your program</h1>
   </div>
@@ -26,15 +27,25 @@
       <div class="cycle-footer">
         <div class="cycle-price"
              th:text="${#numbers.formatDecimal(cycle.price, 0, 'COMMA', 0, 'POINT')} + ' ₸'"></div>
-        <div th:if="${purchasedCycleIds.contains(cycle.id)}">
+
+        <!-- Purchased — show badge + renew button -->
+        <div th:if="${purchasedCycleIds.contains(cycle.id)}"
+             style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
           <span class="cycle-badge" th:text="#{cycles.purchased}">Purchased</span>
+          <a class="btn btn--outline"
+             style="font-size: 13px; padding: 6px 16px;"
+             th:href="@{/client/cycles/{id}/choose-trainer(id=${cycle.id})}"
+             th:text="#{cycles.renew}">Renew / Buy again</a>
         </div>
+
+        <!-- Not purchased -->
         <div th:unless="${purchasedCycleIds.contains(cycle.id)}">
           <a class="btn btn--primary"
              th:href="@{/client/cycles/{id}/choose-trainer(id=${cycle.id})}"
              th:text="#{cycles.buy.now}">Buy Now</a>
         </div>
       </div>
+
     </div>
   </div>
 </div>

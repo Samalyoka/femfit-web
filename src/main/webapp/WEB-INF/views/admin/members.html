@@ -65,7 +65,8 @@
                             <input type="hidden"
                                    th:name="${_csrf.parameterName}"
                                    th:value="${_csrf.token}"/>
-                            <input type="hidden" name="redirectTo" th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
+                            <input type="hidden" name="redirectTo"
+                                   th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
                             <input class="discount-input"
                                    type="number"
                                    name="discountPercent"
@@ -87,7 +88,8 @@
                                 <input type="hidden"
                                        th:name="${_csrf.parameterName}"
                                        th:value="${_csrf.token}"/>
-                                <input type="hidden" name="redirectTo" th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
+                                <input type="hidden" name="redirectTo"
+                                       th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
                                 <button class="btn btn--primary btn--sm" type="submit"
                                         th:text="#{admin.status.activate}">Activate</button>
                             </form>
@@ -98,7 +100,8 @@
                                 <input type="hidden"
                                        th:name="${_csrf.parameterName}"
                                        th:value="${_csrf.token}"/>
-                                <input type="hidden" name="redirectTo" th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
+                                <input type="hidden" name="redirectTo"
+                                       th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
                                 <button class="btn btn--outline btn--sm" type="submit"
                                         th:text="#{admin.status.deactivate}">Deactivate</button>
                             </form>
@@ -110,22 +113,53 @@
             </table>
         </div>
 
-        <!-- Pagination -->
+        <!-- Pagination — FIX: используем th:if/else вместо динамического @{} -->
         <div th:if="${page.totalPages > 1}" class="pagination">
-            <a class="pagination__btn"
-               th:if="${page.currentPage > 1}"
-               th:href="@{${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'}(page=${page.currentPage - 1})"
-               th:text="#{pagination.prev}">Previous</a>
 
-            <span class="pagination__info"
-                  th:text="#{pagination.page(${page.currentPage}, ${page.totalPages})}">
-                Page 1 of 1
+            <!-- Clients pagination -->
+            <th:block th:if="${role == 'CLIENT'}">
+                <a class="pagination__btn"
+                   th:if="${page.currentPage > 1}"
+                   th:href="@{/admin/clients(page=${page.currentPage - 1})}"
+                   th:text="#{pagination.prev}">← Prev</a>
+                <span th:unless="${page.currentPage > 1}"
+                      class="pagination__btn" style="opacity:0.3; cursor:default;">← Prev</span>
+
+                <span class="pagination__info"
+                      th:text="'Page ' + ${page.currentPage} + ' of ' + ${page.totalPages}">
+              Page 1 of 2
             </span>
 
-            <a class="pagination__btn"
-               th:if="${page.currentPage < page.totalPages}"
-               th:href="@{${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'}(page=${page.currentPage + 1})"
-               th:text="#{pagination.next}">Next</a>
+                <a class="pagination__btn"
+                   th:if="${page.currentPage < page.totalPages}"
+                   th:href="@{/admin/clients(page=${page.currentPage + 1})}"
+                   th:text="#{pagination.next}">Next →</a>
+                <span th:unless="${page.currentPage < page.totalPages}"
+                      class="pagination__btn" style="opacity:0.3; cursor:default;">Next →</span>
+            </th:block>
+
+            <!-- Trainers pagination -->
+            <th:block th:if="${role == 'TRAINER'}">
+                <a class="pagination__btn"
+                   th:if="${page.currentPage > 1}"
+                   th:href="@{/admin/trainers(page=${page.currentPage - 1})}"
+                   th:text="#{pagination.prev}">← Prev</a>
+                <span th:unless="${page.currentPage > 1}"
+                      class="pagination__btn" style="opacity:0.3; cursor:default;">← Prev</span>
+
+                <span class="pagination__info"
+                      th:text="'Page ' + ${page.currentPage} + ' of ' + ${page.totalPages}">
+              Page 1 of 2
+            </span>
+
+                <a class="pagination__btn"
+                   th:if="${page.currentPage < page.totalPages}"
+                   th:href="@{/admin/trainers(page=${page.currentPage + 1})}"
+                   th:text="#{pagination.next}">Next →</a>
+                <span th:unless="${page.currentPage < page.totalPages}"
+                      class="pagination__btn" style="opacity:0.3; cursor:default;">Next →</span>
+            </th:block>
+
         </div>
 
     </div>

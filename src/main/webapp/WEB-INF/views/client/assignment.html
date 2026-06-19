@@ -9,46 +9,49 @@
 <div class="page-wrap">
 
   <div class="profile-hero">
-    <a th:href="@{/client/orders}" class="back-link">← <span th:text="#{client.orders}">My Orders</span></a>
+    <a th:href="@{/client/profile}" class="back-link">← <span th:text="#{nav.profile}">My Profile</span></a>
     <p class="section-eyebrow" th:text="#{assignment.eyebrow}">My Training Plan</p>
     <h1 class="section-title" th:text="${order?.cycleTitle} ?: #{assignment.title}">Assignment</h1>
   </div>
 
-  <!-- Order info bar -->
+  <!-- Order info bar — 3 поля, без дублирования -->
   <div class="assignment-order-bar" th:if="${order != null}">
+
     <div class="assignment-order-item">
       <span class="assignment-order-label" th:text="#{assignment.trainer}">Trainer</span>
-      <span class="assignment-order-value" th:text="${order.trainerName} ?: #{assignment.no.trainer}">—</span>
+      <span class="assignment-order-value"
+            th:text="${order.trainerName} ?: #{assignment.no.trainer}">—</span>
     </div>
-    <div class="assignment-order-item">
-      <span class="assignment-order-label" th:text="#{assignment.status}">Status</span>
-      <span th:class="'order-status status-' + ${order.status.toLowerCase()}"
-            th:text="${order.status}">ACTIVE</span>
-    </div>
+
     <div class="assignment-order-item">
       <span class="assignment-order-label" th:text="#{assignment.ordered}">Ordered</span>
       <span class="assignment-order-value"
             th:text="${#temporals.format(order.createdAt,'d MMM yyyy')}">—</span>
     </div>
-    <div class="assignment-order-item" th:if="${assignment != null}">
-      <span class="assignment-order-label" th:text="#{assignment.plan.status}">Plan status</span>
-      <span th:if="${assignment.status == 'ACTIVE'}"
-            class="order-status status-active" th:text="#{assignment.plan.active}">Active</span>
-      <span th:if="${assignment.status == 'COMPLETED'}"
-            class="order-status status-completed" th:text="#{assignment.plan.completed}">Completed</span>
-      <span th:if="${assignment.status == 'REVISION_REQUESTED'}"
-            class="order-status status-pending" th:text="#{assignment.plan.revision}">Revision requested</span>
+
+    <div class="assignment-order-item">
+      <span class="assignment-order-label" th:text="#{assignment.status}">Status</span>
+      <!-- Используем i18n чтобы ACTIVE → Active, COMPLETED → Completed и т.д. -->
+      <span th:class="'order-status status-' + ${order.status.toLowerCase()}"
+            th:text="#{${'order.status.' + order.status.toLowerCase()}}">Active</span>
     </div>
+
+    <!-- Если у задания статус REVISION_REQUESTED — показать отдельно -->
+    <div class="assignment-order-item"
+         th:if="${assignment != null and assignment.status == 'REVISION_REQUESTED'}">
+      <span class="assignment-order-label" th:text="#{assignment.plan.status}">Plan</span>
+      <span class="order-status status-pending"
+            th:text="#{assignment.plan.revision}">Revision requested</span>
+    </div>
+
   </div>
 
   <!-- Assignment exists -->
   <div th:if="${assignment != null}">
 
-    <!-- Flash messages -->
     <div th:if="${success}" class="alert alert-success" th:text="#{${success}}"></div>
     <div th:if="${error}" class="alert alert-error" th:text="#{${error}}"></div>
 
-    <!-- 4 cards grid -->
     <div class="assignment-grid">
 
       <!-- Exercises -->
@@ -66,7 +69,8 @@
           <h2 class="assignment-card__title" th:text="#{assignment.exercises}">Workout Routines</h2>
         </div>
         <div class="assignment-card__body">
-          <p class="assignment-card__text" th:text="${assignment.exercises} ?: #{assignment.not.specified}">—</p>
+          <p class="assignment-card__text"
+             th:text="${assignment.exercises} ?: #{assignment.not.specified}">—</p>
         </div>
       </div>
 
@@ -87,7 +91,8 @@
           <h2 class="assignment-card__title" th:text="#{assignment.equipment}">Equipment</h2>
         </div>
         <div class="assignment-card__body">
-          <p class="assignment-card__text" th:text="${assignment.equipment} ?: #{assignment.not.specified}">—</p>
+          <p class="assignment-card__text"
+             th:text="${assignment.equipment} ?: #{assignment.not.specified}">—</p>
         </div>
       </div>
 
@@ -107,7 +112,8 @@
           <h2 class="assignment-card__title" th:text="#{assignment.nutrition}">Nutrition Plan</h2>
         </div>
         <div class="assignment-card__body">
-          <p class="assignment-card__text" th:text="${assignment.nutritionPlan} ?: #{assignment.not.specified}">—</p>
+          <p class="assignment-card__text"
+             th:text="${assignment.nutritionPlan} ?: #{assignment.not.specified}">—</p>
         </div>
       </div>
 
@@ -128,7 +134,8 @@
           <h2 class="assignment-card__title" th:text="#{assignment.schedule}">Training Schedule</h2>
         </div>
         <div class="assignment-card__body">
-          <p class="assignment-card__text" th:text="${assignment.scheduleInfo} ?: #{assignment.not.specified}">—</p>
+          <p class="assignment-card__text"
+             th:text="${assignment.scheduleInfo} ?: #{assignment.not.specified}">—</p>
         </div>
       </div>
 
@@ -146,7 +153,7 @@
       </div>
       <div th:if="${assignment.status == 'REVISION_REQUESTED'}">
         <span class="assignment-revision-badge" th:text="#{assignment.revision.pending}">
-          ✓ Revision requested — your trainer will update your plan shortly
+          ✓ Revision requested
         </span>
       </div>
     </div>
@@ -167,7 +174,6 @@
     <p class="assignment-empty__desc" th:text="#{assignment.empty.desc}">
       Your trainer will create your personalised plan soon. Check back shortly.
     </p>
-    <a th:href="@{/client/orders}" class="btn-outline" th:text="#{client.orders}">Back to orders</a>
   </div>
 
 </div>

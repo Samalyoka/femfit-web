@@ -106,7 +106,6 @@ public class TrainerDaoImpl implements TrainerDao {
         } catch (SQLException e) {
             throw new RuntimeException("TrainerDao.findTrainerIdByUserId failed", e);
         } finally {
-            con = pool.getConnection();
             pool.releaseConnection(con);
         }
     }

@@ -21,11 +21,33 @@
             </h1>
         </div>
 
+        <!-- Client info bar -->
+        <div class="assignment-order-bar" th:if="${order != null}" style="margin-bottom: 28px;">
+            <div class="assignment-order-item">
+                <span class="assignment-order-label">Client</span>
+                <span class="assignment-order-value" th:text="${order.clientName}">—</span>
+            </div>
+            <div class="assignment-order-item">
+                <span class="assignment-order-label">Programme</span>
+                <span class="assignment-order-value" th:text="${order.cycleTitle}">—</span>
+            </div>
+            <div class="assignment-order-item">
+                <span class="assignment-order-label">Started</span>
+                <span class="assignment-order-value"
+                      th:text="${#temporals.format(order.createdAt,'d MMM yyyy')}">—</span>
+            </div>
+            <div class="assignment-order-item">
+                <span class="assignment-order-label">Status</span>
+                <span th:class="'order-status status-' + ${order.status.toLowerCase()}"
+                      th:text="${order.status}">ACTIVE</span>
+            </div>
+        </div>
+
         <!-- Flash messages -->
         <div th:if="${successMsg}" class="alert alert--success" th:text="${successMsg}"></div>
         <div th:if="${errorMsg}"   class="alert alert--error"   th:text="${errorMsg}"></div>
 
-        <!-- Main form — uses name= instead of th:field to avoid Assignment binding issues -->
+        <!-- Main form -->
         <form th:action="@{/trainer/assignment/save}"
               method="post"
               class="form-card">
