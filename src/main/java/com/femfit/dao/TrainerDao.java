@@ -43,6 +43,16 @@ public interface TrainerDao {
     List<TrainerDto> findAllTrainers();
 
     /**
+     * Returns all active trainers enriched with their average review rating
+     * and review count, computed via LEFT JOIN across orders → reviews.
+     * Trainers with no reviews yet have averageRating = null, reviewCount = 0.
+     * Used on the choose-trainer page so clients can pick by rating.
+     *
+     * @return list of active trainers with rating info, possibly empty
+     */
+    List<TrainerDto> findAllTrainersWithRating();
+
+    /**
      * Get last active order for each client of the trainer.
      * One row per client, with order details if exists, otherwise nulls for order fields.
      *

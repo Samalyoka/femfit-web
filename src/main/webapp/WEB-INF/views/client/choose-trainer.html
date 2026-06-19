@@ -25,6 +25,28 @@
             Trainer Name
           </h3>
           <p class="card__meta" th:text="${trainer.email}">email</p>
+
+          <!-- Rating: filled/empty stars, rounded to nearest whole star.
+               Pre-compute the rounded star count as a local variable (Long)
+               so the comparison i <= roundedStars is Integer/Long-safe. -->
+          <div th:if="${trainer.hasRating()}"
+               th:with="roundedStars=${T(java.lang.Math).round(trainer.averageRating)}"
+               style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+            <span style="color: var(--rose); font-size: 15px; letter-spacing: 1px;">
+              <th:block th:each="i : ${#numbers.sequence(1, 5)}"
+                        th:text="${i <= roundedStars} ? '★' : '☆'">★</th:block>
+            </span>
+            <span style="font-family: var(--serif); font-size: 14px; color: var(--charcoal);"
+                  th:text="${trainer.averageRating}">4.8</span>
+            <span style="font-size: 13px; color: var(--muted);"
+                  th:text="${trainer.reviewCount == 1} ? '(1 review)' : '(' + ${trainer.reviewCount} + ' reviews)'">
+              (12 reviews)
+            </span>
+          </div>
+          <div th:unless="${trainer.hasRating()}"
+               style="font-size: 13px; color: var(--muted); margin-top: 8px;">
+            No reviews yet
+          </div>
         </div>
 
         <div class="card__actions">

@@ -21,7 +21,21 @@ public class TrainerDto {
     private String lastName;
     private String email;
 
+    /**
+     * Average review rating (1-5) across all this trainer's completed orders.
+     * Null if the trainer has no reviews yet.
+     */
+    private Double averageRating;
+
+    /** Number of reviews behind the averageRating, for display ("4.8 (12 reviews)"). */
+    private Integer reviewCount;
+
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+    /** True if this trainer has at least one review. */
+    public boolean hasRating() {
+        return averageRating != null && reviewCount != null && reviewCount > 0;
     }
 }

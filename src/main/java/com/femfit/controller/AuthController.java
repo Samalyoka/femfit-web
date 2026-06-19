@@ -100,13 +100,13 @@ public class AuthController {
             log.warn("Registration payload processing rejected due to {} validation errors", bindingResult.getErrorCount());
             redirectAttrs.addFlashAttribute("org.springframework.validation.BindingResult.registerDto", bindingResult);
             redirectAttrs.addFlashAttribute("registerDto", dto);
-            return "redirect:/femfit/auth/register";
+            return "redirect:/auth/register";
         }
 
         // EmailAlreadyTakenException will bubble to GlobalExceptionHandler
         // No try/catch needed here
         memberService.register(dto);
         redirectAttrs.addFlashAttribute("success", "Registration successful! Please log in.");
-        return "redirect:/femfit/auth/login?registered";
+        return "redirect:/auth/login?registered";
     }
 }

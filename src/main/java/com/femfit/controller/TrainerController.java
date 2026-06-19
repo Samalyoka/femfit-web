@@ -54,6 +54,7 @@ public class TrainerController {
         List<ClientOrderDto> clients =
                 trainerService.getClientsWithOrderByTrainerUserId(trainer.getId());
         model.addAttribute("clients", clients);
+        model.addAttribute("trainer", trainer);
         log.debug("Trainer dashboard loaded: userId={}, clients={}",
                 trainer.getId(), clients.size());
         return "trainer/dashboard";

@@ -86,6 +86,20 @@ public class TrainerDaoImpl implements TrainerDao {
             ORDER BY u.first_name
             """;
 
+    private static final String FIND_ALL_TRAINERS_WITH_RATING = """
+        SELECT u.id, u.first_name, u.last_name, u.email,
+               ROUND(AVG(rv.rating)::numeric, 1) AS avg_rating,
+               COUNT(rv.id) AS review_count
+        FROM members u
+        JOIN roles r ON r.id = u.role_id
+        LEFT JOIN orders o ON o.trainer_id = u.id
+        LEFT JOIN reviews rv ON rv.order_id = o.id
+        WHERE r.name = 'TRAINER'
+          AND u.is_active = true
+        GROUP BY u.id, u.first_name, u.last_name, u.email
+        ORDER BY u.first_name
+        """;
+
     /**
      * Finds the trainer ID for a given user ID.
      * Used to resolve the trainer record from the user/member record.
@@ -185,6 +199,21 @@ public class TrainerDaoImpl implements TrainerDao {
         return trainers;
     }
 
+    @Override
+    public List<TrainerDto> findAllTrainersWithRating() {
+        List<TrainerDto> trainers = new ArrayList<>();
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINERS_WITH_RATING);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) trainers.add(mapTrainerWithRating(rs));
+        } catch (SQLException e) {
+            throw new RuntimeException("TrainerDao.findAllTrainersWithRating failed", e);
+        } finally {
+            pool.releaseConnection(con);
+        }
+        return trainers;
+    }
+
     /**
      * Maps a ResultSet row to a {@link Member} object.
      *
@@ -217,6 +246,19 @@ public class TrainerDaoImpl implements TrainerDao {
                 .firstName(rs.getString("first_name"))
                 .lastName(rs.getString("last_name"))
                 .email(rs.getString("email"))
+                .build();
+    }
+
+    private TrainerDto mapTrainerWithRating(ResultSet rs) throws SQLException {
+        double avgRating = rs.getDouble("avg_rating");
+        boolean hasRating = !rs.wasNull();
+        return TrainerDto.builder()
+                .id(rs.getLong("id"))
+                .firstName(rs.getString("first_name"))
+                .lastName(rs.getString("last_name"))
+                .email(rs.getString("email"))
+                .averageRating(hasRating ? avgRating : null)
+                .reviewCount(rs.getInt("review_count"))
                 .build();
     }
 

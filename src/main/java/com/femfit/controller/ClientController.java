@@ -182,13 +182,15 @@ public class ClientController {
 
     /**
      * Shows trainer selection page before placing order.
+     * Trainers are enriched with average rating and review count so
+     * clients can compare trainers before choosing one.
      */
     @GetMapping("/cycles/{cycleId}/choose-trainer")
     public String chooseTrainer(@PathVariable Integer cycleId,
                                 Model model) {
         trainingCycleService.findById(cycleId)
                 .ifPresent(cycle -> model.addAttribute("cycle", cycle));
-        model.addAttribute("trainers", trainerService.getAllTrainers());
+        model.addAttribute("trainers", trainerService.getAllTrainersWithRating());
         return "client/choose-trainer";
     }
 

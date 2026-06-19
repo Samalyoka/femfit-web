@@ -40,6 +40,16 @@ public interface TrainerService {
     List<TrainerDto> getAllTrainers();
 
     /**
+     * Returns all active trainers enriched with their average review rating
+     * and review count. Used on the choose-trainer page so clients can see
+     * ratings before picking a trainer. Trainers with no reviews show
+     * averageRating = null (see {@link TrainerDto#hasRating()}).
+     *
+     * @return list of active trainers with rating info, possibly empty
+     */
+    List<TrainerDto> getAllTrainersWithRating();
+
+    /**
      * Returns the most recently updated assignment for a client, if any.
      *
      * @param clientId the client's member id
