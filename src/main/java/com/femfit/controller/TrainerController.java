@@ -23,6 +23,12 @@ import java.util.Optional;
 /**
  * Trainer panel for managing client assignments.
  * All exceptions bubble to GlobalExceptionHandler — no try/catch here.
+ *
+ * IMPORTANT: Assignments are tied to a specific ORDER (assignments.order_id),
+ * not to a client directly. A client may have multiple orders with different
+ * trainers, so every lookup here MUST go through orderId, never just clientId —
+ * otherwise one trainer's assignment can leak into another trainer's view of
+ * the same client (this was the root cause of the "duplicated assignments" bug).
  */
 @Controller
 @RequestMapping("/trainer")
@@ -62,16 +68,19 @@ public class TrainerController {
 
     /**
      * GET /trainer/client/{clientId}/assignment
-     * View current assignment for a client.
+     * View current assignment for a client — scoped to THIS order, not
+     * just the client, so a client with multiple trainers sees the right plan.
      */
     @GetMapping("/client/{clientId}/assignment")
     public String viewAssignment(@PathVariable long clientId,
                                  @RequestParam long orderId,
                                  Model model) {
+        // FIX: look up by orderId (assignments.order_id), not by clientId.
+        // findLatestByClientId() returns the most recently updated assignment
+        // across ALL of the client's orders/trainers — wrong scope here.
         Optional<Assignment> assignment =
-                trainerService.getAssignmentForClient(clientId);
+                trainerService.getAssignmentForOrder(orderId);
 
-        // Load order to show client info bar
         Order order = orderService.findById(orderId).orElse(null);
 
         model.addAttribute("assignment", assignment.orElse(null));
@@ -84,14 +93,15 @@ public class TrainerController {
 
     /**
      * GET /trainer/client/{clientId}/assignment/form?orderId={orderId}
-     * Shows form to create/edit assignment.
+     * Shows form to create/edit assignment — scoped to THIS order.
      */
     @GetMapping("/client/{clientId}/assignment/form")
     public String assignmentForm(@PathVariable long clientId,
                                  @RequestParam long orderId,
                                  Model model) {
+        // FIX: same as above — scope to orderId, not clientId.
         Optional<Assignment> existing =
-                trainerService.getAssignmentForClient(clientId);
+                trainerService.getAssignmentForOrder(orderId);
 
         Assignment assignment = existing.orElseGet(() ->
                 Assignment.builder()
@@ -99,7 +109,6 @@ public class TrainerController {
                         .status("ACTIVE")
                         .build());
 
-        // Load order to show client info bar
         Order order = orderService.findById(orderId).orElse(null);
 
         model.addAttribute("assignment", assignment);
@@ -177,7 +186,6 @@ public class TrainerController {
         return "redirect:/trainer/dashboard";
     }
 
-    // Helper — loads full Member from DB using Spring Security email
     private Member resolveCurrentUser(UserDetails principal) {
         return userService.findByEmail(principal.getUsername())
                 .orElseThrow(() -> new IllegalStateException(

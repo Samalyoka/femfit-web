@@ -17,11 +17,6 @@ import java.util.Optional;
 
 /**
  * Implementation of {@link TrainerService}.
- *
- * Provides business logic for trainer operations including:
- * - Retrieving clients assigned to a trainer
- * - Managing training assignments
- * - Listing all available trainers (with or without ratings)
  */
 @Service
 public class TrainerServiceImpl implements TrainerService {
@@ -49,9 +44,19 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerDao.findClientsWithOrderByTrainerId(trainerId);
     }
 
+    @Deprecated
     @Override
     public Optional<Assignment> getAssignmentForClient(long clientId) {
         return assignmentDao.findLatestByClientId(clientId);
+    }
+
+    /**
+     * FIX: scoped to a specific order via findByOrderId(), instead of the
+     * old clientId-wide lookup that could return another trainer's assignment.
+     */
+    @Override
+    public Optional<Assignment> getAssignmentForOrder(long orderId) {
+        return assignmentDao.findByOrderId(orderId);
     }
 
     @Override
@@ -79,23 +84,11 @@ public class TrainerServiceImpl implements TrainerService {
         log.debug("Assignment status set: id={}, status={}", assignmentId, status);
     }
 
-    /**
-     * Retrieves all active trainers in the system.
-     * Used for trainer selection during order placement.
-     *
-     * @return list of all active TrainerDto objects
-     */
     @Override
     public List<TrainerDto> getAllTrainers() {
         return trainerDao.findAllTrainers();
     }
 
-    /**
-     * Retrieves all active trainers with their average rating and review count.
-     * Used on the choose-trainer page so clients can compare trainers by rating.
-     *
-     * @return list of all active TrainerDto objects enriched with rating info
-     */
     @Override
     public List<TrainerDto> getAllTrainersWithRating() {
         return trainerDao.findAllTrainersWithRating();
