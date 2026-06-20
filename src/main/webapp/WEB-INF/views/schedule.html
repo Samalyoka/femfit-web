@@ -33,6 +33,9 @@
         <a th:href="@{/schedule(category='DANCE')}"
            th:class="${activeCategory == 'DANCE'} ? 'fpill active' : 'fpill'"
            th:text="#{schedule.filter.dance}">Dance</a>
+        <a th:href="@{/schedule(category='STRETCHING')}"
+           th:class="${activeCategory == 'STRETCHING'} ? 'fpill active' : 'fpill'"
+           th:text="#{schedule.filter.stretching}">Stretching</a>
     </div>
 
     <!-- Schedule table -->
@@ -53,7 +56,12 @@
         <!-- Schedule rows -->
         <div th:each="s : ${schedules}" class="sched-row">
             <span class="time-c" th:text="${#temporals.format(s.scheduledAt,'HH:mm')}">07:00</span>
-            <span class="class-n" th:text="${s.getLocalizedClassName(#locale.language)}">Morning Yoga</span>
+            <span class="class-n-row">
+                <span class="class-n" th:text="${s.getLocalizedClassName(#locale.language)}">Morning Yoga</span>
+                <span th:if="${s.difficultyLevel}"
+                      th:class="'difficulty-badge difficulty-badge--' + ${#strings.toLowerCase(s.difficultyLevel)}"
+                      th:text="#{${'schedule.difficulty.' + #strings.toLowerCase(s.difficultyLevel)}}">Beginner</span>
+            </span>
             <span class="trainer-c" th:text="${s.trainerName}">Elena M.</span>
 
             <!-- Spots badge -->

@@ -43,7 +43,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                    fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
                    fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   fc.category,
+                   fc.category, fc.difficulty_level,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_occurrences co
             JOIN class_schedules cs ON co.schedule_id = cs.id
@@ -53,7 +53,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
             WHERE co.id = ?
             GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
                      fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
-                     u.first_name, u.last_name, fc.category
+                     u.first_name, u.last_name, fc.category, fc.difficulty_level
             """;
 
     private static final String SELECT_UPCOMING = """
@@ -63,7 +63,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                    fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
                    fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   fc.category,
+                   fc.category, fc.difficulty_level,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_occurrences co
             JOIN class_schedules cs ON co.schedule_id = cs.id
@@ -75,7 +75,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
               AND cs.is_active = TRUE
             GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
                      fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
-                     u.first_name, u.last_name, fc.category
+                     u.first_name, u.last_name, fc.category, fc.difficulty_level
             ORDER BY scheduled_at ASC
             """;
 
@@ -86,7 +86,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                    fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
                    fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   fc.category,
+                   fc.category, fc.difficulty_level,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
             FROM class_occurrences co
             JOIN class_schedules cs ON co.schedule_id = cs.id
@@ -99,7 +99,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
               AND fc.category = ?
             GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
                      fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
-                     u.first_name, u.last_name, fc.category
+                     u.first_name, u.last_name, fc.category, fc.difficulty_level
             ORDER BY scheduled_at ASC
             """;
 
@@ -207,6 +207,7 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                 .classNameKz(rs.getString("class_name_kz"))
                 .trainerName(rs.getString("trainer_name"))
                 .category(rs.getString("category"))
+                .difficultyLevel(rs.getString("difficulty_level"))
                 .spotsLeft(rs.getInt("spots_left"))
                 .durationMinutes(rs.getInt("duration_minutes"))
                 .build();

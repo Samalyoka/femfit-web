@@ -36,6 +36,7 @@ public class ClassSchedule {
     private String classNameKz;
     private String trainerName;
     private String category;
+    private String difficultyLevel;
     private int spotsLeft;
     private int durationMinutes;
 

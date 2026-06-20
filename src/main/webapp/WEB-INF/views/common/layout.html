@@ -29,18 +29,26 @@
   <a class="nav-link" th:href="@{/home}" th:text="#{nav.home}">Home</a>
   <a class="nav-link" th:href="@{/schedule}" th:text="#{nav.schedule}">Schedule</a>
   <a class="nav-link" th:href="@{/plans}" th:text="#{nav.membership}">Membership</a>
-  <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/profile}" th:text="#{nav.profile}">My Profile</a>
   <a class="nav-link" th:if="${userRole == 'CLIENT'}" th:href="@{/client/cycles}" th:text="#{nav.cycles}">Programs</a>
-  <a class="nav-link" th:if="${userRole == 'TRAINER'}" th:href="@{/trainer/dashboard}" th:text="#{nav.trainer}">Trainer Panel</a>
-  <a class="nav-link" th:if="${userRole == 'ADMIN'}" th:href="@{/admin/dashboard}" th:text="#{nav.admin}">Admin Panel</a>
 
-  <span th:if="${isAuthenticated}"
-        th:text="${currentUserName}"
-        style="font-family: var(--serif); font-size: 13px; color: var(--muted);
-               padding: 0 12px; white-space: nowrap;
-               border-left: 1px solid var(--border);
-               border-right: 1px solid var(--border);">
-  </span>
+  <!-- User badge: avatar + name, replaces the old separate "My Profile" /
+       "Trainer Panel" / "Admin Panel" text links and the static name span.
+       One clickable element, routed to the right dashboard per role. -->
+  <a th:if="${isAuthenticated and userRole == 'CLIENT'}"
+     class="user-badge" th:href="@{/client/profile}">
+    <span class="user-badge__avatar" th:text="${currentUserInitials}">AK</span>
+    <span class="user-badge__name" th:text="${currentUserName}">Anna Kim</span>
+  </a>
+  <a th:if="${isAuthenticated and userRole == 'TRAINER'}"
+     class="user-badge" th:href="@{/trainer/dashboard}">
+    <span class="user-badge__avatar" th:text="${currentUserInitials}">EM</span>
+    <span class="user-badge__name" th:text="${currentUserName}">Elena Morozova</span>
+  </a>
+  <a th:if="${isAuthenticated and userRole == 'ADMIN'}"
+     class="user-badge" th:href="@{/admin/dashboard}">
+    <span class="user-badge__avatar" th:text="${currentUserInitials}">A</span>
+    <span class="user-badge__name" th:text="${currentUserName}">Admin</span>
+  </a>
 
   <div class="lang-sw">
     <a th:href="@{''(lang=en)}" class="lang-btn"

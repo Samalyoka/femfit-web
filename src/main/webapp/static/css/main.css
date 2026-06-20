@@ -53,6 +53,10 @@ nav.main-nav {
 .nav-cta { margin-left: 8px; padding: 9px 22px; background: var(--rose); color: white; border: none; border-radius: 30px; font-family: var(--serif); font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.2s, transform 0.15s; letter-spacing: 0.3px; text-decoration: none; display: inline-block; }
 .nav-cta:hover { background: var(--rose-dark); transform: translateY(-1px); color: white; }
 .lang-sw { display: flex; gap: 2px; margin-left: 12px; background: var(--sand); border-radius: 20px; padding: 3px; }
+.user-badge { display: inline-flex; align-items: center; gap: 9px; padding: 6px 16px 6px 6px; border-radius: 30px; text-decoration: none; transition: all 0.2s; }
+.user-badge:hover { background: var(--sand); }
+.user-badge__avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--rose); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 13px; font-weight: 500; letter-spacing: 0.5px; flex-shrink: 0; }
+.user-badge__name { font-family: var(--serif); font-size: 14px; font-weight: 400; color: var(--charcoal); white-space: nowrap; }
 .lang-btn { font-family: var(--serif); font-size: 13px; font-weight: 400; padding: 4px 10px; border-radius: 16px; border: none; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-block; }
 .lang-btn:hover { color: var(--rose-dark); }
 .lang-btn.active { background: white; color: var(--rose-dark); font-weight: 500; }
@@ -113,19 +117,8 @@ footer { background: var(--rose-deep); color: rgba(255,255,255,0.7); font-family
 .hero-sub { font-family: var(--serif); font-size: 18px; font-weight: 300; color: var(--muted); line-height: 1.7; margin-bottom: 36px; max-width: 420px; }
 .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
 .hero-visual { position: relative; height: 480px; display: flex; align-items: center; justify-content: center; }
-.hero-card-big { position: absolute; width: 280px; height: 340px; background: rgba(245,232,234,0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid var(--rose-mid); box-shadow: 0 12px 40px rgba(196,104,122,0.12); left: 40px; top: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 24px; animation: fadeUp 0.7s ease-out 0.2s both; }
-.hero-stat-card { position: absolute; top: 30px; right: 10px; background: var(--rose-dark); color: white; border-radius: 16px; padding: 16px 20px; width: 160px; box-shadow: 0 12px 32px rgba(122,48,64,0.25); animation: fadeUp 0.7s ease-out 0.4s both; }
-.hero-card-label { font-family: var(--serif); font-size: 12px; font-weight: 300; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
-.hero-card-class { font-family: var(--serif); font-size: 22px; font-weight: 400; color: var(--rose-deep); margin-bottom: 4px; }
-.hero-card-meta { font-family: var(--serif); font-size: 13px; font-weight: 300; color: var(--muted); margin-bottom: 16px; }
-.hero-card-divider { height: 1px; background: var(--border); margin-bottom: 16px; width: 100%; }
-.hero-card-stat { font-family: var(--serif); font-size: 32px; font-weight: 400; color: var(--rose); }
-.hero-card-statlabel { font-family: var(--serif); font-size: 12px; font-weight: 300; color: var(--muted); }
-.hero-week-label { font-family: var(--serif); font-size: 12px; font-weight: 300; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; margin-bottom: 4px; }
-.hero-week-stat { font-family: var(--serif); font-size: 24px; font-weight: 400; line-height: 1; }
-.hero-week-sub { font-family: var(--serif); font-size: 12px; font-weight: 300; opacity: 0.8; margin-top: 4px; }
-.hero-image-container { width: 100%; max-width: 500px; height: 600px; overflow: hidden; border-radius: 30px; box-shadow: 0 20px 40px rgba(122,48,64,0.15); margin: 0 auto; }
-.hero-image-container img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; filter: brightness(0.98) saturate(0.95); }
+.hero-image-container { width: 100%; max-width: 560px; aspect-ratio: 3 / 2; overflow: hidden; border-radius: 30px; box-shadow: 0 20px 40px rgba(122,48,64,0.15); margin: 0 auto; }
+.hero-image-container img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transition: transform 0.5s ease; filter: brightness(0.98) saturate(0.95); }
 .hero-image-container img:hover { transform: scale(1.05); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .hero-eyebrow, .hero-h1, .hero-sub, .hero-btns { animation: fadeUp 0.6s ease-out both; }
@@ -135,11 +128,15 @@ footer { background: var(--rose-deep); color: rgba(255,255,255,0.7); font-family
 @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } .hero-visual { display: none; } .class-grid { grid-template-columns: repeat(2, 1fr); } }
 
 /* ── Classes grid ────────────────────────────────────────────── */
-.class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.class-card { background: white; border: 0.5px solid var(--border); border-radius: 4px; padding: 28px 20px 24px; cursor: pointer; transition: background 0.2s, transform 0.2s, box-shadow 0.2s; text-align: center; display: flex; flex-direction: column; align-items: center; text-decoration: none; color: inherit; animation: fadeUp 0.5s ease-out both; }
+.class-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.class-card { background: white; border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; text-align: center; text-decoration: none; color: inherit; animation: fadeUp 0.5s ease-out both; }
 .class-card:nth-child(1) { animation-delay: 0.05s; } .class-card:nth-child(2) { animation-delay: 0.10s; } .class-card:nth-child(3) { animation-delay: 0.15s; } .class-card:nth-child(4) { animation-delay: 0.20s; } .class-card:nth-child(5) { animation-delay: 0.25s; } .class-card:nth-child(6) { animation-delay: 0.30s; }
-.class-card:hover { background: var(--rose-light); transform: translateY(-4px); box-shadow: 0 10px 28px rgba(196,104,122,0.12); }
-.class-line { width: 24px; height: 1px; background: var(--rose); margin-bottom: 16px; }
+.class-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(196,104,122,0.16); }
+.class-card__photo { width: 100%; aspect-ratio: 4 / 3; overflow: hidden; background: var(--rose-light); }
+.class-card__photo img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+.class-card:hover .class-card__photo img { transform: scale(1.06); }
+.class-card__body { padding: 22px 16px 24px; }
+.class-line { width: 24px; height: 1px; background: var(--rose); margin: 0 auto 14px; }
 .class-name { font-family: var(--serif); font-size: 13px; font-weight: 400; letter-spacing: 3px; text-transform: uppercase; color: var(--charcoal); }
 .class-count { font-family: var(--serif); font-size: 12px; font-weight: 300; color: var(--muted); margin-top: 8px; letter-spacing: 1px; }
 
@@ -217,6 +214,11 @@ footer { background: var(--rose-deep); color: rgba(255,255,255,0.7); font-family
 .sched-row:hover { background: var(--sand); }
 .time-c { font-size: 15px; color: var(--muted); }
 .class-n { font-weight: 500; color: var(--charcoal); }
+.class-n-row { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.difficulty-badge { font-family: var(--sans); font-size: 10px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 9px; border-radius: 10px; }
+.difficulty-badge--beginner { background: #EAF3DE; color: #3B6D11; }
+.difficulty-badge--intermediate { background: #FAEEDA; color: #854F0B; }
+.difficulty-badge--advanced { background: var(--rose-light); color: var(--rose-dark); }
 .trainer-c { font-size: 15px; color: var(--muted); }
 .spots-badge { font-family: var(--serif); display: inline-block; font-size: 12px; padding: 3px 10px; border-radius: 12px; background: var(--rose-light); color: var(--rose-dark); font-weight: 400; }
 .spots-badge.full { background: #F1EFE8; color: var(--muted); }

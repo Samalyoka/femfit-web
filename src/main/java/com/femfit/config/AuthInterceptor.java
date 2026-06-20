@@ -44,10 +44,13 @@ public class AuthInterceptor implements HandlerInterceptor {
                         .ifPresent(a -> modelAndView.addObject("userRole",
                                 a.getAuthority().replace("ROLE_", "")));
                 if (auth.getPrincipal() instanceof UserDetails ud) {
-                    String fullName = memberService.findByEmail(ud.getUsername())
-                            .map(m -> m.getFirstName() + " " + m.getLastName())
-                            .orElse(ud.getUsername());
-                    modelAndView.addObject("currentUserName", fullName);
+                    memberService.findByEmail(ud.getUsername()).ifPresentOrElse(m -> {
+                        modelAndView.addObject("currentUserName", m.getFirstName() + " " + m.getLastName());
+                        modelAndView.addObject("currentUserInitials", m.getInitials());
+                    }, () -> {
+                        modelAndView.addObject("currentUserName", ud.getUsername());
+                        modelAndView.addObject("currentUserInitials", "?");
+                    });
                 }
             }
         }

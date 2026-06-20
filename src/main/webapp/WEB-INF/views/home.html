@@ -28,20 +28,7 @@
     </div>
     <div class="hero-visual">
       <div class="hero-image-container">
-        <img th:src="@{/static/img/img.png}" alt="FemFit community">
-      </div>
-      <div class="hero-card-big">
-        <div class="hero-card-label" th:text="#{home.hero.card.label}">Next class</div>
-        <div class="hero-card-class" th:text="#{home.hero.card.class}">Morning Yoga</div>
-        <div class="hero-card-meta" th:text="#{home.hero.card.meta}">07:00 · Studio A · Elena M.</div>
-        <div class="hero-card-divider"></div>
-        <div class="hero-card-stat" th:text="#{home.hero.card.stat}">2,400+</div>
-        <div class="hero-card-statlabel" th:text="#{home.hero.card.statlabel}">Active members</div>
-      </div>
-      <div class="hero-stat-card">
-        <div class="hero-week-label" th:text="#{home.hero.week.label}">This week</div>
-        <div class="hero-week-stat" th:text="#{home.hero.week.stat}">35 classes</div>
-        <div class="hero-week-sub" th:text="#{home.hero.week.sub}">across 6 studios</div>
+        <img th:src="@{/static/img/home/hero-community.jpg}" alt="FemFit community">
       </div>
     </div>
   </div>
@@ -51,10 +38,47 @@
     <div class="section-eyebrow" th:text="#{home.classes.eyebrow}">What we offer</div>
     <h2 class="section-title" th:text="#{home.classes.title}">Our classes</h2>
     <div class="class-grid">
-      <a th:each="cat : ${ {'CARDIO','YOGA','STRENGTH','PILATES','DANCE','STRETCHING'} }"
-         th:href="@{/schedule(category=${cat})}" class="class-card">
-        <div class="class-line"></div>
-        <div class="class-name" th:text="${cat}">YOGA</div>
+      <a th:href="@{/schedule(category='CARDIO')}" class="class-card">
+        <div class="class-card__photo"><img th:src="@{/static/img/home/category-cardio.jpg}" alt="Cardio"></div>
+        <div class="class-card__body">
+          <div class="class-line"></div>
+          <div class="class-name" th:text="#{schedule.filter.cardio}">CARDIO</div>
+        </div>
+      </a>
+      <a th:href="@{/schedule(category='YOGA')}" class="class-card">
+        <div class="class-card__photo"><img th:src="@{/static/img/home/category-yoga.jpg}" alt="Yoga"></div>
+        <div class="class-card__body">
+          <div class="class-line"></div>
+          <div class="class-name" th:text="#{schedule.filter.yoga}">YOGA</div>
+        </div>
+      </a>
+      <a th:href="@{/schedule(category='STRENGTH')}" class="class-card">
+        <div class="class-card__photo"><img th:src="@{/static/img/home/category-strength.jpg}" alt="Strength"></div>
+        <div class="class-card__body">
+          <div class="class-line"></div>
+          <div class="class-name" th:text="#{schedule.filter.strength}">STRENGTH</div>
+        </div>
+      </a>
+      <a th:href="@{/schedule(category='PILATES')}" class="class-card">
+        <div class="class-card__photo"><img th:src="@{/static/img/home/category-pilates.jpg}" alt="Pilates"></div>
+        <div class="class-card__body">
+          <div class="class-line"></div>
+          <div class="class-name" th:text="#{schedule.filter.pilates}">PILATES</div>
+        </div>
+      </a>
+      <a th:href="@{/schedule(category='DANCE')}" class="class-card">
+        <div class="class-card__photo"><img th:src="@{/static/img/home/category-dance.jpg}" alt="Dance"></div>
+        <div class="class-card__body">
+          <div class="class-line"></div>
+          <div class="class-name" th:text="#{schedule.filter.dance}">DANCE</div>
+        </div>
+      </a>
+      <a th:href="@{/schedule(category='STRETCHING')}" class="class-card">
+        <div class="class-card__photo"><img th:src="@{/static/img/home/category-stretching.jpg}" alt="Stretching"></div>
+        <div class="class-card__body">
+          <div class="class-line"></div>
+          <div class="class-name" th:text="#{schedule.filter.stretching}">STRETCHING</div>
+        </div>
       </a>
     </div>
   </div>
