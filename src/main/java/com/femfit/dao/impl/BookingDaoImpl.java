@@ -47,9 +47,10 @@ public class BookingDaoImpl implements BookingDao {
             SELECT b.id, b.member_id, b.schedule_id, b.booked_at, b.status,
                    fc.name AS class_name,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   cs.scheduled_at, cs.room
+                   (co.occurrence_date + cs.start_time) AS scheduled_at, cs.room
             FROM bookings b
-            JOIN class_schedules cs ON b.schedule_id = cs.id
+            JOIN class_occurrences co ON b.schedule_id = co.id
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
             JOIN members u ON t.id = u.id
@@ -60,24 +61,26 @@ public class BookingDaoImpl implements BookingDao {
             SELECT b.id, b.member_id, b.schedule_id, b.booked_at, b.status,
                    fc.name AS class_name,
                    u.first_name || ' ' || u.last_name AS trainer_name,
-                   cs.scheduled_at, cs.room
+                   (co.occurrence_date + cs.start_time) AS scheduled_at, cs.room
             FROM bookings b
-            JOIN class_schedules cs ON b.schedule_id = cs.id
+            JOIN class_occurrences co ON b.schedule_id = co.id
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
             JOIN members u ON t.id = u.id
             WHERE b.member_id = ?
               AND b.status = 'CONFIRMED'
-              AND cs.scheduled_at > NOW()
-            ORDER BY cs.scheduled_at ASC
+              AND (co.occurrence_date + cs.start_time) > NOW()
+            ORDER BY scheduled_at ASC
             """;
 
     private static final String SELECT_BY_SCHEDULE = """
             SELECT b.id, b.member_id, b.schedule_id, b.booked_at, b.status,
-                   fc.name AS class_name, cs.scheduled_at, cs.room,
+                   fc.name AS class_name, (co.occurrence_date + cs.start_time) AS scheduled_at, cs.room,
                    u.first_name || ' ' || u.last_name AS trainer_name
             FROM bookings b
-            JOIN class_schedules cs ON b.schedule_id = cs.id
+            JOIN class_occurrences co ON b.schedule_id = co.id
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN trainers t ON cs.trainer_id = t.id
             JOIN members u ON t.id = u.id
@@ -106,18 +109,25 @@ public class BookingDaoImpl implements BookingDao {
             """;
 
     /**
-     * Locks the class_schedules row for the given slot and returns the
-     * class capacity (from fitness_classes). FOR UPDATE OF cs ensures
-     * concurrent bookWithLock() calls for the same schedule_id are
-     * serialized — the second caller blocks until the first commits
-     * or rolls back.
+     * Locks the class_occurrences row for the given dated session and
+     * returns the class capacity (from fitness_classes via the recurring
+     * template). FOR UPDATE OF co ensures concurrent bookWithLock() calls
+     * for the same occurrence (scheduleId, which is really an occurrence
+     * id post-migration-v4) are serialized — the second caller blocks
+     * until the first commits or rolls back.
+     *
+     * <p>Locking the occurrence (not the template) is essential: the same
+     * template row backs every future week's session, so locking the
+     * template would serialize bookings across ALL weeks of that class,
+     * not just the one being booked.</p>
      */
     private static final String LOCK_SCHEDULE_AND_GET_CAPACITY = """
             SELECT fc.capacity
-            FROM class_schedules cs
+            FROM class_occurrences co
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
-            WHERE cs.id = ?
-            FOR UPDATE OF cs
+            WHERE co.id = ?
+            FOR UPDATE OF co
             """;
 
     /**

@@ -60,6 +60,15 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- jakarta.annotation-api: provides @PostConstruct/@PreDestroy.
+         Not pulled in transitively by spring-context on Spring 6 — needed
+         explicitly for ScheduleOccurrenceInitializer's @PostConstruct hook. -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>2.1.1</version>
+    </dependency>
+
     <!-- ══ THYMELEAF + SPRING INTEGRATION ══ -->
     <dependency>
       <groupId>org.thymeleaf</groupId>

@@ -15,6 +15,14 @@ import java.util.Optional;
 
 /**
  * JDBC implementation of {@link ClassScheduleDao}.
+ *
+ * <p>Reads from {@code class_occurrences} (the bookable, dated sessions)
+ * joined back to their {@code class_schedules} recurring template to get
+ * the day/time, room, class, and trainer info. {@code scheduled_at} is
+ * computed in SQL as {@code occurrence_date + start_time} so the rest of
+ * the application (bookings, the schedule page) keeps working with a single
+ * timestamp exactly as before migration v4 — only the source of that
+ * timestamp changed, from a stored column to a computed one.</p>
  */
 @Repository
 public class ClassScheduleDaoImpl implements ClassScheduleDao {
@@ -29,50 +37,87 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
     }
 
     private static final String SELECT_BY_ID = """
-            SELECT cs.id, cs.class_id, cs.trainer_id, cs.scheduled_at, cs.room, cs.is_cancelled,
-                   fc.name AS class_name, fc.capacity, fc.duration_minutes,
+            SELECT co.id, cs.class_id, cs.trainer_id,
+                   (co.occurrence_date + cs.start_time) AS scheduled_at,
+                   cs.room, co.is_cancelled,
+                   fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
+                   fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
                    fc.category,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
-            FROM class_schedules cs
+            FROM class_occurrences co
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN members u ON cs.trainer_id = u.id
-            LEFT JOIN bookings b ON cs.id = b.schedule_id
-            WHERE cs.id = ?
-            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, fc.category
+            LEFT JOIN bookings b ON co.id = b.schedule_id
+            WHERE co.id = ?
+            GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
+                     fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
+                     u.first_name, u.last_name, fc.category
             """;
 
     private static final String SELECT_UPCOMING = """
-            SELECT cs.id, cs.class_id, cs.trainer_id, cs.scheduled_at, cs.room, cs.is_cancelled,
-                   fc.name AS class_name, fc.capacity, fc.duration_minutes,
+            SELECT co.id, cs.class_id, cs.trainer_id,
+                   (co.occurrence_date + cs.start_time) AS scheduled_at,
+                   cs.room, co.is_cancelled,
+                   fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
+                   fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
                    fc.category,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
-            FROM class_schedules cs
+            FROM class_occurrences co
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN members u ON cs.trainer_id = u.id
-            LEFT JOIN bookings b ON cs.id = b.schedule_id
-            WHERE cs.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
-              AND cs.is_cancelled = FALSE
-            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, fc.category
-            ORDER BY cs.scheduled_at ASC
+            LEFT JOIN bookings b ON co.id = b.schedule_id
+            WHERE (co.occurrence_date + cs.start_time) BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+              AND co.is_cancelled = FALSE
+              AND cs.is_active = TRUE
+            GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
+                     fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
+                     u.first_name, u.last_name, fc.category
+            ORDER BY scheduled_at ASC
             """;
 
     private static final String SELECT_UPCOMING_BY_CATEGORY = """
-            SELECT cs.id, cs.class_id, cs.trainer_id, cs.scheduled_at, cs.room, cs.is_cancelled,
-                   fc.name AS class_name, fc.capacity, fc.duration_minutes,
+            SELECT co.id, cs.class_id, cs.trainer_id,
+                   (co.occurrence_date + cs.start_time) AS scheduled_at,
+                   cs.room, co.is_cancelled,
+                   fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
+                   fc.capacity, fc.duration_minutes,
                    u.first_name || ' ' || u.last_name AS trainer_name,
                    fc.category,
                    fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
-            FROM class_schedules cs
+            FROM class_occurrences co
+            JOIN class_schedules cs ON co.schedule_id = cs.id
             JOIN fitness_classes fc ON cs.class_id = fc.id
             JOIN members u ON cs.trainer_id = u.id
-            LEFT JOIN bookings b ON cs.id = b.schedule_id
-            WHERE cs.scheduled_at BETWEEN NOW() AND NOW() + INTERVAL '7 days'
-              AND cs.is_cancelled = FALSE
+            LEFT JOIN bookings b ON co.id = b.schedule_id
+            WHERE (co.occurrence_date + cs.start_time) BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+              AND co.is_cancelled = FALSE
+              AND cs.is_active = TRUE
               AND fc.category = ?
-            GROUP BY cs.id, fc.name, fc.capacity, fc.duration_minutes, u.first_name, u.last_name, fc.category
-            ORDER BY cs.scheduled_at ASC
+            GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
+                     fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
+                     u.first_name, u.last_name, fc.category
+            ORDER BY scheduled_at ASC
+            """;
+
+    /**
+     * Generates occurrences for the next N weeks from today, for every
+     * active recurring template. Idempotent — relies on the (schedule_id,
+     * occurrence_date) UNIQUE constraint, so calling this repeatedly (e.g.
+     * on every app startup) never creates duplicates. This is what keeps
+     * the schedule page from ever running dry again.
+     */
+    private static final String GENERATE_UPCOMING_OCCURRENCES = """
+            INSERT INTO class_occurrences (schedule_id, occurrence_date)
+            SELECT cs.id, d::date
+            FROM class_schedules cs
+            CROSS JOIN generate_series(CURRENT_DATE, CURRENT_DATE + (? || ' days')::interval, INTERVAL '1 day') AS d
+            WHERE cs.is_active = TRUE
+              AND EXTRACT(ISODOW FROM d)::int = cs.day_of_week
+            ON CONFLICT (schedule_id, occurrence_date) DO NOTHING
             """;
 
     @Override
@@ -126,6 +171,28 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
         return list;
     }
 
+    /**
+     * Generates occurrences for the next {@code weeksAhead} weeks from today
+     * for every active recurring template. Safe to call on every application
+     * startup or from a scheduled job — duplicates are silently skipped.
+     *
+     * @param weeksAhead how many weeks ahead to ensure occurrences exist for
+     */
+    @Override
+    public void generateUpcomingOccurrences(int weeksAhead) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(GENERATE_UPCOMING_OCCURRENCES)) {
+            ps.setInt(1, weeksAhead * 7);
+            int inserted = ps.executeUpdate();
+            log.info("Generated {} new class occurrence(s) for the next {} week(s)", inserted, weeksAhead);
+        } catch (SQLException e) {
+            log.error("Error generating upcoming occurrences: {}", e.getMessage());
+            throw new RuntimeException("Failed to generate occurrences", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
     private ClassSchedule mapRow(ResultSet rs) throws SQLException {
         return ClassSchedule.builder()
                 .id(rs.getLong("id"))
@@ -136,6 +203,8 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
                 .cancelled(rs.getBoolean("is_cancelled"))
                 .capacity(rs.getInt("capacity"))
                 .className(rs.getString("class_name"))
+                .classNameRu(rs.getString("class_name_ru"))
+                .classNameKz(rs.getString("class_name_kz"))
                 .trainerName(rs.getString("trainer_name"))
                 .category(rs.getString("category"))
                 .spotsLeft(rs.getInt("spots_left"))

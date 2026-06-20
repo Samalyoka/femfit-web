@@ -3,6 +3,7 @@ package com.femfit.dao.impl;
 import com.femfit.dao.TrainerDao;
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.dto.TrainerDto;
+import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
 import com.femfit.datasource.ConnectionPool;
@@ -97,6 +98,32 @@ public class TrainerDaoImpl implements TrainerDao {
         WHERE r.name = 'TRAINER'
           AND u.is_active = true
         GROUP BY u.id, u.first_name, u.last_name, u.email
+        ORDER BY u.first_name
+        """;
+
+    /**
+     * Full public profile per trainer for the "Our Trainers" page —
+     * joins members + trainers for the profile fields, and aggregates
+     * orders/reviews the same way FIND_ALL_TRAINERS_WITH_RATING does.
+     */
+    private static final String FIND_ALL_TRAINER_PROFILES = """
+        SELECT u.id, u.first_name, u.last_name,
+               t.photo_url, t.specialization, t.bio,
+               t.experience_years, t.certification,
+               t.specialization_ru, t.specialization_kz, t.bio_ru, t.bio_kz,
+               ROUND(AVG(rv.rating)::numeric, 1) AS avg_rating,
+               COUNT(rv.id) AS review_count
+        FROM members u
+        JOIN roles r ON r.id = u.role_id
+        JOIN trainers t ON t.id = u.id
+        LEFT JOIN orders o ON o.trainer_id = u.id
+        LEFT JOIN reviews rv ON rv.order_id = o.id
+        WHERE r.name = 'TRAINER'
+          AND u.is_active = true
+        GROUP BY u.id, u.first_name, u.last_name,
+                 t.photo_url, t.specialization, t.bio,
+                 t.experience_years, t.certification,
+                 t.specialization_ru, t.specialization_kz, t.bio_ru, t.bio_kz
         ORDER BY u.first_name
         """;
 
@@ -215,6 +242,27 @@ public class TrainerDaoImpl implements TrainerDao {
     }
 
     /**
+     * Full public profiles for all active trainers, for the "Our Trainers" page.
+     *
+     * @return list of trainer profiles, empty list if none found
+     * @throws RuntimeException if the query fails
+     */
+    @Override
+    public List<TrainerProfileDto> findAllTrainerProfiles() {
+        List<TrainerProfileDto> profiles = new ArrayList<>();
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINER_PROFILES);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) profiles.add(mapTrainerProfile(rs));
+        } catch (SQLException e) {
+            throw new RuntimeException("TrainerDao.findAllTrainerProfiles failed", e);
+        } finally {
+            pool.releaseConnection(con);
+        }
+        return profiles;
+    }
+
+    /**
      * Maps a ResultSet row to a {@link Member} object.
      *
      * @param rs the result set positioned at the current row
@@ -257,6 +305,34 @@ public class TrainerDaoImpl implements TrainerDao {
                 .firstName(rs.getString("first_name"))
                 .lastName(rs.getString("last_name"))
                 .email(rs.getString("email"))
+                .averageRating(hasRating ? avgRating : null)
+                .reviewCount(rs.getInt("review_count"))
+                .build();
+    }
+
+    /**
+     * Maps a ResultSet row to a {@link TrainerProfileDto} object.
+     *
+     * @param rs the result set positioned at the current row
+     * @return a populated TrainerProfileDto object
+     * @throws SQLException if a column cannot be read
+     */
+    private TrainerProfileDto mapTrainerProfile(ResultSet rs) throws SQLException {
+        double avgRating = rs.getDouble("avg_rating");
+        boolean hasRating = !rs.wasNull();
+        return TrainerProfileDto.builder()
+                .id(rs.getLong("id"))
+                .firstName(rs.getString("first_name"))
+                .lastName(rs.getString("last_name"))
+                .photoUrl(rs.getString("photo_url"))
+                .specialization(rs.getString("specialization"))
+                .bio(rs.getString("bio"))
+                .experienceYears(rs.getInt("experience_years"))
+                .certification(rs.getString("certification"))
+                .specializationRu(rs.getString("specialization_ru"))
+                .specializationKz(rs.getString("specialization_kz"))
+                .bioRu(rs.getString("bio_ru"))
+                .bioKz(rs.getString("bio_kz"))
                 .averageRating(hasRating ? avgRating : null)
                 .reviewCount(rs.getInt("review_count"))
                 .build();

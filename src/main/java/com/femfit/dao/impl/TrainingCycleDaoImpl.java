@@ -30,20 +30,23 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
     }
 
     private static final String SELECT_ALL = """
-            SELECT id, title, description, duration_weeks, price, is_active, created_at
+            SELECT id, title, description, duration_weeks, price, is_active, created_at, photo_url,
+                   title_ru, title_kz, description_ru, description_kz
             FROM training_cycles
             ORDER BY created_at DESC
             """;
 
     private static final String SELECT_ACTIVE = """
-            SELECT id, title, description, duration_weeks, price, is_active, created_at
+            SELECT id, title, description, duration_weeks, price, is_active, created_at, photo_url,
+                   title_ru, title_kz, description_ru, description_kz
             FROM training_cycles
             WHERE is_active = true
             ORDER BY created_at DESC
             """;
 
     private static final String SELECT_BY_ID = """
-            SELECT id, title, description, duration_weeks, price, is_active, created_at
+            SELECT id, title, description, duration_weeks, price, is_active, created_at, photo_url,
+                   title_ru, title_kz, description_ru, description_kz
             FROM training_cycles
             WHERE id = ?
             """;
@@ -245,6 +248,11 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
                 .active(rs.getBoolean("is_active"))
                 .createdAt(rs.getTimestamp("created_at") != null
                         ? rs.getTimestamp("created_at").toLocalDateTime() : null)
+                .photoUrl(rs.getString("photo_url"))
+                .titleRu(rs.getString("title_ru"))
+                .titleKz(rs.getString("title_kz"))
+                .descriptionRu(rs.getString("description_ru"))
+                .descriptionKz(rs.getString("description_kz"))
                 .build();
     }
 }

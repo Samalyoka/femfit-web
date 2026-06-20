@@ -16,14 +16,17 @@
 
   <div class="cycles-grid">
     <div th:each="cycle : ${cycles}" class="cycle-card">
+      <div class="cycle-photo" th:if="${cycle.photoUrl}">
+        <img th:src="@{${cycle.photoUrl}}" th:alt="${cycle.getLocalizedTitle(#locale.language)}">
+      </div>
       <div class="cycle-header">
-        <h2 class="cycle-title" th:text="${cycle.title}"></h2>
+        <h2 class="cycle-title" th:text="${cycle.getLocalizedTitle(#locale.language)}"></h2>
         <div class="cycle-duration">
           <span th:text="${cycle.durationWeeks}"></span>
           <span th:text="#{cycles.weeks}"> weeks</span>
         </div>
       </div>
-      <p class="cycle-desc" th:text="${cycle.description}"></p>
+      <p class="cycle-desc" th:text="${cycle.getLocalizedDescription(#locale.language)}"></p>
       <div class="cycle-footer">
         <div class="cycle-price"
              th:text="${#numbers.formatDecimal(cycle.price, 0, 'COMMA', 0, 'POINT')} + ' ₸'"></div>

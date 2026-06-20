@@ -53,7 +53,7 @@
         <!-- Schedule rows -->
         <div th:each="s : ${schedules}" class="sched-row">
             <span class="time-c" th:text="${#temporals.format(s.scheduledAt,'HH:mm')}">07:00</span>
-            <span class="class-n" th:text="${s.className}">Morning Yoga</span>
+            <span class="class-n" th:text="${s.getLocalizedClassName(#locale.language)}">Morning Yoga</span>
             <span class="trainer-c" th:text="${s.trainerName}">Elena M.</span>
 
             <!-- Spots badge -->

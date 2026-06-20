@@ -18,6 +18,31 @@
     <div class="container">
 
         <div class="about-block">
+            <h2 class="about-block__title" th:text="#{about.trainers.gallery.title}">Meet our trainers</h2>
+            <div class="trainer-gallery">
+                <div th:each="trainer : ${trainerProfiles}" class="trainer-card">
+                    <div class="trainer-card__photo">
+                        <img th:if="${trainer.photoUrl}" th:src="@{${trainer.photoUrl}}" th:alt="${trainer.fullName}">
+                    </div>
+                    <div class="trainer-card__body">
+                        <div class="trainer-card__name" th:text="${trainer.fullName}">Trainer Name</div>
+                        <div class="trainer-card__specialization" th:if="${trainer.getLocalizedSpecialization(#locale.language)}" th:text="${trainer.getLocalizedSpecialization(#locale.language)}">Specialization</div>
+                        <p class="trainer-card__bio" th:if="${trainer.getLocalizedBio(#locale.language)}" th:text="${trainer.getLocalizedBio(#locale.language)}">Bio text goes here.</p>
+                        <div class="trainer-card__meta">
+                            <span th:if="${trainer.certification}" th:text="${trainer.certification}">CERT</span>
+                            <span th:if="${trainer.hasRating()}"
+                                  th:with="roundedStars=${T(java.lang.Math).round(trainer.averageRating)}"
+                                  class="trainer-card__rating">
+                                <th:block th:each="i : ${#numbers.sequence(1, 5)}"
+                                          th:text="${i <= roundedStars} ? '★' : '☆'">★</th:block>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about-block">
             <h2 class="about-block__title" th:text="#{about.trainers.how.title}">What your trainer does for you</h2>
             <div class="about-steps">
                 <div class="about-step">

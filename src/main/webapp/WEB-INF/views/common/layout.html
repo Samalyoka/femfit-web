@@ -63,8 +63,51 @@
 </nav>
 
 <footer th:fragment="footer">
-  <div class="footer-logo">FemFit</div>
-  <div>© 2026 FemFit Women's Fitness Club. All rights reserved.</div>
+  <div class="footer-main">
+    <div class="footer-col">
+      <div class="footer-logo">Fem<span>Fit</span></div>
+      <p class="footer-about__text" th:text="#{footer.about.text}">FemFit is a women-only fitness club built around personal trainers, thoughtful programmes, and a community that supports every body, at every stage.</p>
+    </div>
+
+    <div class="footer-col">
+      <div class="footer-col__title" th:text="#{footer.contact.title}">Contact Us</div>
+      <div class="footer-contact__line" th:text="#{footer.contact.address}">12 Кабанбай Батыр, Astana, Kazakhstan</div>
+      <a class="footer-contact__phone" href="tel:+77001234567">+7 700 123-4567</a>
+      <a class="footer-contact__phone" href="mailto:hello@femfit.kz">hello@femfit.kz</a>
+    </div>
+
+    <div class="footer-col">
+      <div class="footer-col__title" th:text="#{footer.newsletter.title}">Newsletter</div>
+      <p class="footer-newsletter__text" th:text="#{footer.newsletter.text}">You can trust us. We only send offers, not a single spam.</p>
+      <form class="footer-newsletter__form" onsubmit="return false;">
+        <input class="footer-newsletter__input" type="email" th:placeholder="#{footer.newsletter.placeholder}" placeholder="Your email address">
+        <button class="footer-newsletter__btn" type="submit" aria-label="Subscribe">→</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="footer-copyright" th:text="#{footer.copyright}">© 2026 FemFit Women's Fitness Club. All rights reserved.</div>
+    <div class="footer-social">
+      <a class="footer-social__link" href="#" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.6"/>
+          <circle cx="17.2" cy="6.8" r="1" fill="currentColor"/>
+        </svg>
+      </a>
+      <a class="footer-social__link" href="#" aria-label="Facebook">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 9h2.5V5.5H14C11.8 5.5 10 7.3 10 9.5V12H7.5v3.5H10V21h3.5v-5.5H16l1-3.5h-3.5v-2c0-.6.4-1 1-1Z" fill="currentColor"/>
+        </svg>
+      </a>
+      <a class="footer-social__link" href="#" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.5 3c.4 2.2 2 3.7 4.2 4v2.7c-1.5.1-2.9-.3-4.2-1.1v6.7c0 3.2-2.6 5.7-5.8 5.7S5 18.5 5 15.3c0-3.1 2.5-5.6 5.5-5.7v2.8a2.9 2.9 0 1 0 2.9 2.9V3h3.1Z" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
+  </div>
 </footer>
 
 </body>

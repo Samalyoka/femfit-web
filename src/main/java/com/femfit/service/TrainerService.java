@@ -2,6 +2,7 @@ package com.femfit.service;
 
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.dto.TrainerDto;
+import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
 
@@ -20,6 +21,13 @@ public interface TrainerService {
     List<TrainerDto> getAllTrainers();
 
     List<TrainerDto> getAllTrainersWithRating();
+
+    /**
+     * Full public profiles for all active trainers, for the "Our Trainers" page.
+     *
+     * @return list of trainer profiles, possibly empty
+     */
+    List<TrainerProfileDto> getAllTrainerProfiles();
 
     /**
      * @deprecated This returns the most recently updated assignment across

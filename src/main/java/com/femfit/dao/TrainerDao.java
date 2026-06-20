@@ -2,6 +2,7 @@ package com.femfit.dao;
 
 import com.femfit.dto.ClientOrderDto;
 import com.femfit.dto.TrainerDto;
+import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Member;
 
 import java.util.List;
@@ -60,4 +61,16 @@ public interface TrainerDao {
      * @return list of client/order projections, possibly empty
      */
     List<ClientOrderDto> findClientsWithOrderByTrainerId(long trainerId);
+
+    /**
+     * Returns full public profiles for all active trainers — photo, specialization,
+     * bio, certification, experience years, and average review rating — for the
+     * public-facing "Our Trainers" page (about/trainers.html). Unlike
+     * {@link #findAllTrainersWithRating()}, this includes the marketing/profile
+     * fields needed to render a full trainer card, not just the lightweight
+     * picker fields.
+     *
+     * @return list of trainer profiles, possibly empty
+     */
+    List<TrainerProfileDto> findAllTrainerProfiles();
 }

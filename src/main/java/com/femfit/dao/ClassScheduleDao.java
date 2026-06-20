@@ -32,4 +32,15 @@ public interface ClassScheduleDao {
      * @return filtered list
      */
     List<ClassSchedule> findUpcomingByCategory(String category);
+
+    /**
+     * Generates dated, bookable occurrences for every active recurring
+     * schedule template, covering the next {@code weeksAhead} weeks from
+     * today. Idempotent — safe to call repeatedly (e.g. on every app
+     * startup). This is what keeps the public schedule page from ever
+     * running out of upcoming classes to show.
+     *
+     * @param weeksAhead how many weeks ahead to ensure occurrences exist for
+     */
+    void generateUpcomingOccurrences(int weeksAhead);
 }

@@ -1,8 +1,14 @@
 package com.femfit.controller;
 
+import com.femfit.dto.TrainerProfileDto;
+import com.femfit.service.TrainerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
 
 /**
  * Serves static informational pages about FemFit programmes and club features.
@@ -22,12 +28,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/about")
 public class AboutController {
 
+    private final TrainerService trainerService;
+
+    @Autowired
+    public AboutController(TrainerService trainerService) {
+        this.trainerService = trainerService;
+    }
+
     /**
      * Personal trainers page.
      * Linked from the "Personal trainers" Why Us card on the home page.
+     * Loads full public trainer profiles (photo, specialization, bio, rating)
+     * so the page can render a real "meet the team" gallery, not just the
+     * generic informational content.
      */
     @GetMapping("/trainers")
-    public String trainers() {
+    public String trainers(Model model) {
+        List<TrainerProfileDto> trainerProfiles = trainerService.getAllTrainerProfiles();
+        model.addAttribute("trainerProfiles", trainerProfiles);
         return "about/trainers";
     }
 
