@@ -27,6 +27,16 @@ public interface TrainingCycleDao {
     List<TrainingCycle> findAllActive();
 
     /**
+     * Returns a single page of active training cycles, most recent first.
+     * Used by clients to browse available programmes with pagination.
+     *
+     * @param offset SQL offset
+     * @param limit  page size
+     * @return list of active cycles for this page
+     */
+    List<TrainingCycle> findAllActive(int offset, int limit);
+
+    /**
      * Finds a training cycle by ID.
      *
      * @param id the cycle ID

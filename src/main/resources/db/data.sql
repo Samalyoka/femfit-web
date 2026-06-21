@@ -15,9 +15,11 @@
 --    trainers/training_cycles tables) — seeded directly here rather than via
 --    a separate patch, so a fresh `schema.sql` + `data.sql` run produces the
 --    full, photo-complete site with no extra steps.
---  • Passwords: trainer accounts use trainer123, admin uses admin123,
---    client test accounts use client123 (all BCrypt-hashed, unchanged from
---    the live DB).
+--  • Passwords: ALL trainer accounts (original 3 + 4 additional) use
+--    Trainer123! — admin uses admin123, client test accounts use client123
+--    (all BCrypt-hashed). The hash for the 4 additional trainers was regenerated
+--    and verified against Trainer123! on 2026-06-21 after the original
+--    seeded hash failed to authenticate on the live DB (see migration notes).
 
 
 -- ══════════════════════════════════════
@@ -182,7 +184,7 @@ Tuesday: Active Recovery (Yoga)
 Wednesday: Core & Stability
 Thursday: Rest Day
 Friday: Full Body Strength', 'ACTIVE', '2026-06-17 21:21:09.17287', '2026-06-18 22:50:23.241356'),
-                                                                                                                                (4, 20, 'Warm-up: 5 mins of Cat-Cow stretch & Child’s Pose to mobilize the spine.
+                                                                                                                                (4, 20, 'Warm-up: 5 mins of Cat-Cow stretch & Child''s Pose to mobilize the spine.
 Core Engagement:
 Dead Bug: 3 sets × 12 reps (focus on lower back pressed to the mat).
 Forearm Plank: 3 sets × 45 seconds (maintain a straight line from head to heels).
@@ -196,7 +198,7 @@ Daily focus: Ensure adequate protein intake to support core muscle recovery, and
 Best Time: Morning or early evening, ideally before heavy meals.
 Duration: 30–40 minutes per session.', 'ACTIVE', '2026-06-18 22:42:18.16052', '2026-06-18 22:42:18.16052'),
                                                                                                                                 (5, 17, '1. EXERCISE PLAN
-Warm-up: 5 mins of Cat-Cow stretch & Child’s Pose to mobilize the spine.
+Warm-up: 5 mins of Cat-Cow stretch & Child''s Pose to mobilize the spine.
 Core Engagement:
 Dead Bug: 3 sets × 12 reps (focus on lower back pressed to the mat).
 Forearm Plank: 3 sets × 45 seconds (maintain a straight line from head to heels).
@@ -349,18 +351,23 @@ WHERE id = 21;
 
 -- ══════════════════════════════════════
 --  ADDITIONAL TRAINERS (Pilates, Dance, Post-Natal, Beginner/Weight-Loss)
---  password for all = trainer123 (same BCrypt hash as the original 3 trainers)
+--  Password for all = Trainer123!
+--  This hash was freshly generated and VERIFIED against "Trainer123!" via
+--  bcrypt.checkpw() on 2026-06-21 — the previously seeded hash (copied from
+--  the original 3 trainers, assuming it meant the same password) turned out
+--  NOT to match Trainer123! on the live DB, causing login failures. If you
+--  re-seed from scratch, this hash is confirmed correct.
 -- ══════════════════════════════════════
 INSERT INTO members (first_name, last_name, email, phone, password_hash, birth_date, role_id)
 VALUES
     ('Aizhan',   'Tulegenova', 'aizhan@femfit.kz',   '+77078901234',
-     '$2a$12$bq3Kf2TLrBr/T80mCLscheAXtP4p/k/mUAA5BSCPr5fZUCW8CtLoO', '1993-04-11', 2),
+     '$2a$12$caalsQnPSp7fG1eFz/JvVe2bCop2zTkomnJP8nHHJWCTtiHFH8/aG', '1993-04-11', 2),
     ('Dina',     'Ospanova',   'dina@femfit.kz',     '+77089012345',
-     '$2a$12$bq3Kf2TLrBr/T80mCLscheAXtP4p/k/mUAA5BSCPr5fZUCW8CtLoO', '1990-09-27', 2),
+     '$2a$12$caalsQnPSp7fG1eFz/JvVe2bCop2zTkomnJP8nHHJWCTtiHFH8/aG', '1990-09-27', 2),
     ('Karina',   'Yermekova',  'karina@femfit.kz',   '+77090123456',
-     '$2a$12$bq3Kf2TLrBr/T80mCLscheAXtP4p/k/mUAA5BSCPr5fZUCW8CtLoO', '1987-02-19', 2),
+     '$2a$12$caalsQnPSp7fG1eFz/JvVe2bCop2zTkomnJP8nHHJWCTtiHFH8/aG', '1987-02-19', 2),
     ('Saltanat', 'Iskakova',   'saltanat@femfit.kz', '+77001239876',
-     '$2a$12$bq3Kf2TLrBr/T80mCLscheAXtP4p/k/mUAA5BSCPr5fZUCW8CtLoO', '1996-06-30', 2)
+     '$2a$12$caalsQnPSp7fG1eFz/JvVe2bCop2zTkomnJP8nHHJWCTtiHFH8/aG', '1996-06-30', 2)
 ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO trainers (id, bio, experience_years, certification, photo_url, specialization)

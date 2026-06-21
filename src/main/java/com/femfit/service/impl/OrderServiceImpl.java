@@ -36,6 +36,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<Order> findByUserId(Long userId, int offset, int limit) {
+        return orderDao.findByUserId(userId, offset, limit);
+    }
+
+    @Override
+    public int countByUserId(Long userId) {
+        return orderDao.countByUserId(userId);
+    }
+
+    @Override
     public Optional<Order> findById(Long orderId) {
         return orderDao.findById(orderId);
     }

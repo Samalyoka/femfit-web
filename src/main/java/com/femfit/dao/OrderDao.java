@@ -35,6 +35,24 @@ public interface OrderDao {
     List<Order> findByUserId(Long userId);
 
     /**
+     * Returns a single page of orders for a client, most recent first.
+     *
+     * @param userId client's user id
+     * @param offset SQL offset
+     * @param limit  page size
+     * @return list of orders for this page
+     */
+    List<Order> findByUserId(Long userId, int offset, int limit);
+
+    /**
+     * Counts total orders for a client (for client-side pagination).
+     *
+     * @param userId client's user id
+     * @return total number of orders placed by this client
+     */
+    int countByUserId(Long userId);
+
+    /**
      * Returns all active orders assigned to a trainer.
      *
      * @param trainerId trainer's user id

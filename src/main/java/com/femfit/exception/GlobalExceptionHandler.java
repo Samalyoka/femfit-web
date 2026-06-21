@@ -46,7 +46,7 @@ public class GlobalExceptionHandler {
         redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 
         String referrer = request.getHeader("Referer");
-        return "redirect:" + (referrer != null ? referrer : "/femfit/schedule");
+        return "redirect:" + (referrer != null ? referrer : "/schedule");
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
     ) {
         log.warn("Password validation error: {}", ex.getMessage());
         redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-        return "redirect:/femfit/client/profile";
+        return "redirect:/client/profile";
     }
 
     /**
@@ -85,9 +85,9 @@ public class GlobalExceptionHandler {
         // If coming from profile update, stay on profile; otherwise go to register
         String referrer = request.getHeader("Referer");
         if (referrer != null && referrer.contains("profile")) {
-            return "redirect:/femfit/client/profile";
+            return "redirect:/client/profile";
         }
-        return "redirect:/femfit/auth/register";
+        return "redirect:/auth/register";
     }
 
     // ══════════════════════════════════════════════════════════════
@@ -109,7 +109,7 @@ public class GlobalExceptionHandler {
         redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 
         String referrer = request.getHeader("Referer");
-        return "redirect:" + (referrer != null ? referrer : "/femfit/home");
+        return "redirect:" + (referrer != null ? referrer : "/home");
     }
 
     // ══════════════════════════════════════════════════════════════

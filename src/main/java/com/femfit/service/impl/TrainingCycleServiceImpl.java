@@ -38,6 +38,11 @@ public class TrainingCycleServiceImpl implements TrainingCycleService {
     }
 
     @Override
+    public List<TrainingCycle> findAllActive(int offset, int limit) {
+        return cycleDao.findAllActive(offset, limit);
+    }
+
+    @Override
     public Optional<TrainingCycle> findById(Integer id) {
         return cycleDao.findById(id);
     }

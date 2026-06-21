@@ -62,6 +62,23 @@ public class OrderDaoImpl implements OrderDao {
             ORDER BY o.created_at DESC
             """;
 
+    private static final String SELECT_BY_USER_PAGED = """
+            SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
+                   o.paid_amount, o.created_at, o.completed_at,
+                   u.first_name || ' ' || u.last_name AS client_name,
+                   tc.title AS cycle_title,
+                   t.first_name || ' ' || t.last_name AS trainer_name
+            FROM orders o
+            JOIN members u ON o.member_id = u.id
+            JOIN training_cycles tc ON o.cycle_id = tc.id
+            LEFT JOIN members t ON o.trainer_id = t.id
+            WHERE o.member_id = ?
+            ORDER BY o.created_at DESC
+            LIMIT ? OFFSET ?
+            """;
+
+    private static final String COUNT_BY_USER = "SELECT COUNT(*) FROM orders WHERE member_id = ?";
+
     private static final String SELECT_ACTIVE_BY_TRAINER = """
             SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
                    o.paid_amount, o.created_at, o.completed_at,
@@ -171,6 +188,43 @@ public class OrderDaoImpl implements OrderDao {
             pool.releaseConnection(conn);
         }
         return list;
+    }
+
+    @Override
+    public List<Order> findByUserId(Long userId, int offset, int limit) {
+        Connection conn = pool.getConnection();
+        List<Order> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_USER_PAGED)) {
+            ps.setLong(1, userId);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Error finding paged orders for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to find orders", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return list;
+    }
+
+    @Override
+    public int countByUserId(Long userId) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(COUNT_BY_USER)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.error("Error counting orders for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to count orders", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return 0;
     }
 
     @Override

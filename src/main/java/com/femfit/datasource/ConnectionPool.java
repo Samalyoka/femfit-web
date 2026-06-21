@@ -6,10 +6,10 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -37,7 +37,12 @@ public class ConnectionPool {
     /** Queue of available (idle) connections. */
     private final BlockingQueue<Connection> availableConnections;
 
-    /** All connections created by this pool (for shutdown). */
+    /**
+     * All connections created by this pool (for shutdown).
+     * CopyOnWriteArrayList because {@link #getConnection()} may append to it
+     * concurrently from multiple request threads when recreating a closed
+     * connection — a plain ArrayList is not safe for that concurrent access.
+     */
     private final List<Connection> allConnections;
 
     private volatile boolean isShutdown = false;
@@ -59,7 +64,7 @@ public class ConnectionPool {
         this.password = password;
         this.poolSize = poolSize;
         this.availableConnections = new ArrayBlockingQueue<>(poolSize);
-        this.allConnections = new ArrayList<>(poolSize);
+        this.allConnections = new CopyOnWriteArrayList<>();
 
         loadDriver(driver);
         initConnections();

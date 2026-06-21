@@ -17,6 +17,9 @@ public interface TrainingCycleService {
     /** Active cycles only — for client browse page. */
     List<TrainingCycle> findAllActive();
 
+    /** Active cycles only, paginated — for client browse page. */
+    List<TrainingCycle> findAllActive(int offset, int limit);
+
     /** Find by ID. */
     Optional<TrainingCycle> findById(Integer id);
 

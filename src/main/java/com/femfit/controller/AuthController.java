@@ -31,6 +31,22 @@ public class AuthController {
     }
 
     /**
+     * Handles stray GET requests to /auth/logout (e.g. a stale bookmark, browser history,
+     * or a manually typed URL). Actual logout is a POST-only operation handled by Spring
+     * Security's LogoutFilter via the form in common/layout.html; GET has no handler there
+     * by design (logout must not be triggerable by a plain link/CSRF-free navigation).
+     * Rather than letting this fall through to a 404/500, redirect the user to the login
+     * page so a wrong-method request degrades gracefully instead of erroring.
+     *
+     * @return redirect to the login page
+     */
+    @GetMapping("/logout")
+    public String logoutGetRedirect() {
+        log.debug("Received GET /auth/logout (no handler by design) — redirecting to /auth/login");
+        return "redirect:/auth/login";
+    }
+
+    /**
      * Renders the login page.
      * Actual POST authentication request processing is intercepted and handled by Spring Security.
      *

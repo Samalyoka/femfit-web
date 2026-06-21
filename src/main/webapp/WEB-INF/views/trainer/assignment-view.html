@@ -15,7 +15,7 @@
             <a class="back-link"
                th:href="@{/trainer/dashboard}"
                th:text="#{common.back}">← Back</a>
-            <h1 class="section-title" th:text="#{assignment.title}">Assignment</h1>
+            <h1 class="section-title" th:text="#{trainer.assignment.view.title}">Assignment</h1>
         </div>
 
         <!-- Client info bar -->
@@ -50,7 +50,7 @@
                     <line x1="25" y1="44" x2="45" y2="44" stroke="var(--rose-mid)" stroke-width="2" stroke-linecap="round"/>
                 </svg>
             </div>
-            <p class="assignment-empty__desc" th:text="#{assignment.no.assignment}">
+            <p class="assignment-empty__desc" th:text="#{trainer.assignment.view.no.assignment}">
                 No assignment created yet.
             </p>
             <a class="btn btn--primary"
@@ -71,22 +71,22 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" th:text="#{assignment.exercises}">Exercises</label>
+                <label class="form-label" th:text="#{trainer.assignment.view.exercises}">Exercises</label>
                 <div class="assignment-text" th:text="${assignment.exercises}">—</div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" th:text="#{assignment.equipment}">Equipment</label>
+                <label class="form-label" th:text="#{trainer.assignment.view.equipment}">Equipment</label>
                 <div class="assignment-text" th:text="${assignment.equipment}">—</div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" th:text="#{assignment.nutrition}">Nutrition Plan</label>
+                <label class="form-label" th:text="#{trainer.assignment.view.nutrition}">Nutrition Plan</label>
                 <div class="assignment-text" th:text="${assignment.nutritionPlan}">—</div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" th:text="#{assignment.schedule}">Schedule</label>
+                <label class="form-label" th:text="#{trainer.assignment.view.schedule}">Schedule</label>
                 <div class="assignment-text" th:text="${assignment.scheduleInfo}">—</div>
             </div>
 

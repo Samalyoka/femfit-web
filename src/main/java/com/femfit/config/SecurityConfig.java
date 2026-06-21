@@ -61,6 +61,7 @@ public class SecurityConfig {
                                 new AntPathRequestMatcher("/schedule/**"),
                                 new AntPathRequestMatcher("/plans"),
                                 new AntPathRequestMatcher("/auth/login"),
+                                new AntPathRequestMatcher("/auth/logout"),
                                 new AntPathRequestMatcher("/auth/register"),
                                 new AntPathRequestMatcher("/static/**"),
                                 new AntPathRequestMatcher("/error"),

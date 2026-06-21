@@ -6,20 +6,22 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Locale;
 
 /**
  * Root Spring application context.
  * Configures: Connection Pool, MessageSource, i18n.
+ *
+ * Note: PasswordEncoder is defined in {@link SecurityConfig}, not here —
+ * it's a security-specific bean used directly by SecurityConfig's
+ * AuthenticationManager, so it lives alongside the rest of the security
+ * setup rather than being duplicated across two configuration classes.
  */
 @Configuration
 @ComponentScan(basePackages = {
         "com.femfit.service",
-        "com.femfit.dao",
-        "com.femfit.util"
+        "com.femfit.dao"
 })
 @PropertySource("classpath:application.properties")
 public class AppConfig {
@@ -72,13 +74,5 @@ public class AppConfig {
         source.setDefaultLocale(Locale.ENGLISH);
         source.setCacheSeconds(3600);
         return source;
-    }
-
-    /**
-     * BCrypt password encoder with work factor 12.
-     */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12);
     }
 }

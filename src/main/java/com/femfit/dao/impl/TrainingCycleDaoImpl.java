@@ -44,6 +44,15 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
             ORDER BY created_at DESC
             """;
 
+    private static final String SELECT_ACTIVE_PAGED = """
+            SELECT id, title, description, duration_weeks, price, is_active, created_at, photo_url,
+                   title_ru, title_kz, description_ru, description_kz
+            FROM training_cycles
+            WHERE is_active = true
+            ORDER BY created_at DESC
+            LIMIT ? OFFSET ?
+            """;
+
     private static final String SELECT_BY_ID = """
             SELECT id, title, description, duration_weeks, price, is_active, created_at, photo_url,
                    title_ru, title_kz, description_ru, description_kz
@@ -106,6 +115,25 @@ public class TrainingCycleDaoImpl implements TrainingCycleDao {
             while (rs.next()) list.add(mapRow(rs));
         } catch (SQLException e) {
             log.error("Error fetching active training cycles: {}", e.getMessage());
+            throw new RuntimeException("Failed to fetch training cycles", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return list;
+    }
+
+    @Override
+    public List<TrainingCycle> findAllActive(int offset, int limit) {
+        Connection conn = pool.getConnection();
+        List<TrainingCycle> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_ACTIVE_PAGED)) {
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Error fetching paged active training cycles: {}", e.getMessage());
             throw new RuntimeException("Failed to fetch training cycles", e);
         } finally {
             pool.releaseConnection(conn);

@@ -115,21 +115,29 @@ public class ClientController {
     }
 
     /**
-     * Client's orders list.
+     * Client's orders list, paginated (10 per page).
      */
     @GetMapping("/orders")
-    public String orders(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String orders(@AuthenticationPrincipal UserDetails userDetails,
+                         @RequestParam(defaultValue = "1") int page,
+                         Model model) {
         Member member = getUser(userDetails);
-        List<Order> orders = orderService.findByUserId(member.getId());
+        int pageSize = 10;
+        int offset = (page - 1) * pageSize;
+        List<Order> orders = orderService.findByUserId(member.getId(), offset, pageSize);
 
         List<Long> reviewedOrderIds = orders.stream()
                 .map(Order::getId)
                 .filter(reviewService::hasReview)
                 .toList();
 
+        int totalOrders = orderService.countByUserId(member.getId());
+
         model.addAttribute("orders", orders);
         model.addAttribute("reviewedOrderIds", reviewedOrderIds);
         model.addAttribute("member", member);
+        model.addAttribute("totalPages", (int) Math.ceil(totalOrders / (double) pageSize));
+        model.addAttribute("currentPage", page);
         return "client/orders";
     }
 
@@ -165,18 +173,25 @@ public class ClientController {
     }
 
     /**
-     * Shows all available training cycles for purchase.
+     * Shows available training cycles for purchase, paginated (9 per page).
      */
     @GetMapping("/cycles")
-    public String cycles(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+    public String cycles(@AuthenticationPrincipal UserDetails userDetails,
+                         @RequestParam(defaultValue = "1") int page,
+                         Model model) {
         Member member = getUser(userDetails);
-        List<TrainingCycle> cycles = trainingCycleService.findAllActive();
+        int pageSize = 9;
+        int offset = (page - 1) * pageSize;
+        List<TrainingCycle> cycles = trainingCycleService.findAllActive(offset, pageSize);
         List<Order> myOrders = orderService.findByUserId(member.getId());
         List<Integer> purchasedCycleIds = myOrders.stream()
                 .map(Order::getCycleId)
                 .toList();
+        int totalActive = trainingCycleService.countActive();
         model.addAttribute("cycles", cycles);
         model.addAttribute("purchasedCycleIds", purchasedCycleIds);
+        model.addAttribute("totalPages", (int) Math.ceil(totalActive / (double) pageSize));
+        model.addAttribute("currentPage", page);
         return "client/cycles";
     }
 

@@ -14,12 +14,36 @@ import java.util.Optional;
  */
 public interface TrainerService {
 
+    /**
+     * Returns all clients assigned to the trainer identified by their member/user id.
+     *
+     * @param userIdOfTrainer the member id of the logged-in trainer
+     * @return list of clients assigned to this trainer, possibly empty
+     */
     List<Member> getClientsByTrainerUserId(long userIdOfTrainer);
 
+    /**
+     * Returns all clients assigned to the trainer, each paired with their
+     * associated order details (cycle, status, dates).
+     *
+     * @param userIdOfTrainer the member id of the logged-in trainer
+     * @return list of client/order pairs, possibly empty
+     */
     List<ClientOrderDto> getClientsWithOrderByTrainerUserId(long userIdOfTrainer);
 
+    /**
+     * Returns all trainers in the system, regardless of active status or rating.
+     *
+     * @return list of all trainers, possibly empty
+     */
     List<TrainerDto> getAllTrainers();
 
+    /**
+     * Returns all trainers along with their aggregated review rating,
+     * for display on trainer-selection pages.
+     *
+     * @return list of trainers with rating info, possibly empty
+     */
     List<TrainerDto> getAllTrainersWithRating();
 
     /**
@@ -51,9 +75,27 @@ public interface TrainerService {
      */
     Optional<Assignment> getAssignmentForOrder(long orderId);
 
+    /**
+     * Creates a new assignment for the given order, or updates the existing
+     * one if an assignment for that order already exists (one assignment
+     * per order).
+     *
+     * @param assignment the assignment to save or update; must have orderId set
+     */
     void saveOrUpdateAssignment(Assignment assignment);
 
+    /**
+     * Permanently removes the assignment associated with the given order.
+     *
+     * @param orderId the order whose assignment should be deleted
+     */
     void deleteAssignment(long orderId);
 
+    /**
+     * Updates the status of an assignment (e.g. marking it as completed).
+     *
+     * @param assignmentId the id of the assignment to update
+     * @param status       the new status value
+     */
     void updateAssignmentStatus(Long assignmentId, String status);
 }
