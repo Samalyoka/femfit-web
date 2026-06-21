@@ -81,9 +81,14 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void requestRevision(Long assignmentId) {
-        assignmentDao.updateStatus(assignmentId, "REVISION_REQUESTED");
-        log.info("Revision requested for assignment id={}", assignmentId);
+    public void requestRevision(Long assignmentId, boolean exercises, boolean equipment,
+                                boolean nutrition, boolean schedule, String comment) {
+        if (!exercises && !equipment && !nutrition && !schedule) {
+            throw new IllegalArgumentException("At least one item must be selected for revision");
+        }
+        assignmentDao.requestRevision(assignmentId, exercises, equipment, nutrition, schedule, comment);
+        log.info("Revision requested for assignment id={}: exercises={}, equipment={}, nutrition={}, schedule={}",
+                assignmentId, exercises, equipment, nutrition, schedule);
     }
 
     @Override
@@ -109,5 +114,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public int countAll() {
         return orderDao.countAll();
+    }
+
+    @Override
+    public void assignTrainer(Long orderId, Long trainerId) {
+        log.info("Reassigning order id={} to trainer id={}", orderId, trainerId);
+        orderDao.assignTrainer(orderId, trainerId);
     }
 }

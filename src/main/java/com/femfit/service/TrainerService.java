@@ -5,6 +5,7 @@ import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
+import com.femfit.model.TrainerAvailability;
 
 import java.util.List;
 import java.util.Optional;
@@ -98,4 +99,27 @@ public interface TrainerService {
      * @param status       the new status value
      */
     void updateAssignmentStatus(Long assignmentId, String status);
+
+    /**
+     * Sets a trainer's availability status (admin function). An UNAVAILABLE
+     * trainer is hidden from the client-facing choose-trainer page, but
+     * their existing orders are unaffected until an admin reassigns them —
+     * see {@link com.femfit.service.OrderService#assignTrainer}.
+     *
+     * @param trainerId the trainer's id
+     * @param status    the new availability status
+     */
+    void setAvailability(long trainerId, TrainerAvailability status);
+
+    /**
+     * Returns all active trainers with their rating, including those
+     * currently marked UNAVAILABLE. Used by the admin order-reassignment
+     * UI to show the full trainer list (an unavailable trainer's name is
+     * still needed to display whose orders are being reassigned), while
+     * the reassignment target list itself should be filtered to
+     * AVAILABLE trainers only.
+     *
+     * @return list of all active trainers with rating info, possibly empty
+     */
+    List<TrainerDto> getAllTrainersIncludingUnavailable();
 }

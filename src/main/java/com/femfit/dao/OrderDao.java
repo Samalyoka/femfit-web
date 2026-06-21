@@ -53,6 +53,16 @@ public interface OrderDao {
     int countByUserId(Long userId);
 
     /**
+     * Counts orders with status COMPLETED for a client.
+     * Used to calculate the automatic regular-client discount (see
+     * {@link com.femfit.service.MemberService#calculateAutoDiscount}).
+     *
+     * @param userId client's user id
+     * @return number of completed training cycles for this client
+     */
+    int countCompletedByUserId(Long userId);
+
+    /**
      * Returns all active orders assigned to a trainer.
      *
      * @param trainerId trainer's user id

@@ -35,7 +35,9 @@
                     <th>Name</th>
                     <th>Email</th>
                     <th>Status</th>
+                    <th th:if="${role == 'CLIENT'}">Account Type</th>
                     <th th:if="${role == 'CLIENT'}">Discount</th>
+                    <th th:if="${role == 'TRAINER'}">Availability</th>
                     <th>Actions</th>
                 </tr>
                 </thead>
@@ -57,6 +59,27 @@
                               th:text="#{admin.status.inactive}">Inactive</span>
                     </td>
 
+                    <!-- Account Type column — clients only -->
+                    <td th:if="${role == 'CLIENT'}">
+                        <form th:action="@{/admin/member/account-type/{id}(id=${member.id})}"
+                              method="post"
+                              class="discount-form">
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+                            <input type="hidden" name="redirectTo"
+                                   th:value="${role == 'CLIENT'} ? '/admin/clients' : '/admin/trainers'"/>
+                            <select class="form-select" name="accountType">
+                                <option value="REGULAR"
+                                        th:selected="${member.accountType == null or member.accountType.name() == 'REGULAR'}">Regular</option>
+                                <option value="CORPORATE"
+                                        th:selected="${member.accountType != null and member.accountType.name() == 'CORPORATE'}">Corporate</option>
+                            </select>
+                            <button class="btn btn--outline btn--sm" type="submit"
+                                    th:text="#{admin.discount.apply}">Apply</button>
+                        </form>
+                    </td>
+
                     <!-- Discount column — clients only -->
                     <td th:if="${role == 'CLIENT'}">
                         <form th:action="@{/admin/member/discount/{id}(id=${member.id})}"
@@ -73,6 +96,27 @@
                                    min="0" max="100"
                                    th:value="${member.discountPercent != null ? member.discountPercent : 0}"/>
                             <span class="discount-pct">%</span>
+                            <button class="btn btn--outline btn--sm" type="submit"
+                                    th:text="#{admin.discount.apply}">Apply</button>
+                        </form>
+                    </td>
+
+                    <!-- Availability column — trainers only -->
+                    <td th:if="${role == 'TRAINER'}"
+                        th:with="trainerInfo=${trainerAvailability.?[id == member.id]}">
+                        <form th:action="@{/admin/trainer/availability/{id}(id=${member.id})}"
+                              method="post"
+                              class="discount-form">
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}"/>
+                            <input type="hidden" name="redirectTo" value="/admin/trainers"/>
+                            <select class="form-select" name="availabilityStatus">
+                                <option value="AVAILABLE"
+                                        th:selected="${#lists.isEmpty(trainerInfo) or trainerInfo[0].availabilityStatus == null or trainerInfo[0].availabilityStatus.name() == 'AVAILABLE'}">Available</option>
+                                <option value="UNAVAILABLE"
+                                        th:selected="${!#lists.isEmpty(trainerInfo) and trainerInfo[0].availabilityStatus != null and trainerInfo[0].availabilityStatus.name() == 'UNAVAILABLE'}">Unavailable</option>
+                            </select>
                             <button class="btn btn--outline btn--sm" type="submit"
                                     th:text="#{admin.discount.apply}">Apply</button>
                         </form>

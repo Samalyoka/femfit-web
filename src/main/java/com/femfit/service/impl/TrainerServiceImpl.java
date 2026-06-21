@@ -7,6 +7,7 @@ import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
+import com.femfit.model.TrainerAvailability;
 import com.femfit.service.TrainerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,5 +99,16 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public List<TrainerProfileDto> getAllTrainerProfiles() {
         return trainerDao.findAllTrainerProfiles();
+    }
+
+    @Override
+    public void setAvailability(long trainerId, TrainerAvailability status) {
+        log.info("Setting availability={} for trainer id={}", status, trainerId);
+        trainerDao.setAvailability(trainerId, status);
+    }
+
+    @Override
+    public List<TrainerDto> getAllTrainersIncludingUnavailable() {
+        return trainerDao.findAllTrainersWithRating(true);
     }
 }

@@ -222,10 +222,53 @@ class OrderServiceImplTest {
     // ── requestRevision ──────────────────────────────────────────────────
 
     @Test
-    @DisplayName("requestRevision: sets assignment status to REVISION_REQUESTED")
-    void requestRevision_setsStatus() {
-        orderService.requestRevision(30L);
-        verify(assignmentDao).updateStatus(30L, "REVISION_REQUESTED");
+    @DisplayName("requestRevision: single item (exercises) delegates to DAO with the correct flags")
+    void requestRevision_singleItem() {
+        orderService.requestRevision(30L, true, false, false, false, "Too intense, please simplify");
+
+        verify(assignmentDao).requestRevision(30L, true, false, false, false, "Too intense, please simplify");
+    }
+
+    @Test
+    @DisplayName("requestRevision: multiple items selected at once are all passed through")
+    void requestRevision_multipleItems() {
+        orderService.requestRevision(31L, true, false, true, true, null);
+
+        verify(assignmentDao).requestRevision(31L, true, false, true, true, null);
+    }
+
+    @Test
+    @DisplayName("requestRevision: all four items selected is valid")
+    void requestRevision_allItems() {
+        orderService.requestRevision(32L, true, true, true, true, "Everything needs rework");
+
+        verify(assignmentDao).requestRevision(32L, true, true, true, true, "Everything needs rework");
+    }
+
+    @Test
+    @DisplayName("requestRevision: works with a null comment (optional field)")
+    void requestRevision_nullComment() {
+        orderService.requestRevision(33L, false, true, false, false, null);
+
+        verify(assignmentDao).requestRevision(33L, false, true, false, false, null);
+    }
+
+    @Test
+    @DisplayName("requestRevision: throws IllegalArgumentException when no item is selected")
+    void requestRevision_noItemSelected_throws() {
+        assertThatThrownBy(() -> orderService.requestRevision(34L, false, false, false, false, "Some comment"))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(assignmentDao, never()).requestRevision(anyLong(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyString());
+    }
+
+    @Test
+    @DisplayName("requestRevision: throws IllegalArgumentException when no item is selected, even with no comment")
+    void requestRevision_noItemSelected_noComment_throws() {
+        assertThatThrownBy(() -> orderService.requestRevision(35L, false, false, false, false, null))
+                .isInstanceOf(IllegalArgumentException.class);
+
+        verify(assignmentDao, never()).requestRevision(anyLong(), anyBoolean(), anyBoolean(), anyBoolean(), anyBoolean(), anyString());
     }
 
     // ── placeOrder ───────────────────────────────────────────────────────
@@ -315,5 +358,15 @@ class OrderServiceImplTest {
         int result = orderService.countAll();
 
         assertThat(result).isZero();
+    }
+
+    // ── assignTrainer ────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("assignTrainer: delegates to DAO (admin reassignment when primary trainer is unavailable)")
+    void assignTrainer_delegates() {
+        orderService.assignTrainer(40L, 24L);
+
+        verify(orderDao).assignTrainer(40L, 24L);
     }
 }

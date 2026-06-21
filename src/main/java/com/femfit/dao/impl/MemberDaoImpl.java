@@ -1,6 +1,7 @@
 package com.femfit.dao.impl;
 
 import com.femfit.dao.MemberDao;
+import com.femfit.model.AccountType;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
 import com.femfit.datasource.ConnectionPool;
@@ -36,16 +37,16 @@ public class MemberDaoImpl implements MemberDao {
 
     private static final String INSERT_USER = """
             INSERT INTO members (first_name, last_name, email, phone, password_hash,
-                               birth_date, role_id, is_active, registration_date, discount_percent)
+                               birth_date, role_id, is_active, registration_date, discount_percent, account_type)
             VALUES (?, ?, ?, ?, ?, ?, (SELECT id FROM roles WHERE name = ?),
-                    TRUE, NOW(), 0)
+                    TRUE, NOW(), 0, 'REGULAR')
             RETURNING id
             """;
 
     private static final String SELECT_BY_ID = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type
             FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE u.id = ?
@@ -54,7 +55,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_BY_EMAIL = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type
             FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE u.email = ?
@@ -63,7 +64,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_ALL = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type
             FROM members u
             JOIN roles r ON u.role_id = r.id
             ORDER BY u.registration_date DESC
@@ -72,7 +73,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_BY_ROLE = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type
             FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE r.name = ?
@@ -101,6 +102,10 @@ public class MemberDaoImpl implements MemberDao {
 
     private static final String SET_DISCOUNT = """
             UPDATE members SET discount_percent = ? WHERE id = ?
+            """;
+
+    private static final String SET_ACCOUNT_TYPE = """
+            UPDATE members SET account_type = ? WHERE id = ?
             """;
 
     private static final String EXISTS_BY_EMAIL = """
@@ -294,6 +299,21 @@ public class MemberDaoImpl implements MemberDao {
     }
 
     @Override
+    public void setAccountType(Long userId, AccountType accountType) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(SET_ACCOUNT_TYPE)) {
+            ps.setString(1, accountType.name());
+            ps.setLong(2, userId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Error setting account type for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to set account type", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
+    @Override
     public boolean existsByEmail(String email) {
         Connection conn = pool.getConnection();
         try (PreparedStatement ps = conn.prepareStatement(EXISTS_BY_EMAIL)) {
@@ -317,6 +337,7 @@ public class MemberDaoImpl implements MemberDao {
      * @throws SQLException if a column cannot be read
      */
     private Member mapRow(ResultSet rs) throws SQLException {
+        String accountTypeRaw = rs.getString("account_type");
         return Member.builder()
                 .id(rs.getLong("id"))
                 .firstName(rs.getString("first_name"))
@@ -331,6 +352,7 @@ public class MemberDaoImpl implements MemberDao {
                 .registrationDate(rs.getTimestamp("registration_date") != null
                         ? rs.getTimestamp("registration_date").toLocalDateTime() : null)
                 .discountPercent(rs.getInt("discount_percent"))
+                .accountType(accountTypeRaw != null ? AccountType.valueOf(accountTypeRaw) : AccountType.REGULAR)
                 .build();
     }
 }

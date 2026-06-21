@@ -1,5 +1,6 @@
 package com.femfit.dto;
 
+import com.femfit.model.TrainerAvailability;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class TrainerDto {
     private String firstName;
     private String lastName;
     private String email;
+    private TrainerAvailability availabilityStatus;
 
     /**
      * Average review rating (1-5) across all this trainer's completed orders.
@@ -37,5 +39,10 @@ public class TrainerDto {
     /** True if this trainer has at least one review. */
     public boolean hasRating() {
         return averageRating != null && reviewCount != null && reviewCount > 0;
+    }
+
+    /** True if this trainer is currently available to take on new assignments. */
+    public boolean isAvailable() {
+        return availabilityStatus == null || availabilityStatus == TrainerAvailability.AVAILABLE;
     }
 }

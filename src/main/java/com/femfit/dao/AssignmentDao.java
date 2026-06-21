@@ -22,6 +22,22 @@ public interface AssignmentDao {
     /** Update only the status. */
     void updateStatus(Long assignmentId, String status);
 
+    /**
+     * Records a per-item revision request: sets which specific part(s) of
+     * the assignment need to be redone, stores the client's comment, and
+     * sets status to REVISION_REQUESTED. Replaces any previous revision
+     * request on this assignment.
+     *
+     * @param assignmentId the assignment id
+     * @param exercises    true if exercises need revision
+     * @param equipment    true if equipment needs revision
+     * @param nutrition    true if nutrition plan needs revision
+     * @param schedule     true if schedule needs revision
+     * @param comment      optional client comment explaining the request
+     */
+    void requestRevision(Long assignmentId, boolean exercises, boolean equipment,
+                          boolean nutrition, boolean schedule, String comment);
+
     /** Delete all assignments for an order. */
     void deleteByOrderId(Long orderId);
 }

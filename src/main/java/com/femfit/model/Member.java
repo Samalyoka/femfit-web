@@ -33,6 +33,7 @@ public class Member {
     private boolean active;
     private LocalDateTime registrationDate;
     private int discountPercent;
+    private AccountType accountType;
 
     /**
      * Derived attribute — calculated from birthDate.

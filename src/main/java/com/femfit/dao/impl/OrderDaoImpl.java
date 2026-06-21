@@ -79,6 +79,9 @@ public class OrderDaoImpl implements OrderDao {
 
     private static final String COUNT_BY_USER = "SELECT COUNT(*) FROM orders WHERE member_id = ?";
 
+    private static final String COUNT_COMPLETED_BY_USER =
+            "SELECT COUNT(*) FROM orders WHERE member_id = ? AND status = 'COMPLETED'";
+
     private static final String SELECT_ACTIVE_BY_TRAINER = """
             SELECT o.id, o.member_id, o.cycle_id, o.trainer_id, o.status,
                    o.paid_amount, o.created_at, o.completed_at,
@@ -221,6 +224,23 @@ public class OrderDaoImpl implements OrderDao {
         } catch (SQLException e) {
             log.error("Error counting orders for user {}: {}", userId, e.getMessage());
             throw new RuntimeException("Failed to count orders", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return 0;
+    }
+
+    @Override
+    public int countCompletedByUserId(Long userId) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(COUNT_COMPLETED_BY_USER)) {
+            ps.setLong(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            log.error("Error counting completed orders for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to count completed orders", e);
         } finally {
             pool.releaseConnection(conn);
         }

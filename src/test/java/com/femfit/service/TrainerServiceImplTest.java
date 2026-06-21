@@ -6,6 +6,7 @@ import com.femfit.dto.ClientOrderDto;
 import com.femfit.dto.TrainerDto;
 import com.femfit.model.Assignment;
 import com.femfit.model.Member;
+import com.femfit.model.TrainerAvailability;
 import com.femfit.service.impl.TrainerServiceImpl;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -191,5 +192,52 @@ class TrainerServiceImplTest {
     void updateAssignmentStatus_delegates() {
         trainerService.updateAssignmentStatus(7L, "COMPLETED");
         verify(assignmentDao).updateStatus(7L, "COMPLETED");
+    }
+
+    // ── setAvailability ──────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("setAvailability: delegates UNAVAILABLE to DAO")
+    void setAvailability_unavailable_delegates() {
+        trainerService.setAvailability(18L, TrainerAvailability.UNAVAILABLE);
+        verify(trainerDao).setAvailability(18L, TrainerAvailability.UNAVAILABLE);
+    }
+
+    @Test
+    @DisplayName("setAvailability: delegates AVAILABLE to DAO")
+    void setAvailability_available_delegates() {
+        trainerService.setAvailability(18L, TrainerAvailability.AVAILABLE);
+        verify(trainerDao).setAvailability(18L, TrainerAvailability.AVAILABLE);
+    }
+
+    // ── getAllTrainersIncludingUnavailable ──────────────────────────────
+
+    @Test
+    @DisplayName("getAllTrainersIncludingUnavailable: requests DAO with includeUnavailable=true")
+    void getAllTrainersIncludingUnavailable_passesTrueFlag() {
+        List<TrainerDto> trainers = List.of(
+                TrainerDto.builder().id(18L).firstName("Elena").lastName("Morozova")
+                        .availabilityStatus(TrainerAvailability.AVAILABLE).build(),
+                TrainerDto.builder().id(20L).firstName("Sofia").lastName("Romanova")
+                        .availabilityStatus(TrainerAvailability.UNAVAILABLE).build()
+        );
+        when(trainerDao.findAllTrainersWithRating(true)).thenReturn(trainers);
+
+        List<TrainerDto> result = trainerService.getAllTrainersIncludingUnavailable();
+
+        assertThat(result).hasSize(2);
+        assertThat(result).anyMatch(t -> t.getAvailabilityStatus() == TrainerAvailability.UNAVAILABLE);
+        verify(trainerDao).findAllTrainersWithRating(true);
+        verify(trainerDao, never()).findAllTrainersWithRating(false);
+    }
+
+    @Test
+    @DisplayName("getAllTrainersIncludingUnavailable: returns empty list when no trainers exist")
+    void getAllTrainersIncludingUnavailable_empty() {
+        when(trainerDao.findAllTrainersWithRating(true)).thenReturn(Collections.emptyList());
+
+        List<TrainerDto> result = trainerService.getAllTrainersIncludingUnavailable();
+
+        assertThat(result).isEmpty();
     }
 }

@@ -41,7 +41,9 @@ CREATE TABLE IF NOT EXISTS trainers (
                                         bio_ru            TEXT,
                                         bio_kz            TEXT,
                                         specialization_ru VARCHAR(150),
-                                        specialization_kz VARCHAR(150)
+                                        specialization_kz VARCHAR(150),
+                                        availability_status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE'
+                                                             CHECK (availability_status IN ('AVAILABLE', 'UNAVAILABLE'))
 );
 
 -- ══════════════════════════════════════
@@ -149,6 +151,14 @@ CREATE TABLE IF NOT EXISTS assignments (
                                            nutrition_plan TEXT,          -- dietary recommendations
                                            schedule_info  TEXT,          -- training schedule
                                            status         VARCHAR(20) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE, COMPLETED, REVISION_REQUESTED
+                                           -- Per-item revision flags: which specific part(s) of the
+                                           -- assignment the client asked the trainer to redo. status
+                                           -- becomes REVISION_REQUESTED when any of these is true.
+                                           revision_exercises_requested  BOOLEAN NOT NULL DEFAULT FALSE,
+                                           revision_equipment_requested  BOOLEAN NOT NULL DEFAULT FALSE,
+                                           revision_nutrition_requested  BOOLEAN NOT NULL DEFAULT FALSE,
+                                           revision_schedule_requested   BOOLEAN NOT NULL DEFAULT FALSE,
+                                           revision_comment              TEXT,
                                            created_at     TIMESTAMP   NOT NULL DEFAULT NOW(),
                                            updated_at     TIMESTAMP   NOT NULL DEFAULT NOW()
 );

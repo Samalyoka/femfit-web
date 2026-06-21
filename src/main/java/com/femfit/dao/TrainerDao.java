@@ -4,6 +4,7 @@ import com.femfit.dto.ClientOrderDto;
 import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Member;
+import com.femfit.model.TrainerAvailability;
 
 import java.util.List;
 
@@ -49,9 +50,33 @@ public interface TrainerDao {
      * Trainers with no reviews yet have averageRating = null, reviewCount = 0.
      * Used on the choose-trainer page so clients can pick by rating.
      *
-     * @return list of active trainers with rating info, possibly empty
+     * @return list of active, AVAILABLE trainers with rating info, possibly empty
      */
     List<TrainerDto> findAllTrainersWithRating();
+
+    /**
+     * Returns all active trainers enriched with their average review rating,
+     * optionally including trainers currently marked UNAVAILABLE.
+     * Used by admin order-reassignment UI, where an unavailable trainer's
+     * existing orders still need to be visible even though clients can no
+     * longer pick that trainer for new orders.
+     *
+     * @param includeUnavailable if true, includes trainers with
+     *                           availability_status = UNAVAILABLE
+     * @return list of active trainers with rating info, possibly empty
+     */
+    List<TrainerDto> findAllTrainersWithRating(boolean includeUnavailable);
+
+    /**
+     * Sets a trainer's availability status (admin function). An UNAVAILABLE
+     * trainer is hidden from the client-facing choose-trainer page, but
+     * their existing orders are unaffected until explicitly reassigned —
+     * see {@link com.femfit.dao.OrderDao#assignTrainer}.
+     *
+     * @param trainerId the trainer's id
+     * @param status    the new availability status
+     */
+    void setAvailability(long trainerId, TrainerAvailability status);
 
     /**
      * Get last active order for each client of the trainer.

@@ -1,10 +1,12 @@
 package com.femfit.service;
 
 import com.femfit.dao.MemberDao;
+import com.femfit.dao.OrderDao;
 import com.femfit.dto.PageDto;
 import com.femfit.dto.RegisterDto;
 import com.femfit.exception.EmailAlreadyTakenException;
 import com.femfit.exception.InvalidPasswordException;
+import com.femfit.model.AccountType;
 import com.femfit.model.Role;
 import com.femfit.model.Member;
 import com.femfit.service.impl.MemberServiceImpl;
@@ -32,6 +34,9 @@ class MemberServiceImplTest {
 
     @Mock
     private MemberDao memberDao;
+
+    @Mock
+    private OrderDao orderDao;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -69,7 +74,8 @@ class MemberServiceImplTest {
         assertThat(result.getRole()).isEqualTo(Role.CLIENT);
         verify(memberDao).save(argThat(u ->
                 u.getPasswordHash().equals("$2a$12$hashed") &&
-                        u.getEmail().equals(validDto.getEmail())
+                        u.getEmail().equals(validDto.getEmail()) &&
+                        u.getAccountType() == AccountType.REGULAR
         ));
     }
 
@@ -247,5 +253,150 @@ class MemberServiceImplTest {
         assertThatThrownBy(() -> userService.setDiscount(1L, -1))
                 .isInstanceOf(IllegalArgumentException.class);
         verify(memberDao, never()).setDiscount(anyLong(), anyInt());
+    }
+
+    // ── setAccountType ───────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("setAccountType: persists the new type and recalculates discount")
+    void setAccountType_persistsAndRecalculates() {
+        Member member = Member.builder().id(1L).accountType(AccountType.CORPORATE).build();
+        when(memberDao.findById(1L)).thenReturn(Optional.of(member));
+        when(orderDao.countCompletedByUserId(1L)).thenReturn(0);
+
+        userService.setAccountType(1L, AccountType.CORPORATE);
+
+        verify(memberDao).setAccountType(1L, AccountType.CORPORATE);
+        // recalculateDiscount runs after — CORPORATE with 0 cycles still gets the flat 10%
+        verify(memberDao).setDiscount(1L, 10);
+    }
+
+    @Test
+    @DisplayName("setAccountType: switching back to REGULAR recalculates using completed-cycle tiers")
+    void setAccountType_switchToRegularRecalculates() {
+        Member member = Member.builder().id(1L).accountType(AccountType.REGULAR).build();
+        when(memberDao.findById(1L)).thenReturn(Optional.of(member));
+        when(orderDao.countCompletedByUserId(1L)).thenReturn(7);
+
+        userService.setAccountType(1L, AccountType.REGULAR);
+
+        verify(memberDao).setAccountType(1L, AccountType.REGULAR);
+        verify(memberDao).setDiscount(1L, 10);
+    }
+
+    // ── calculateAutoDiscount ────────────────────────────────────────────
+
+    @Test
+    @DisplayName("calculateAutoDiscount: CORPORATE always gets flat 10%, regardless of completed cycles")
+    void calculateAutoDiscount_corporateFlatTen() {
+        Member member = Member.builder().accountType(AccountType.CORPORATE).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 0)).isEqualTo(10);
+        assertThat(userService.calculateAutoDiscount(member, 50)).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR with 0-2 completed cycles gets 0%")
+    void calculateAutoDiscount_regularBelowFirstTier() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 0)).isZero();
+        assertThat(userService.calculateAutoDiscount(member, 2)).isZero();
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR boundary value 3 completed cycles gets 5%")
+    void calculateAutoDiscount_regularThreeBoundary() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 3)).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR with 4-5 completed cycles stays at 5%")
+    void calculateAutoDiscount_regularFiveTier() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 5)).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR boundary value 6 completed cycles gets 10%")
+    void calculateAutoDiscount_regularSixBoundary() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 6)).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR with 9 completed cycles stays at 10%")
+    void calculateAutoDiscount_regularNineTier() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 9)).isEqualTo(10);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR boundary value 10 completed cycles gets 15%")
+    void calculateAutoDiscount_regularTenBoundary() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 10)).isEqualTo(15);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: REGULAR with many completed cycles caps at 15%")
+    void calculateAutoDiscount_regularCapsAtFifteen() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 100)).isEqualTo(15);
+    }
+
+    @Test
+    @DisplayName("calculateAutoDiscount: just-below-boundary values (2, 5, 9) do not yet qualify for the next tier")
+    void calculateAutoDiscount_justBelowBoundaries() {
+        Member member = Member.builder().accountType(AccountType.REGULAR).build();
+
+        assertThat(userService.calculateAutoDiscount(member, 2)).isZero();
+        assertThat(userService.calculateAutoDiscount(member, 5)).isEqualTo(5);
+        assertThat(userService.calculateAutoDiscount(member, 9)).isEqualTo(10);
+    }
+
+    // ── recalculateDiscount ──────────────────────────────────────────────
+
+    @Test
+    @DisplayName("recalculateDiscount: looks up member and completed cycles, then persists the computed discount")
+    void recalculateDiscount_success() {
+        Member member = Member.builder().id(1L).accountType(AccountType.REGULAR).build();
+        when(memberDao.findById(1L)).thenReturn(Optional.of(member));
+        when(orderDao.countCompletedByUserId(1L)).thenReturn(6);
+
+        userService.recalculateDiscount(1L);
+
+        verify(memberDao).setDiscount(1L, 10);
+    }
+
+    @Test
+    @DisplayName("recalculateDiscount: throws RuntimeException when member not found")
+    void recalculateDiscount_memberNotFound() {
+        when(memberDao.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.recalculateDiscount(404L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("404");
+
+        verify(memberDao, never()).setDiscount(anyLong(), anyInt());
+    }
+
+    @Test
+    @DisplayName("recalculateDiscount: CORPORATE member with zero completed cycles still gets flat 10%")
+    void recalculateDiscount_corporateZeroCycles() {
+        Member member = Member.builder().id(2L).accountType(AccountType.CORPORATE).build();
+        when(memberDao.findById(2L)).thenReturn(Optional.of(member));
+        when(orderDao.countCompletedByUserId(2L)).thenReturn(0);
+
+        userService.recalculateDiscount(2L);
+
+        verify(memberDao).setDiscount(2L, 10);
     }
 }

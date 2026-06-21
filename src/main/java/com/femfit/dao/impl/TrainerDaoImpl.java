@@ -6,6 +6,7 @@ import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
+import com.femfit.model.TrainerAvailability;
 import com.femfit.datasource.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,18 +89,39 @@ public class TrainerDaoImpl implements TrainerDao {
             """;
 
     private static final String FIND_ALL_TRAINERS_WITH_RATING = """
-        SELECT u.id, u.first_name, u.last_name, u.email,
+        SELECT u.id, u.first_name, u.last_name, u.email, t.availability_status,
                ROUND(AVG(rv.rating)::numeric, 1) AS avg_rating,
                COUNT(rv.id) AS review_count
         FROM members u
         JOIN roles r ON r.id = u.role_id
+        JOIN trainers t ON t.id = u.id
         LEFT JOIN orders o ON o.trainer_id = u.id
         LEFT JOIN reviews rv ON rv.order_id = o.id
         WHERE r.name = 'TRAINER'
           AND u.is_active = true
-        GROUP BY u.id, u.first_name, u.last_name, u.email
+        GROUP BY u.id, u.first_name, u.last_name, u.email, t.availability_status
         ORDER BY u.first_name
         """;
+
+    private static final String FIND_ALL_TRAINERS_WITH_RATING_AVAILABLE_ONLY = """
+        SELECT u.id, u.first_name, u.last_name, u.email, t.availability_status,
+               ROUND(AVG(rv.rating)::numeric, 1) AS avg_rating,
+               COUNT(rv.id) AS review_count
+        FROM members u
+        JOIN roles r ON r.id = u.role_id
+        JOIN trainers t ON t.id = u.id
+        LEFT JOIN orders o ON o.trainer_id = u.id
+        LEFT JOIN reviews rv ON rv.order_id = o.id
+        WHERE r.name = 'TRAINER'
+          AND u.is_active = true
+          AND t.availability_status = 'AVAILABLE'
+        GROUP BY u.id, u.first_name, u.last_name, u.email, t.availability_status
+        ORDER BY u.first_name
+        """;
+
+    private static final String SET_AVAILABILITY = """
+            UPDATE trainers SET availability_status = ? WHERE id = ?
+            """;
 
     /**
      * Full public profile per trainer for the "Our Trainers" page —
@@ -228,9 +250,15 @@ public class TrainerDaoImpl implements TrainerDao {
 
     @Override
     public List<TrainerDto> findAllTrainersWithRating() {
+        return findAllTrainersWithRating(false);
+    }
+
+    @Override
+    public List<TrainerDto> findAllTrainersWithRating(boolean includeUnavailable) {
+        String sql = includeUnavailable ? FIND_ALL_TRAINERS_WITH_RATING : FIND_ALL_TRAINERS_WITH_RATING_AVAILABLE_ONLY;
         List<TrainerDto> trainers = new ArrayList<>();
         Connection con = pool.getConnection();
-        try (PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINERS_WITH_RATING);
+        try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) trainers.add(mapTrainerWithRating(rs));
         } catch (SQLException e) {
@@ -239,6 +267,21 @@ public class TrainerDaoImpl implements TrainerDao {
             pool.releaseConnection(con);
         }
         return trainers;
+    }
+
+    @Override
+    public void setAvailability(long trainerId, TrainerAvailability status) {
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(SET_AVAILABILITY)) {
+            ps.setString(1, status.name());
+            ps.setLong(2, trainerId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            log.error("Error setting availability={} for trainer {}: {}", status, trainerId, e.getMessage());
+            throw new RuntimeException("Failed to set trainer availability", e);
+        } finally {
+            pool.releaseConnection(con);
+        }
     }
 
     /**
@@ -300,6 +343,7 @@ public class TrainerDaoImpl implements TrainerDao {
     private TrainerDto mapTrainerWithRating(ResultSet rs) throws SQLException {
         double avgRating = rs.getDouble("avg_rating");
         boolean hasRating = !rs.wasNull();
+        String availabilityRaw = rs.getString("availability_status");
         return TrainerDto.builder()
                 .id(rs.getLong("id"))
                 .firstName(rs.getString("first_name"))
@@ -307,6 +351,8 @@ public class TrainerDaoImpl implements TrainerDao {
                 .email(rs.getString("email"))
                 .averageRating(hasRating ? avgRating : null)
                 .reviewCount(rs.getInt("review_count"))
+                .availabilityStatus(availabilityRaw != null
+                        ? TrainerAvailability.valueOf(availabilityRaw) : TrainerAvailability.AVAILABLE)
                 .build();
     }
 

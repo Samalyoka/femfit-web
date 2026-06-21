@@ -1,5 +1,6 @@
 package com.femfit.dao;
 
+import com.femfit.model.AccountType;
 import com.femfit.model.Member;
 import com.femfit.model.Role;
 
@@ -94,6 +95,15 @@ public interface MemberDao {
      * @param discountPercent discount value 0–100
      */
     void setDiscount(Long userId, int discountPercent);
+
+    /**
+     * Sets a client's account type (REGULAR or CORPORATE), which determines
+     * how their discount is calculated (admin function).
+     *
+     * @param userId      the user's id
+     * @param accountType the new account type
+     */
+    void setAccountType(Long userId, AccountType accountType);
 
     /**
      * Checks whether an email is already taken.

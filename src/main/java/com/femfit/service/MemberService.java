@@ -2,6 +2,7 @@ package com.femfit.service;
 
 import com.femfit.dto.RegisterDto;
 import com.femfit.dto.PageDto;
+import com.femfit.model.AccountType;
 import com.femfit.model.Role;
 import com.femfit.model.Member;
 
@@ -84,4 +85,42 @@ public interface MemberService {
      * @param discountPercent value from 0 to 100
      */
     void setDiscount(Long memberId, int discountPercent);
+
+    /**
+     * Sets a client's account type (REGULAR or CORPORATE), and immediately
+     * recalculates their discount to match the new type's rule (admin
+     * function). See {@link #calculateAutoDiscount} for the exact rule.
+     *
+     * @param memberId    the member's id
+     * @param accountType the new account type
+     */
+    void setAccountType(Long memberId, AccountType accountType);
+
+    /**
+     * Computes the discount a member is entitled to under the automatic
+     * discount rule, without persisting anything.
+     *
+     * <ul>
+     *   <li>CORPORATE accounts always receive a flat 10% discount,
+     *       regardless of completed cycles.</li>
+     *   <li>REGULAR accounts receive a discount that grows with loyalty:
+     *       10+ completed cycles → 15%, 6+ → 10%, 3+ → 5%, otherwise 0%.</li>
+     * </ul>
+     *
+     * @param member          the member (only {@code accountType} is read)
+     * @param completedCycles number of the member's COMPLETED training cycle orders
+     * @return the discount percentage (0-15) this member is entitled to
+     */
+    int calculateAutoDiscount(Member member, int completedCycles);
+
+    /**
+     * Recalculates and persists a member's discount using
+     * {@link #calculateAutoDiscount}, based on their current account type
+     * and number of completed training cycles. Intended to be called after
+     * an order is marked COMPLETED, and is also safe to call manually
+     * (e.g. from an admin "recalculate" action).
+     *
+     * @param memberId the member's id
+     */
+    void recalculateDiscount(Long memberId);
 }

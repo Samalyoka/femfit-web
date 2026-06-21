@@ -70,23 +70,42 @@
                       th:text="${assignment.status}">ACTIVE</span>
             </div>
 
+            <!-- Client's revision comment, if any was provided -->
+            <div th:if="${assignment.status == 'REVISION_REQUESTED' and assignment.revisionComment != null and !assignment.revisionComment.isBlank()}"
+                 class="alert" style="background: var(--sand); margin-bottom: 24px;">
+                <strong th:text="#{trainer.assignment.view.revision.comment.label}">Client's note:</strong>
+                <span th:text="${assignment.revisionComment}"></span>
+            </div>
+
             <div class="form-group">
                 <label class="form-label" th:text="#{trainer.assignment.view.exercises}">Exercises</label>
+                <span th:if="${assignment.revisionExercisesRequested}"
+                      class="badge badge--warning" style="margin-left: 8px; font-size: 11px;"
+                      th:text="#{trainer.assignment.view.revision.flag}">Revision requested</span>
                 <div class="assignment-text" th:text="${assignment.exercises}">—</div>
             </div>
 
             <div class="form-group">
                 <label class="form-label" th:text="#{trainer.assignment.view.equipment}">Equipment</label>
+                <span th:if="${assignment.revisionEquipmentRequested}"
+                      class="badge badge--warning" style="margin-left: 8px; font-size: 11px;"
+                      th:text="#{trainer.assignment.view.revision.flag}">Revision requested</span>
                 <div class="assignment-text" th:text="${assignment.equipment}">—</div>
             </div>
 
             <div class="form-group">
                 <label class="form-label" th:text="#{trainer.assignment.view.nutrition}">Nutrition Plan</label>
+                <span th:if="${assignment.revisionNutritionRequested}"
+                      class="badge badge--warning" style="margin-left: 8px; font-size: 11px;"
+                      th:text="#{trainer.assignment.view.revision.flag}">Revision requested</span>
                 <div class="assignment-text" th:text="${assignment.nutritionPlan}">—</div>
             </div>
 
             <div class="form-group">
                 <label class="form-label" th:text="#{trainer.assignment.view.schedule}">Schedule</label>
+                <span th:if="${assignment.revisionScheduleRequested}"
+                      class="badge badge--warning" style="margin-left: 8px; font-size: 11px;"
+                      th:text="#{trainer.assignment.view.revision.flag}">Revision requested</span>
                 <div class="assignment-text" th:text="${assignment.scheduleInfo}">—</div>
             </div>
 

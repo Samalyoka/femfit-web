@@ -1,10 +1,12 @@
 package com.femfit.service.impl;
 
 import com.femfit.dao.MemberDao;
+import com.femfit.dao.OrderDao;
 import com.femfit.dto.PageDto;
 import com.femfit.dto.RegisterDto;
 import com.femfit.exception.EmailAlreadyTakenException;
 import com.femfit.exception.InvalidPasswordException;
+import com.femfit.model.AccountType;
 import com.femfit.model.Role;
 import com.femfit.model.Member;
 import com.femfit.service.MemberService;
@@ -34,11 +36,13 @@ public class MemberServiceImpl implements MemberService {
     private static final Logger log = LoggerFactory.getLogger(MemberServiceImpl.class);
 
     private final MemberDao memberDao;
+    private final OrderDao orderDao;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public MemberServiceImpl(MemberDao memberDao, PasswordEncoder passwordEncoder) {
+    public MemberServiceImpl(MemberDao memberDao, OrderDao orderDao, PasswordEncoder passwordEncoder) {
         this.memberDao = memberDao;
+        this.orderDao = orderDao;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -60,6 +64,7 @@ public class MemberServiceImpl implements MemberService {
                 .birthDate(dto.getBirthDate())
                 .role(Role.CLIENT)
                 .active(true)
+                .accountType(AccountType.REGULAR)
                 .build();
 
         Member saved = memberDao.save(member);
@@ -118,5 +123,35 @@ public class MemberServiceImpl implements MemberService {
         }
         log.info("Setting discount={}% for user id={}", discountPercent, userId);
         memberDao.setDiscount(userId, discountPercent);
+    }
+
+    @Override
+    public void setAccountType(Long userId, AccountType accountType) {
+        log.info("Setting accountType={} for user id={}", accountType, userId);
+        memberDao.setAccountType(userId, accountType);
+        recalculateDiscount(userId);
+    }
+
+    @Override
+    public int calculateAutoDiscount(Member member, int completedCycles) {
+        if (member.getAccountType() == AccountType.CORPORATE) {
+            return 10;
+        }
+        // REGULAR — tiered by loyalty (number of completed training cycles)
+        if (completedCycles >= 10) return 15;
+        if (completedCycles >= 6) return 10;
+        if (completedCycles >= 3) return 5;
+        return 0;
+    }
+
+    @Override
+    public void recalculateDiscount(Long userId) {
+        Member member = memberDao.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userId));
+        int completedCycles = orderDao.countCompletedByUserId(userId);
+        int newDiscount = calculateAutoDiscount(member, completedCycles);
+        log.info("Recalculated discount for user id={}: accountType={}, completedCycles={}, discount={}%",
+                userId, member.getAccountType(), completedCycles, newDiscount);
+        memberDao.setDiscount(userId, newDiscount);
     }
 }

@@ -67,6 +67,12 @@
             </svg>
           </div>
           <h2 class="assignment-card__title" th:text="#{assignment.exercises}">Workout Routines</h2>
+          <label class="assignment-revision-check"
+                 th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}"
+                 style="margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 400; color: var(--muted); cursor: pointer;">
+            <input type="checkbox" name="revisionExercises" value="true" form="revision-form"/>
+            <span th:text="#{assignment.revision.mark}">Needs revision</span>
+          </label>
         </div>
         <div class="assignment-card__body">
           <p class="assignment-card__text"
@@ -89,6 +95,12 @@
             </svg>
           </div>
           <h2 class="assignment-card__title" th:text="#{assignment.equipment}">Equipment</h2>
+          <label class="assignment-revision-check"
+                 th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}"
+                 style="margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 400; color: var(--muted); cursor: pointer;">
+            <input type="checkbox" name="revisionEquipment" value="true" form="revision-form"/>
+            <span th:text="#{assignment.revision.mark}">Needs revision</span>
+          </label>
         </div>
         <div class="assignment-card__body">
           <p class="assignment-card__text"
@@ -110,6 +122,12 @@
             </svg>
           </div>
           <h2 class="assignment-card__title" th:text="#{assignment.nutrition}">Nutrition Plan</h2>
+          <label class="assignment-revision-check"
+                 th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}"
+                 style="margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 400; color: var(--muted); cursor: pointer;">
+            <input type="checkbox" name="revisionNutrition" value="true" form="revision-form"/>
+            <span th:text="#{assignment.revision.mark}">Needs revision</span>
+          </label>
         </div>
         <div class="assignment-card__body">
           <p class="assignment-card__text"
@@ -132,6 +150,12 @@
             </svg>
           </div>
           <h2 class="assignment-card__title" th:text="#{assignment.schedule}">Training Schedule</h2>
+          <label class="assignment-revision-check"
+                 th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}"
+                 style="margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 400; color: var(--muted); cursor: pointer;">
+            <input type="checkbox" name="revisionSchedule" value="true" form="revision-form"/>
+            <span th:text="#{assignment.revision.mark}">Needs revision</span>
+          </label>
         </div>
         <div class="assignment-card__body">
           <p class="assignment-card__text"
@@ -143,12 +167,30 @@
 
     <!-- Actions -->
     <div class="assignment-actions">
-      <div th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}">
-        <form th:action="@{/client/assignment/revision/{id}(id=${assignment.id})}" method="post">
+      <div th:if="${assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}"
+           style="width: 100%;">
+        <form id="revision-form"
+              th:action="@{/client/assignment/revision/{id}(id=${assignment.id})}"
+              method="post">
           <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-          <button type="submit" class="btn-outline" th:text="#{assignment.request.revision}">
+          <input type="hidden" name="orderId" th:value="${order?.id}"/>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label class="form-label" th:text="#{assignment.revision.comment.label}">
+              What would you like changed? (optional)
+            </label>
+            <textarea class="form-textarea" name="revisionComment" rows="3" maxlength="1000"
+                      th:placeholder="#{assignment.revision.comment.placeholder}"></textarea>
+          </div>
+
+          <button type="submit" class="btn-outline" id="revision-submit-btn" disabled
+                  th:text="#{assignment.request.revision}">
             Request a revision
           </button>
+          <p id="revision-hint" class="review-rating-hint" style="margin-top: 8px;"
+             th:text="#{assignment.revision.select.hint}">
+            Check at least one item above to request a revision.
+          </p>
         </form>
       </div>
       <div th:if="${assignment.status == 'REVISION_REQUESTED'}">
@@ -159,6 +201,19 @@
     </div>
 
   </div>
+
+  <script th:if="${assignment != null and assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}">
+    (function () {
+      var checkboxes = document.querySelectorAll('#revision-form input[type="checkbox"]');
+      var submitBtn = document.getElementById('revision-submit-btn');
+      function updateButtonState() {
+        var anyChecked = Array.prototype.some.call(checkboxes, function (cb) { return cb.checked; });
+        submitBtn.disabled = !anyChecked;
+      }
+      checkboxes.forEach(function (cb) { cb.addEventListener('change', updateButtonState); });
+      updateButtonState();
+    })();
+  </script>
 
   <!-- No assignment yet -->
   <div th:unless="${assignment != null}" class="assignment-empty">

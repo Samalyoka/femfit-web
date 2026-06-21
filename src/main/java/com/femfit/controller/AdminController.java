@@ -2,12 +2,16 @@ package com.femfit.controller;
 
 import com.femfit.dto.PageDto;
 import com.femfit.dto.TrainingCycleDto;
+import com.femfit.model.AccountType;
 import com.femfit.model.Member;
+import com.femfit.model.Order;
 import com.femfit.model.Role;
+import com.femfit.model.TrainerAvailability;
 import com.femfit.model.TrainingCycle;
 import com.femfit.service.MemberService;
 import com.femfit.service.OrderService;
 import com.femfit.service.ReviewService;
+import com.femfit.service.TrainerService;
 import com.femfit.service.TrainingCycleService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -19,6 +23,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -39,16 +44,19 @@ public class AdminController {
     private final OrderService orderService;
     private final TrainingCycleService cycleService;
     private final ReviewService reviewService;
+    private final TrainerService trainerService;
 
     @Autowired
     public AdminController(MemberService userService,
                            OrderService orderService,
                            TrainingCycleService cycleService,
-                           ReviewService reviewService) {
+                           ReviewService reviewService,
+                           TrainerService trainerService) {
         this.userService = userService;
         this.orderService = orderService;
         this.cycleService = cycleService;
         this.reviewService = reviewService;
+        this.trainerService = trainerService;
     }
 
     // ── Dashboard ────────────────────────────────────────────────
@@ -90,6 +98,9 @@ public class AdminController {
         PageDto<Member> pageDto = userService.findByRole(Role.TRAINER, page, 10);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
+        // Availability lives in the trainers table, not members — fetch
+        // separately and let the template look it up by id.
+        model.addAttribute("trainerAvailability", trainerService.getAllTrainersIncludingUnavailable());
         return "admin/members";
     }
 
@@ -132,6 +143,37 @@ public class AdminController {
         return "redirect:" + resolveRedirect(redirectTo);
     }
 
+    /**
+     * Sets a client's account type (REGULAR/CORPORATE). The discount is
+     * automatically recalculated to match the new type's rule — see
+     * {@link MemberService#setAccountType}.
+     */
+    @PostMapping("/member/account-type/{memberId}")
+    public String setAccountType(@PathVariable Long memberId,
+                                 @RequestParam(name = "accountType") AccountType accountType,
+                                 @RequestParam(required = false) String redirectTo,
+                                 RedirectAttributes redirectAttrs) {
+        userService.setAccountType(memberId, accountType);
+        redirectAttrs.addFlashAttribute("success", "msg.success.save");
+        return "redirect:" + resolveRedirect(redirectTo);
+    }
+
+    /**
+     * Sets a trainer's availability (AVAILABLE/UNAVAILABLE). An UNAVAILABLE
+     * trainer is hidden from the client-facing choose-trainer page; their
+     * existing orders are unaffected until reassigned via
+     * {@link #reassignOrderTrainer}.
+     */
+    @PostMapping("/trainer/availability/{trainerId}")
+    public String setTrainerAvailability(@PathVariable Long trainerId,
+                                         @RequestParam(name = "availabilityStatus") TrainerAvailability availabilityStatus,
+                                         @RequestParam(required = false) String redirectTo,
+                                         RedirectAttributes redirectAttrs) {
+        trainerService.setAvailability(trainerId, availabilityStatus);
+        redirectAttrs.addFlashAttribute("success", "msg.success.save");
+        return "redirect:" + resolveRedirect(redirectTo);
+    }
+
     // ── Orders ───────────────────────────────────────────────────
 
     /**
@@ -144,15 +186,26 @@ public class AdminController {
         model.addAttribute("totalPages",
                 (int) Math.ceil(orderService.countAll() / 10.0));
         model.addAttribute("currentPage", page);
+        // For the trainer-reassignment dropdown — only trainers who can
+        // currently take on a reassigned order.
+        model.addAttribute("availableTrainers", trainerService.getAllTrainersWithRating());
         return "admin/orders";
     }
 
     /**
-     * Marks order as completed.
+     * Marks order as completed, then recalculates the client's automatic
+     * discount (completing a cycle may push a regular client into a higher
+     * loyalty tier — see {@link MemberService#recalculateDiscount}).
      */
     @PostMapping("/order/complete/{orderId}")
     public String completeOrder(@PathVariable Long orderId, RedirectAttributes ra) {
+        Optional<Order> order = orderService.findById(orderId);
         orderService.updateStatus(orderId, "COMPLETED");
+        if (order.isPresent()) {
+            userService.recalculateDiscount(order.get().getMemberId());
+        } else {
+            log.warn("Order id={} not found — discount not recalculated", orderId);
+        }
         ra.addFlashAttribute("success", "msg.success.save");
         return "redirect:/admin/orders";
     }
@@ -163,6 +216,20 @@ public class AdminController {
     @PostMapping("/order/cancel/{orderId}")
     public String cancelOrder(@PathVariable Long orderId, RedirectAttributes ra) {
         orderService.updateStatus(orderId, "CANCELLED");
+        ra.addFlashAttribute("success", "msg.success.save");
+        return "redirect:/admin/orders";
+    }
+
+    /**
+     * Reassigns an order's trainer — for when the primary trainer is
+     * unavailable (vacation, sick leave) and the client needs to be
+     * handed to a different, available trainer.
+     */
+    @PostMapping("/order/reassign-trainer/{orderId}")
+    public String reassignOrderTrainer(@PathVariable Long orderId,
+                                       @RequestParam(name = "trainerId") Long trainerId,
+                                       RedirectAttributes ra) {
+        orderService.assignTrainer(orderId, trainerId);
         ra.addFlashAttribute("success", "msg.success.save");
         return "redirect:/admin/orders";
     }

@@ -39,14 +39,22 @@ public class AssignmentDaoImpl implements AssignmentDao {
 
     private static final String SELECT_BY_ORDER = """
             SELECT id, order_id, exercises, equipment, nutrition_plan,
-                   schedule_info, status, created_at, updated_at
+                   schedule_info, status,
+                   revision_exercises_requested, revision_equipment_requested,
+                   revision_nutrition_requested, revision_schedule_requested,
+                   revision_comment,
+                   created_at, updated_at
             FROM assignments
             WHERE order_id = ?
             """;
 
     private static final String SELECT_LATEST_BY_CLIENT = """
             SELECT a.id, a.order_id, a.exercises, a.equipment, a.nutrition_plan,
-                   a.schedule_info, a.status, a.created_at, a.updated_at
+                   a.schedule_info, a.status,
+                   a.revision_exercises_requested, a.revision_equipment_requested,
+                   a.revision_nutrition_requested, a.revision_schedule_requested,
+                   a.revision_comment,
+                   a.created_at, a.updated_at
             FROM assignments a
             JOIN orders o ON o.id = a.order_id
             WHERE o.member_id = ?
@@ -57,13 +65,31 @@ public class AssignmentDaoImpl implements AssignmentDao {
     private static final String UPDATE = """
             UPDATE assignments
                SET exercises = ?, equipment = ?, nutrition_plan = ?,
-                   schedule_info = ?, updated_at = NOW()
+                   schedule_info = ?, status = 'ACTIVE',
+                   revision_exercises_requested = FALSE,
+                   revision_equipment_requested = FALSE,
+                   revision_nutrition_requested = FALSE,
+                   revision_schedule_requested = FALSE,
+                   revision_comment = NULL,
+                   updated_at = NOW()
              WHERE id = ?
             """;
 
     private static final String UPDATE_STATUS = """
             UPDATE assignments
                SET status = ?, updated_at = NOW()
+             WHERE id = ?
+            """;
+
+    private static final String REQUEST_REVISION = """
+            UPDATE assignments
+               SET status = 'REVISION_REQUESTED',
+                   revision_exercises_requested = ?,
+                   revision_equipment_requested = ?,
+                   revision_nutrition_requested = ?,
+                   revision_schedule_requested = ?,
+                   revision_comment = ?,
+                   updated_at = NOW()
              WHERE id = ?
             """;
 
@@ -211,6 +237,43 @@ public class AssignmentDaoImpl implements AssignmentDao {
     }
 
     /**
+     * Records a per-item revision request and sets status to REVISION_REQUESTED.
+     *
+     * @param assignmentId the assignment id
+     * @param exercises    true if exercises need revision
+     * @param equipment    true if equipment needs revision
+     * @param nutrition    true if nutrition plan needs revision
+     * @param schedule     true if schedule needs revision
+     * @param comment      optional client comment
+     * @throws RuntimeException if the update fails
+     */
+    @Override
+    public void requestRevision(Long assignmentId, boolean exercises, boolean equipment,
+                                 boolean nutrition, boolean schedule, String comment) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(REQUEST_REVISION)) {
+            ps.setBoolean(1, exercises);
+            ps.setBoolean(2, equipment);
+            ps.setBoolean(3, nutrition);
+            ps.setBoolean(4, schedule);
+            if (comment != null) {
+                ps.setString(5, comment);
+            } else {
+                ps.setNull(5, Types.VARCHAR);
+            }
+            ps.setLong(6, assignmentId);
+            ps.executeUpdate();
+            log.info("Revision requested for assignment id={}: exercises={}, equipment={}, nutrition={}, schedule={}",
+                    assignmentId, exercises, equipment, nutrition, schedule);
+        } catch (SQLException e) {
+            log.error("Error requesting revision for assignment id={}", assignmentId, e);
+            throw new RuntimeException("Failed to request revision", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
+    /**
      * Deletes all assignments for a given order.
      * Typically used when an order is cancelled.
      *
@@ -248,6 +311,11 @@ public class AssignmentDaoImpl implements AssignmentDao {
                 .nutritionPlan(rs.getString("nutrition_plan"))
                 .scheduleInfo(rs.getString("schedule_info"))
                 .status(rs.getString("status"))
+                .revisionExercisesRequested(rs.getBoolean("revision_exercises_requested"))
+                .revisionEquipmentRequested(rs.getBoolean("revision_equipment_requested"))
+                .revisionNutritionRequested(rs.getBoolean("revision_nutrition_requested"))
+                .revisionScheduleRequested(rs.getBoolean("revision_schedule_requested"))
+                .revisionComment(rs.getString("revision_comment"))
                 .createdAt(rs.getTimestamp("created_at").toLocalDateTime())
                 .updatedAt(rs.getTimestamp("updated_at").toLocalDateTime())
                 .build();

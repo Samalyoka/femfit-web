@@ -78,11 +78,20 @@ public interface OrderService {
     void updateStatus(Long orderId, String status);
 
     /**
-     * Marks an assignment as revision requested by client.
+     * Records a client's request to revise specific part(s) of an
+     * assignment (exercises, equipment, nutrition, schedule — any
+     * combination), with an optional comment explaining what's needed.
+     * Sets the assignment's status to REVISION_REQUESTED.
      *
      * @param assignmentId the assignment id
+     * @param exercises    true if exercises need revision
+     * @param equipment    true if equipment needs revision
+     * @param nutrition    true if nutrition plan needs revision
+     * @param schedule     true if schedule needs revision
+     * @param comment      optional client comment explaining the request
      */
-    void requestRevision(Long assignmentId);
+    void requestRevision(Long assignmentId, boolean exercises, boolean equipment,
+                         boolean nutrition, boolean schedule, String comment);
 
     /**
      * Places a new order for a training cycle.
@@ -110,4 +119,15 @@ public interface OrderService {
      * @return total number of orders
      */
     int countAll();
+
+    /**
+     * Reassigns an order to a different trainer (admin function). Used when
+     * the order's primary trainer is unavailable (vacation, sick leave) and
+     * an admin reassigns the client to another available trainer. Also sets
+     * the order's status to ACTIVE.
+     *
+     * @param orderId   the order to reassign
+     * @param trainerId the new trainer's id
+     */
+    void assignTrainer(Long orderId, Long trainerId);
 }
