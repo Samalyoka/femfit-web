@@ -75,7 +75,7 @@ public class TrainerController {
     public String viewAssignment(@PathVariable long clientId,
                                  @RequestParam long orderId,
                                  Model model) {
-        // FIX: look up by orderId (assignments.order_id), not by clientId.
+        // look up by orderId (assignments.order_id), not by clientId.
         // findLatestByClientId() returns the most recently updated assignment
         // across ALL of the client's orders/trainers — wrong scope here.
         Optional<Assignment> assignment =

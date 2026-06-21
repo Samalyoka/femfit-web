@@ -1,6 +1,7 @@
 package com.femfit.controller;
 
 import com.femfit.dto.PageDto;
+import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainingCycleDto;
 import com.femfit.model.AccountType;
 import com.femfit.model.Member;
@@ -22,6 +23,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import java.util.Optional;
 import java.util.Set;
@@ -99,8 +103,14 @@ public class AdminController {
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
         // Availability lives in the trainers table, not members — fetch
-        // separately and let the template look it up by id.
-        model.addAttribute("trainerAvailability", trainerService.getAllTrainersIncludingUnavailable());
+        // separately and expose as id -> TrainerDto so the template can do
+        // a simple, safe map lookup instead of a SpEL collection selection
+        // (which is fragile across Thymeleaf/SpEL versions when the lookup
+        // key shares a name with a variable already in scope).
+        Map<Long, TrainerDto> availabilityById = trainerService.getAllTrainersIncludingUnavailable()
+                .stream()
+                .collect(Collectors.toMap(TrainerDto::getId, t -> t));
+        model.addAttribute("trainerAvailability", availabilityById);
         return "admin/members";
     }
 

@@ -76,7 +76,7 @@
                                         th:selected="${member.accountType != null and member.accountType.name() == 'CORPORATE'}">Corporate</option>
                             </select>
                             <button class="btn btn--outline btn--sm" type="submit"
-                                    th:text="#{admin.discount.apply}">Apply</button>
+                                    th:text="#{admin.availability.apply}">Apply</button>
                         </form>
                     </td>
 
@@ -103,7 +103,7 @@
 
                     <!-- Availability column — trainers only -->
                     <td th:if="${role == 'TRAINER'}"
-                        th:with="trainerInfo=${trainerAvailability.?[id == member.id]}">
+                        th:with="trainerInfo=${trainerAvailability.get(member.id)}">
                         <form th:action="@{/admin/trainer/availability/{id}(id=${member.id})}"
                               method="post"
                               class="discount-form">
@@ -113,12 +113,12 @@
                             <input type="hidden" name="redirectTo" value="/admin/trainers"/>
                             <select class="form-select" name="availabilityStatus">
                                 <option value="AVAILABLE"
-                                        th:selected="${#lists.isEmpty(trainerInfo) or trainerInfo[0].availabilityStatus == null or trainerInfo[0].availabilityStatus.name() == 'AVAILABLE'}">Available</option>
+                                        th:selected="${trainerInfo == null or trainerInfo.availabilityStatus == null or trainerInfo.availabilityStatus.name() == 'AVAILABLE'}">Available</option>
                                 <option value="UNAVAILABLE"
-                                        th:selected="${!#lists.isEmpty(trainerInfo) and trainerInfo[0].availabilityStatus != null and trainerInfo[0].availabilityStatus.name() == 'UNAVAILABLE'}">Unavailable</option>
+                                        th:selected="${trainerInfo != null and trainerInfo.availabilityStatus != null and trainerInfo.availabilityStatus.name() == 'UNAVAILABLE'}">Unavailable</option>
                             </select>
                             <button class="btn btn--outline btn--sm" type="submit"
-                                    th:text="#{admin.discount.apply}">Apply</button>
+                                    th:text="#{admin.availability.apply}">Apply</button>
                         </form>
                     </td>
 

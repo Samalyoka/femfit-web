@@ -7,7 +7,7 @@ package com.femfit.model;
  * account is enabled in the system at all). A trainer can be an active
  * member but temporarily UNAVAILABLE (e.g. on vacation or sick leave),
  * in which case an admin may reassign their orders to an AVAILABLE
- * trainer — see {@link com.femfit.service.TrainerService#reassignTrainer}.</p>
+ * trainer — see {@link com.femfit.service.OrderService#assignTrainer}.</p>
  */
 public enum TrainerAvailability {
     AVAILABLE,

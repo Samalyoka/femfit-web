@@ -204,7 +204,7 @@
 
   <script th:if="${assignment != null and assignment.status != 'REVISION_REQUESTED' and assignment.status != 'COMPLETED'}">
     (function () {
-      var checkboxes = document.querySelectorAll('#revision-form input[type="checkbox"]');
+      var checkboxes = document.querySelectorAll('input[type="checkbox"][form="revision-form"]');
       var submitBtn = document.getElementById('revision-submit-btn');
       function updateButtonState() {
         var anyChecked = Array.prototype.some.call(checkboxes, function (cb) { return cb.checked; });

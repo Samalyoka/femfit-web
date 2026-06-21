@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{common/layout :: head}">
+  <title>My Archive — FemFit</title>
+</head>
+<body>
+<nav th:replace="~{common/layout :: nav}"></nav>
+
+<div class="page-wrap">
+
+  <div class="profile-hero">
+    <a th:href="@{/client/profile}" class="back-link">← <span th:text="#{nav.profile}">My Profile</span></a>
+    <p class="section-eyebrow" th:text="#{client.account}">My Account</p>
+    <h1 class="section-title" th:text="#{client.archive}">My Archive</h1>
+    <p class="hero-sub" style="margin-top: 8px; max-width: 560px;"
+       th:text="#{client.archive.sub}">
+      Programmes you've completed, along with the final plan your trainer
+      built for you and the review you left.
+    </p>
+  </div>
+
+  <!-- Empty state -->
+  <div th:if="${#lists.isEmpty(entries)}" class="profile-section-card">
+    <div class="profile-empty">
+      <p th:text="#{client.archive.empty}">No completed programmes yet.</p>
+      <a th:href="@{/client/cycles}" class="btn-primary"
+         style="margin-top: 16px; display: inline-block;"
+         th:text="#{nav.cycles}">Browse Programmes</a>
+    </div>
+  </div>
+
+  <!-- Archive entries -->
+  <div th:unless="${#lists.isEmpty(entries)}" style="display: flex; flex-direction: column; gap: 24px;">
+
+    <div th:each="entry : ${entries}" class="profile-section-card">
+
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+        <div>
+          <h2 class="profile-section-title" style="margin-bottom: 4px;" th:text="${entry.order.cycleTitle}">Programme</h2>
+          <p class="booking-time" style="margin: 0;">
+            <span th:text="#{client.archive.completed.on}">Completed on</span>
+            <span th:text="${#temporals.format(entry.order.completedAt, 'd MMM yyyy')}">date</span>
+            <span th:if="${entry.order.trainerName != null}">
+              · <span th:text="#{client.orders.trainer}">Trainer:</span> <span th:text="${entry.order.trainerName}"></span>
+            </span>
+          </p>
+        </div>
+        <span class="status-completed order-status" th:text="#{order.status.completed}">Completed</span>
+      </div>
+
+      <!-- Final assignment, if one exists -->
+      <div th:if="${entry.assignment != null}"
+           style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+
+        <div th:if="${entry.assignment.exercises != null and !entry.assignment.exercises.isBlank()}">
+          <p class="assignment-order-label" th:text="#{assignment.exercises}">Exercises</p>
+          <p class="profile-empty" style="padding: 4px 0 0; font-size: 15px;" th:text="${entry.assignment.exercises}"></p>
+        </div>
+
+        <div th:if="${entry.assignment.equipment != null and !entry.assignment.equipment.isBlank()}">
+          <p class="assignment-order-label" th:text="#{assignment.equipment}">Equipment</p>
+          <p class="profile-empty" style="padding: 4px 0 0; font-size: 15px;" th:text="${entry.assignment.equipment}"></p>
+        </div>
+
+        <div th:if="${entry.assignment.nutritionPlan != null and !entry.assignment.nutritionPlan.isBlank()}">
+          <p class="assignment-order-label" th:text="#{assignment.nutrition}">Nutrition Plan</p>
+          <p class="profile-empty" style="padding: 4px 0 0; font-size: 15px;" th:text="${entry.assignment.nutritionPlan}"></p>
+        </div>
+
+        <div th:if="${entry.assignment.scheduleInfo != null and !entry.assignment.scheduleInfo.isBlank()}">
+          <p class="assignment-order-label" th:text="#{assignment.schedule}">Schedule</p>
+          <p class="profile-empty" style="padding: 4px 0 0; font-size: 15px;" th:text="${entry.assignment.scheduleInfo}"></p>
+        </div>
+      </div>
+
+      <!-- Client's review, if left -->
+      <div th:if="${entry.review != null}"
+           style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+        <p class="assignment-order-label" style="margin-bottom: 6px;" th:text="#{client.archive.your.review}">Your review</p>
+        <div class="review-stars" style="margin-bottom: 6px;">
+          <span th:each="i : ${#numbers.sequence(1, 5)}"
+                class="review-star"
+                th:classappend="${i <= entry.review.rating} ? ' filled'">★</span>
+        </div>
+        <p class="profile-empty" style="padding: 0;" th:if="${entry.review.comment != null and !entry.review.comment.isBlank()}"
+           th:text="${entry.review.comment}"></p>
+      </div>
+
+      <!-- No review left -->
+      <div th:if="${entry.unreviewed}"
+           style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+        <a th:href="@{/client/review/{id}(id=${entry.order.id})}" class="btn-outline"
+           th:text="#{review.leave}">Leave a Review</a>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<footer th:replace="~{common/layout :: footer}"></footer>
+</body>
+</html>

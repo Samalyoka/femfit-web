@@ -120,7 +120,6 @@ public class AuthController {
         }
 
         // EmailAlreadyTakenException will bubble to GlobalExceptionHandler
-        // No try/catch needed here
         memberService.register(dto);
         redirectAttrs.addFlashAttribute("success", "Registration successful! Please log in.");
         return "redirect:/auth/login?registered";
