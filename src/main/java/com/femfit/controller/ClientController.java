@@ -119,8 +119,8 @@ public class ClientController {
      */
     @GetMapping("/orders")
     public String orders(@AuthenticationPrincipal UserDetails userDetails,
-                         @RequestParam(defaultValue = "1") int page,
-                         Model model) {
+                          @RequestParam(defaultValue = "1") int page,
+                          Model model) {
         Member member = getUser(userDetails);
         int pageSize = 10;
         int offset = (page - 1) * pageSize;
@@ -139,19 +139,6 @@ public class ClientController {
         model.addAttribute("totalPages", (int) Math.ceil(totalOrders / (double) pageSize));
         model.addAttribute("currentPage", page);
         return "client/orders";
-    }
-
-    /**
-     * Client's archive of completed training programmes — past assignments
-     * and reviews kept for reference, so clients can revisit programmes
-     * they've finished and the recommendations they followed.
-     */
-    @GetMapping("/archive")
-    public String archive(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-        Member member = getUser(userDetails);
-        model.addAttribute("entries", orderService.getArchive(member.getId()));
-        model.addAttribute("member", member);
-        return "client/archive";
     }
 
     /**
@@ -205,8 +192,8 @@ public class ClientController {
      */
     @GetMapping("/cycles")
     public String cycles(@AuthenticationPrincipal UserDetails userDetails,
-                         @RequestParam(defaultValue = "1") int page,
-                         Model model) {
+                          @RequestParam(defaultValue = "1") int page,
+                          Model model) {
         Member member = getUser(userDetails);
         int pageSize = 9;
         int offset = (page - 1) * pageSize;
