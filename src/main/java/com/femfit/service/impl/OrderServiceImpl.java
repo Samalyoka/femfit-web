@@ -1,6 +1,8 @@
 package com.femfit.service.impl;
 
 import com.femfit.dao.AssignmentDao;
+import com.femfit.dao.ReviewDao;
+import com.femfit.dto.ArchiveEntryDto;
 import com.femfit.dao.OrderDao;
 import com.femfit.model.Assignment;
 import com.femfit.model.Order;
@@ -23,11 +25,13 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderDao orderDao;
     private final AssignmentDao assignmentDao;
+    private final ReviewDao reviewDao;
 
     @Autowired
-    public OrderServiceImpl(OrderDao orderDao, AssignmentDao assignmentDao) {
+    public OrderServiceImpl(OrderDao orderDao, AssignmentDao assignmentDao, ReviewDao reviewDao) {
         this.orderDao = orderDao;
         this.assignmentDao = assignmentDao;
+        this.reviewDao = reviewDao;
     }
 
     @Override
@@ -120,5 +124,20 @@ public class OrderServiceImpl implements OrderService {
     public void assignTrainer(Long orderId, Long trainerId) {
         log.info("Reassigning order id={} to trainer id={}", orderId, trainerId);
         orderDao.assignTrainer(orderId, trainerId);
+    }
+
+    @Override
+    public java.util.List<ArchiveEntryDto> getArchive(Long userId) {
+        return orderDao.findByUserId(userId).stream()
+                .filter(o -> "COMPLETED".equals(o.getStatus()))
+                .sorted(java.util.Comparator.comparing(
+                        com.femfit.model.Order::getCompletedAt,
+                        java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())))
+                .map(o -> ArchiveEntryDto.builder()
+                        .order(o)
+                        .assignment(assignmentDao.findByOrderId(o.getId()).orElse(null))
+                        .review(reviewDao.findByOrderId(o.getId()).orElse(null))
+                        .build())
+                .toList();
     }
 }

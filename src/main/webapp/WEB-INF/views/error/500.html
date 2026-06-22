@@ -13,13 +13,13 @@
 
         <div style="font-family: 'Cormorant Garamond', serif;
                     font-size: 0.95rem; letter-spacing: 0.15em; text-transform: uppercase;
-                    color: #C4687A; margin-bottom: 12px;">Error 500</div>
+                    color: #C4687A; margin-bottom: 12px;" th:text="#{error.label} + ' 500'">Error 500</div>
 
         <h1 class="section-title" style="margin: 0 0 16px;"
-            th:text="#{error.500.title}">Something went wrong on our end</h1>
+            th:text="#{error.500.title}">Something went wrong</h1>
 
         <p class="section-sub" style="margin-bottom: 36px; line-height: 1.6;"
-           th:text="#{error.500.message}">We're sorry — an unexpected error occurred while processing your request. This is on us, not you. Please try again in a moment, and if the problem continues, contact our support team.</p>
+           th:text="#{error.500.message}">We're sorry — an unexpected error occurred while processing your request. Please try again in a moment, and if the problem continues, contact our support team.</p>
 
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
             <a class="btn btn--primary" th:href="@{/home}"

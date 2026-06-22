@@ -17,10 +17,10 @@
     <!-- Order summary -->
     <div class="review-order-card" th:if="${order != null}">
         <div class="review-order-info">
-            <div class="review-order-title" th:text="${order.cycleTitle}">Programme</div>
+            <div class="review-order-title" th:text="${order.getLocalizedCycleTitle(#locale.language)}">Programme</div>
             <div class="review-order-meta">
                 <span th:if="${order.trainerName != null}" th:text="#{review.with.trainer} + ' ' + ${order.trainerName}">with Trainer</span>
-                <span th:text="'· ' + #{review.completed} + ' ' + ${#temporals.format(order.completedAt ?: order.createdAt,'d MMM yyyy')}">· Completed</span>
+                <span th:text="'· ' + #{review.completed} + ' ' + ${@dateFormatter.format(order.completedAt ?: order.createdAt)}">· Completed</span>
             </div>
         </div>
         <span class="order-status status-completed" th:text="#{review.status.completed}">Completed</span>

@@ -12,19 +12,19 @@
     <div class="container">
 
         <div class="page-header">
-            <a class="back-link" th:href="@{/admin/dashboard}">← Dashboard</a>
+            <a class="back-link" th:href="@{/admin/dashboard}" th:text="#{admin.dashboard.back}">← Dashboard</a>
             <h1 class="section-title"
                 th:text="${role == 'CLIENT'} ? #{admin.clients} : #{admin.trainers}">
                 Members
             </h1>
         </div>
 
-        <div th:if="${success}" class="alert alert--success" th:text="${success}"></div>
+        <div th:if="${success}" class="alert alert--success" th:text="#{${success}}"></div>
         <div th:if="${error}"   class="alert alert--error"   th:text="${error}"></div>
 
         <!-- Empty state -->
         <div th:if="${page.content.empty}" class="empty-state">
-            <p class="section-sub">No members found.</p>
+            <p class="section-sub" th:text="#{admin.members.empty}">[[#{admin.members.empty}]]</p>
         </div>
 
         <!-- Members table -->
@@ -32,13 +32,13 @@
             <table class="data-table">
                 <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Status</th>
-                    <th th:if="${role == 'CLIENT'}">Account Type</th>
-                    <th th:if="${role == 'CLIENT'}">Discount</th>
-                    <th th:if="${role == 'TRAINER'}">Availability</th>
-                    <th>Actions</th>
+                    <th th:text="#{table.name}">Name</th>
+                    <th th:text="#{table.email}">Email</th>
+                    <th th:text="#{table.status}">Status</th>
+                    <th th:if="${role == 'CLIENT'}" th:text="#{admin.member.account.type}">Account Type</th>
+                    <th th:if="${role == 'CLIENT'}" th:text="#{admin.discounts}">Discount</th>
+                    <th th:if="${role == 'TRAINER'}" th:text="#{admin.availability}">Availability</th>
+                    <th th:text="#{table.actions}">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -167,10 +167,10 @@
                    th:href="@{/admin/clients(page=${page.currentPage - 1})}"
                    th:text="#{pagination.prev}">← Prev</a>
                 <span th:unless="${page.currentPage > 1}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;">← Prev</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.prev}" th:text="#{pagination.prev}">← Prev</span>
 
                 <span class="pagination__info"
-                      th:text="'Page ' + ${page.currentPage} + ' of ' + ${page.totalPages}">
+                      th:text="#{pagination.page(${page.currentPage}, ${page.totalPages})}">
               Page 1 of 2
             </span>
 
@@ -179,7 +179,7 @@
                    th:href="@{/admin/clients(page=${page.currentPage + 1})}"
                    th:text="#{pagination.next}">Next →</a>
                 <span th:unless="${page.currentPage < page.totalPages}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;">Next →</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.next}" th:text="#{pagination.next}">Next →</span>
             </th:block>
 
             <!-- Trainers pagination -->
@@ -189,10 +189,10 @@
                    th:href="@{/admin/trainers(page=${page.currentPage - 1})}"
                    th:text="#{pagination.prev}">← Prev</a>
                 <span th:unless="${page.currentPage > 1}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;">← Prev</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.prev}" th:text="#{pagination.prev}">← Prev</span>
 
                 <span class="pagination__info"
-                      th:text="'Page ' + ${page.currentPage} + ' of ' + ${page.totalPages}">
+                      th:text="#{pagination.page(${page.currentPage}, ${page.totalPages})}">
               Page 1 of 2
             </span>
 
@@ -201,7 +201,7 @@
                    th:href="@{/admin/trainers(page=${page.currentPage + 1})}"
                    th:text="#{pagination.next}">Next →</a>
                 <span th:unless="${page.currentPage < page.totalPages}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;">Next →</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.next}" th:text="#{pagination.next}">Next →</span>
             </th:block>
 
         </div>

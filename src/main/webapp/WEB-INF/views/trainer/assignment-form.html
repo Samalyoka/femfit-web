@@ -24,27 +24,27 @@
         <!-- Client info bar -->
         <div class="assignment-order-bar" th:if="${order != null}" style="margin-bottom: 28px;">
             <div class="assignment-order-item">
-                <span class="assignment-order-label">Client</span>
+                <span class="assignment-order-label" th:text="#{assignment.order.client}">Client</span>
                 <span class="assignment-order-value" th:text="${order.clientName}">—</span>
             </div>
             <div class="assignment-order-item">
-                <span class="assignment-order-label">Programme</span>
-                <span class="assignment-order-value" th:text="${order.cycleTitle}">—</span>
+                <span class="assignment-order-label" th:text="#{assignment.order.programme}">Programme</span>
+                <span class="assignment-order-value" th:text="${order.getLocalizedCycleTitle(#locale.language)}">—</span>
             </div>
             <div class="assignment-order-item">
-                <span class="assignment-order-label">Started</span>
+                <span class="assignment-order-label" th:text="#{assignment.order.started}">Started</span>
                 <span class="assignment-order-value"
-                      th:text="${#temporals.format(order.createdAt,'d MMM yyyy')}">—</span>
+                      th:text="${@dateFormatter.format(order.createdAt)}">—</span>
             </div>
             <div class="assignment-order-item">
-                <span class="assignment-order-label">Status</span>
+                <span class="assignment-order-label" th:text="#{assignment.order.status}">Status</span>
                 <span th:class="'order-status status-' + ${order.status.toLowerCase()}"
-                      th:text="${order.status}">ACTIVE</span>
+                      th:text="${order.status == 'ACTIVE'} ? #{order.status.active} : (${order.status == 'COMPLETED'} ? #{order.status.completed} : #{order.status.pending})">ACTIVE</span>
             </div>
         </div>
 
         <!-- Flash messages -->
-        <div th:if="${successMsg}" class="alert alert--success" th:text="${successMsg}"></div>
+        <div th:if="${successMsg}" class="alert alert--success" th:text="#{${successMsg}}"></div>
         <div th:if="${errorMsg}"   class="alert alert--error"   th:text="${errorMsg}"></div>
 
         <!-- Main form -->

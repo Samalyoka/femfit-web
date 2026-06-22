@@ -18,7 +18,10 @@ import java.util.Locale;
  * AuthenticationManager, so it lives alongside the rest of the security
  * setup rather than being duplicated across two configuration classes.
  */
+import org.springframework.scheduling.annotation.EnableScheduling;
+
 @Configuration
+@EnableScheduling
 @ComponentScan(basePackages = {
         "com.femfit.service",
         "com.femfit.dao"

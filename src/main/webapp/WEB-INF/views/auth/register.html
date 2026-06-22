@@ -20,7 +20,7 @@
 <div class="auth-wrap">
     <div class="auth-card auth-card-register">
         <div class="auth-title" th:text="#{auth.register.title}">Join FemFit</div>
-        <div class="auth-sub">Create your account and start your journey</div>
+        <div class="auth-sub" th:text="#{auth.register.sub}">Create your account and start your journey</div>
 
         <form th:action="@{/auth/register}" method="post" th:object="${registerDto}" novalidate>
             <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
@@ -31,7 +31,7 @@
                     <input type="text" th:field="*{firstName}"
                            th:class="${#fields.hasErrors('firstName')} ? 'form-control is-invalid' : 'form-control'"
                            pattern="[\p{L} '\-]+"
-                           title="Letters, spaces, hyphens and apostrophes only"
+                           th:title="#{auth.name.pattern.hint}" title="Letters only"
                            required>
                     <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}"></div>
                 </div>
@@ -40,7 +40,7 @@
                     <input type="text" th:field="*{lastName}"
                            th:class="${#fields.hasErrors('lastName')} ? 'form-control is-invalid' : 'form-control'"
                            pattern="[\p{L} '\-]+"
-                           title="Letters, spaces, hyphens and apostrophes only"
+                           th:title="#{auth.name.pattern.hint}" title="Letters only"
                            required>
                     <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}"></div>
                 </div>
@@ -50,13 +50,13 @@
                 <label class="form-label" th:text="#{auth.email}">Email</label>
                 <input type="email" th:field="*{email}"
                        th:class="${#fields.hasErrors('email')} ? 'form-control is-invalid' : 'form-control'"
-                       placeholder="your@email.com" required>
+                       th:placeholder="#{auth.email.placeholder}" placeholder="your@email.com" required>
                 <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
             </div>
 
             <div class="mb">
                 <label class="form-label" th:text="#{auth.phone}">Phone</label>
-                <input type="tel" th:field="*{phone}" class="form-control" placeholder="87001234567">
+                <input type="tel" th:field="*{phone}" class="form-control" th:placeholder="#{auth.phone.placeholder}" placeholder="+77001234567">
             </div>
 
             <div class="mb">
@@ -68,7 +68,7 @@
                 <label class="form-label" th:text="#{auth.password}">Password</label>
                 <input type="password" th:field="*{password}"
                        th:class="${#fields.hasErrors('password')} ? 'form-control is-invalid' : 'form-control'"
-                       placeholder="Min 8 characters" required autocomplete="new-password">
+                       th:placeholder="#{auth.password.registerPlaceholder}" placeholder="Min 8 characters" required autocomplete="new-password">
                 <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
             </div>
 
@@ -84,7 +84,7 @@
 
 <footer class="auth-footer">
     <div class="auth-footer-logo">FemFit</div>
-    <div>© 2026 FemFit. All rights reserved.</div>
+    <div th:text="#{footer.copyright}">© 2026 FemFit. All rights reserved.</div>
 </footer>
 
 </body>

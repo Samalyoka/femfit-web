@@ -142,6 +142,18 @@ public class ClientController {
     }
 
     /**
+     * Archive of completed training programmes — each paired with
+     * its final assignment and client review (if any).
+     */
+    @GetMapping("/archive")
+    public String archive(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        Member member = getUser(userDetails);
+        model.addAttribute("entries", orderService.getArchive(member.getId()));
+        model.addAttribute("member", member);
+        return "client/archive";
+    }
+
+    /**
      * View assignment for a specific order.
      */
     @GetMapping("/assignment/{orderId}")
@@ -245,7 +257,8 @@ public class ClientController {
 
         // May throw ValidationException — bubbles to GlobalExceptionHandler
         orderService.placeOrder(member.getId(), cycleId, cycle.getPrice(), trainerId);
-        redirectAttrs.addFlashAttribute("successMsg", "order.placed.successfully");
+        String msgKey = (trainerId != null) ? "order.placed.successfully" : "order.placed.no.trainer";
+        redirectAttrs.addFlashAttribute("successMsg", msgKey);
         return "redirect:/client/orders";
     }
 

@@ -43,4 +43,7 @@ public interface BookingService {
      * @return visit count
      */
     int countVisitsThisMonth(Long userId);
+
+    /** Finds bookings due for a reminder and sends emails via EmailService. */
+    int sendUpcomingClassReminders();
 }

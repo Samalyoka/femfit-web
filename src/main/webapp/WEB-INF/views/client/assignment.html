@@ -11,7 +11,7 @@
   <div class="profile-hero">
     <a th:href="@{/client/profile}" class="back-link">← <span th:text="#{nav.profile}">My Profile</span></a>
     <p class="section-eyebrow" th:text="#{assignment.eyebrow}">My Training Plan</p>
-    <h1 class="section-title" th:text="${order?.cycleTitle} ?: #{assignment.title}">Assignment</h1>
+    <h1 class="section-title" th:text="${order?.getLocalizedCycleTitle(#locale.language)} ?: #{assignment.title}">Assignment</h1>
   </div>
 
   <!-- Order info bar — 3 поля, без дублирования -->
@@ -26,7 +26,7 @@
     <div class="assignment-order-item">
       <span class="assignment-order-label" th:text="#{assignment.ordered}">Ordered</span>
       <span class="assignment-order-value"
-            th:text="${#temporals.format(order.createdAt,'d MMM yyyy')}">—</span>
+            th:text="${@dateFormatter.format(order.createdAt)}">—</span>
     </div>
 
     <div class="assignment-order-item">

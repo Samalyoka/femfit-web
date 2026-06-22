@@ -130,4 +130,7 @@ public interface OrderService {
      * @param trainerId the new trainer's id
      */
     void assignTrainer(Long orderId, Long trainerId);
+
+    /** Returns completed orders for a client, each paired with assignment and review. */
+    List<com.femfit.dto.ArchiveEntryDto> getArchive(Long userId);
 }

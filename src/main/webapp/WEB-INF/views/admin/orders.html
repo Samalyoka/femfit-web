@@ -12,15 +12,15 @@
   <div class="container">
 
     <div class="page-header">
-      <a class="back-link" th:href="@{/admin/dashboard}">← Dashboard</a>
+      <a class="back-link" th:href="@{/admin/dashboard}" th:text="#{admin.dashboard.back}">← Dashboard</a>
       <h1 class="section-title" th:text="#{admin.orders}">All Orders</h1>
     </div>
 
-    <div th:if="${success}" class="alert alert--success" th:text="${success}"></div>
+    <div th:if="${success}" class="alert alert--success" th:text="#{${success}}"></div>
 
     <!-- Empty state -->
     <div th:if="${orders.empty}" class="empty-state">
-      <p class="section-sub">No orders yet.</p>
+      <p class="section-sub" th:text="#{admin.orders.empty}">[[#{admin.orders.empty}]]</p>
     </div>
 
     <!-- Orders table -->
@@ -29,13 +29,13 @@
         <thead>
         <tr>
           <th>#</th>
-          <th>Client</th>
-          <th>Program</th>
-          <th>Trainer</th>
-          <th>Amount</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Actions</th>
+          <th th:text="#{table.client}">Client</th>
+          <th th:text="#{table.program}">Program</th>
+          <th th:text="#{table.trainer}">Trainer</th>
+          <th th:text="#{table.amount}">Amount</th>
+          <th th:text="#{table.status}">Status</th>
+          <th th:text="#{table.date}">Date</th>
+          <th th:text="#{table.actions}">Actions</th>
         </tr>
         </thead>
         <tbody>
@@ -47,7 +47,7 @@
           <td class="data-table__name"
               th:text="${order.clientName}">Client</td>
 
-          <td th:text="${order.cycleTitle}">Program</td>
+          <td th:text="${order.getLocalizedCycleTitle(#locale.language)}">Program</td>
 
           <td class="data-table__meta"
               th:text="${order.trainerName != null ? order.trainerName : '—'}">—</td>
@@ -58,7 +58,7 @@
 
           <td>
                         <span class="badge"
-                              th:text="${order.status}"
+                              th:text="${order.status == 'ACTIVE'} ? #{order.status.active} : (${order.status == 'COMPLETED'} ? #{order.status.completed} : (${order.status == 'CANCELLED'} ? #{order.status.cancelled} : #{order.status.pending}))"
                               th:classappend="${order.status == 'ACTIVE'}    ? ' badge--active'
                                            : (${order.status == 'COMPLETED'} ? ' badge--success'
                                            : (${order.status == 'CANCELLED'} ? ' badge--inactive'
@@ -69,7 +69,7 @@
 
           <td class="data-table__meta"
               th:text="${order.createdAt != null}
-                                 ? ${#temporals.format(order.createdAt, 'dd MMM yyyy')}
+                                 ? ${@dateFormatter.format(order.createdAt)}
                                  : '—'">
             —
           </td>

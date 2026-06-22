@@ -9,56 +9,56 @@
 <div class="page-wrap">
 
     <div class="page-header">
-        <a th:href="@{/admin/dashboard}" class="back-link">← Dashboard</a>
-        <h1 class="section-title">Statistics &amp; Reports</h1>
+        <a th:href="@{/admin/dashboard}" class="back-link" th:text="#{admin.dashboard.back}">← Dashboard</a>
+        <h1 class="section-title" th:text="#{admin.stats.title}">Statistics &amp; Reports</h1>
     </div>
 
     <!-- Key metrics inline summary -->
     <div class="profile-section-card" style="margin-bottom: 28px;">
-        <h2 class="profile-section-title">Overview</h2>
+        <h2 class="profile-section-title" th:text="#{admin.stats.overview}" th:text="#{admin.stats.overview}">Overview</h2>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 16px;">
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${totalClients}">0</div>
-                <div class="stat-label">Total Clients</div>
+                <div class="stat-label" th:text="#{admin.stats.total.clients}" th:text="#{admin.stats.total.clients}">Total Clients</div>
             </div>
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${totalTrainers}">0</div>
-                <div class="stat-label">Total Trainers</div>
+                <div class="stat-label" th:text="#{admin.stats.total.trainers}" th:text="#{admin.stats.total.trainers}">Total Trainers</div>
             </div>
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${totalOrders}">0</div>
-                <div class="stat-label">Total Orders</div>
+                <div class="stat-label" th:text="#{admin.stats.total.orders}" th:text="#{admin.stats.total.orders}">Total Orders</div>
             </div>
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${activeCycles}">0</div>
-                <div class="stat-label">Active Cycles</div>
+                <div class="stat-label" th:text="#{admin.stats.active.cycles}" th:text="#{admin.stats.active.cycles}">Active Cycles</div>
             </div>
         </div>
     </div>
 
     <!-- Recent reviews -->
     <div class="profile-section-card">
-        <h2 class="profile-section-title">Recent Reviews</h2>
+        <h2 class="profile-section-title" th:text="#{admin.stats.recent.reviews}" th:text="#{admin.stats.recent.reviews}">Recent Reviews</h2>
 
         <div th:if="${#lists.isEmpty(recentReviews)}" class="profile-empty">
-            No reviews yet.
+            [[#{admin.stats.no.reviews}]]
         </div>
 
         <table th:unless="${#lists.isEmpty(recentReviews)}"
                class="data-table" style="margin-top: 16px;">
             <thead>
             <tr>
-                <th>Member</th>
-                <th>Programme</th>
-                <th>Rating</th>
-                <th>Comment</th>
-                <th>Date</th>
+                <th th:text="#{table.member}">Member</th>
+                <th th:text="#{table.programme}">Programme</th>
+                <th th:text="#{table.rating}">Rating</th>
+                <th th:text="#{table.comment}">Comment</th>
+                <th th:text="#{table.date}">Date</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="r : ${recentReviews}">
                 <td class="data-table__name" th:text="${r.memberName}">Member</td>
-                <td th:text="${r.cycleTitle}">Programme</td>
+                <td th:text="${r.getLocalizedCycleTitle(#locale.language)}">Programme</td>
                 <td>
             <span th:each="i : ${#numbers.sequence(1, 5)}"
                   th:style="${i <= r.rating} ? 'color: var(--rose)' : 'color: var(--border)'"
@@ -67,7 +67,7 @@
                 <td class="data-table__meta"
                     th:text="${r.comment != null} ? ${#strings.abbreviate(r.comment, 60)} : '—'">
                 </td>
-                <td th:text="${#temporals.format(r.createdAt, 'd MMM yyyy')}">Date</td>
+                <td th:text="${@dateFormatter.format(r.createdAt)}">Date</td>
             </tr>
             </tbody>
         </table>

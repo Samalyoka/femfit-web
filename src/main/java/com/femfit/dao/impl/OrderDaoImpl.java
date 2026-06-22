@@ -40,6 +40,8 @@ public class OrderDaoImpl implements OrderDao {
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
             JOIN members u ON o.member_id = u.id
@@ -53,6 +55,8 @@ public class OrderDaoImpl implements OrderDao {
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
             JOIN members u ON o.member_id = u.id
@@ -67,6 +71,8 @@ public class OrderDaoImpl implements OrderDao {
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
             JOIN members u ON o.member_id = u.id
@@ -87,6 +93,8 @@ public class OrderDaoImpl implements OrderDao {
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
             JOIN members u ON o.member_id = u.id
@@ -101,6 +109,8 @@ public class OrderDaoImpl implements OrderDao {
                    o.paid_amount, o.created_at, o.completed_at,
                    u.first_name || ' ' || u.last_name AS client_name,
                    tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz,
                    t.first_name || ' ' || t.last_name AS trainer_name
             FROM orders o
             JOIN members u ON o.member_id = u.id
@@ -346,6 +356,8 @@ public class OrderDaoImpl implements OrderDao {
                         ? rs.getTimestamp("completed_at").toLocalDateTime() : null)
                 .clientName(rs.getString("client_name"))
                 .cycleTitle(rs.getString("cycle_title"))
+                .cycleTitleRu(rs.getString("cycle_title_ru"))
+                .cycleTitleKz(rs.getString("cycle_title_kz"))
                 .trainerName(rs.getString("trainer_name"))
                 .build();
     }

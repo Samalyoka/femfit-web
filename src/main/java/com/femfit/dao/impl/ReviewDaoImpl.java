@@ -41,7 +41,9 @@ public class ReviewDaoImpl implements ReviewDao {
     private static final String SELECT_BY_ORDER = """
             SELECT r.id, r.order_id, r.member_id, r.trainer_id, r.rating, r.comment, r.created_at,
                    m.first_name || ' ' || m.last_name AS member_name,
-                   tc.title AS cycle_title
+                   tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz
             FROM reviews r
             JOIN members m ON r.member_id = m.id
             JOIN orders o ON r.order_id = o.id
@@ -52,7 +54,9 @@ public class ReviewDaoImpl implements ReviewDao {
     private static final String SELECT_BY_MEMBER = """
             SELECT r.id, r.order_id, r.member_id, r.trainer_id, r.rating, r.comment, r.created_at,
                    m.first_name || ' ' || m.last_name AS member_name,
-                   tc.title AS cycle_title
+                   tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz
             FROM reviews r
             JOIN members m ON r.member_id = m.id
             JOIN orders o ON r.order_id = o.id
@@ -64,7 +68,9 @@ public class ReviewDaoImpl implements ReviewDao {
     private static final String SELECT_RECENT = """
             SELECT r.id, r.order_id, r.member_id, r.trainer_id, r.rating, r.comment, r.created_at,
                    m.first_name || ' ' || m.last_name AS member_name,
-                   tc.title AS cycle_title
+                   tc.title AS cycle_title,
+                   tc.title_ru AS cycle_title_ru,
+                   tc.title_kz AS cycle_title_kz
             FROM reviews r
             JOIN members m ON r.member_id = m.id
             JOIN orders o ON r.order_id = o.id
@@ -226,6 +232,8 @@ public class ReviewDaoImpl implements ReviewDao {
                         ? rs.getTimestamp("created_at").toLocalDateTime() : null)
                 .memberName(rs.getString("member_name"))
                 .cycleTitle(rs.getString("cycle_title"))
+                .cycleTitleRu(rs.getString("cycle_title_ru"))
+                .cycleTitleKz(rs.getString("cycle_title_kz"))
                 .build();
     }
 }

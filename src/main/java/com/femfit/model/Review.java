@@ -34,4 +34,12 @@ public class Review {
 
     /** Populated from JOIN — cycle title */
     private String cycleTitle;
+    private String cycleTitleRu;
+    private String cycleTitleKz;
+
+    public String getLocalizedCycleTitle(String lang) {
+        if ("ru".equals(lang) && cycleTitleRu != null && !cycleTitleRu.isBlank()) return cycleTitleRu;
+        if ("kz".equals(lang) && cycleTitleKz != null && !cycleTitleKz.isBlank()) return cycleTitleKz;
+        return cycleTitle;
+    }
 }

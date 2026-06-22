@@ -110,4 +110,8 @@ public interface BookingDao {
      *         empty list if user has no bookings or doesn't exist
      */
     List<Long> findBookedScheduleIdsByEmail(String email);
+
+    /** Bookings confirmed within the given window, enriched with member email for reminders. */
+    List<com.femfit.dto.BookingReminderDto> findBookingsForReminder(
+            java.time.LocalDateTime windowStart, java.time.LocalDateTime windowEnd);
 }

@@ -11,8 +11,8 @@
   <div class="container" style="max-width: 800px;">
 
     <div class="page-header">
-      <a class="back-link" th:href="@{/client/cycles}">← Back</a>
-      <h1 class="section-title">Choose your trainer</h1>
+      <a class="back-link" th:href="@{/client/cycles}" th:text="#{common.back}">← Back</a>
+      <h1 class="section-title" th:text="#{choose.trainer.title}">Choose your trainer</h1>
       <p class="section-sub"
          th:text="${cycle?.title}">Program name</p>
     </div>
@@ -39,7 +39,7 @@
             <span style="font-family: var(--serif); font-size: 14px; color: var(--charcoal);"
                   th:text="${trainer.averageRating}">4.8</span>
             <span style="font-size: 13px; color: var(--muted);"
-                  th:text="${trainer.reviewCount == 1} ? '(1 review)' : '(' + ${trainer.reviewCount} + ' reviews)'">
+                  th:text="${trainer.reviewCount == 1} ? #{choose.trainer.review.singular} : #{choose.trainer.review.plural(${trainer.reviewCount})}">
               (12 reviews)
             </span>
           </div>

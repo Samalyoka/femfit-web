@@ -271,7 +271,7 @@
             <div class="review-avatar" th:text="${#strings.substring(review.memberName, 0, 1)}">A</div>
             <div>
               <div class="review-author" th:text="${review.memberName}">Member</div>
-              <div class="review-programme" th:text="${review.cycleTitle}">Programme</div>
+              <div class="review-programme" th:text="${review.getLocalizedCycleTitle(#locale.language)}">Programme</div>
             </div>
           </div>
 

@@ -24,7 +24,7 @@
 
     <div class="alert alert-error" th:if="${loginError}" th:text="#{auth.login.error}">Invalid email or password.</div>
     <div class="alert alert-success" th:if="${logoutMsg}" th:text="#{auth.logout.success}">You have been logged out.</div>
-    <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+    <div class="alert alert-success" th:if="${success}" th:text="#{${success}}"></div>
 
     <form th:action="@{/auth/login}" method="post">
       <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
@@ -50,7 +50,7 @@
 
 <footer class="auth-footer">
   <div class="auth-footer-logo">FemFit</div>
-  <div>© 2026 FemFit. All rights reserved.</div>
+  <div th:text="#{footer.copyright}">© 2026 FemFit. All rights reserved.</div>
 </footer>
 
 </body>

@@ -306,7 +306,7 @@ footer { background: var(--rose-deep); color: rgba(255,255,255,0.7); font-family
 .profile-meta-row { display: flex; justify-content: space-between; gap: 8px; }
 .profile-meta-row span:last-child { color: var(--charcoal); font-weight: 400; text-align: right; }
 .profile-main { display: flex; flex-direction: column; gap: 24px; }
-.profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.profile-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
 .profile-section-card { background: white; border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
 .profile-section-title { font-family: var(--serif); font-size: 22px; color: var(--charcoal); margin-bottom: 20px; font-weight: 400; }
 .profile-empty { font-family: var(--serif); font-size: 16px; font-weight: 300; color: var(--muted); padding: 20px 0; }

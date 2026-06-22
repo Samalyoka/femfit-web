@@ -487,6 +487,54 @@ public class BookingDaoImpl implements BookingDao {
      * @return the mapped Booking object
      * @throws SQLException if column retrieval fails
      */
+    private static final String SELECT_FOR_REMINDER = """
+            SELECT b.id AS booking_id,
+                   m.email AS member_email,
+                   m.first_name AS member_first_name,
+                   fc.name AS class_name,
+                   (co.occurrence_date + cs.start_time) AS scheduled_at,
+                   cs.room
+            FROM bookings b
+            JOIN members m ON b.member_id = m.id
+            JOIN class_occurrences co ON b.schedule_id = co.id
+            JOIN class_schedules cs ON co.schedule_id = cs.id
+            JOIN fitness_classes fc ON cs.class_id = fc.id
+            WHERE b.status = 'CONFIRMED'
+              AND (co.occurrence_date + cs.start_time) >= ?
+              AND (co.occurrence_date + cs.start_time) <  ?
+            ORDER BY scheduled_at
+            """;
+
+    @Override
+    public java.util.List<com.femfit.dto.BookingReminderDto> findBookingsForReminder(
+            java.time.LocalDateTime windowStart, java.time.LocalDateTime windowEnd) {
+        Connection conn = pool.getConnection();
+        java.util.List<com.femfit.dto.BookingReminderDto> list = new java.util.ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_FOR_REMINDER)) {
+            ps.setTimestamp(1, java.sql.Timestamp.valueOf(windowStart));
+            ps.setTimestamp(2, java.sql.Timestamp.valueOf(windowEnd));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(com.femfit.dto.BookingReminderDto.builder()
+                            .bookingId(rs.getLong("booking_id"))
+                            .memberEmail(rs.getString("member_email"))
+                            .memberFirstName(rs.getString("member_first_name"))
+                            .className(rs.getString("class_name"))
+                            .scheduledAt(rs.getTimestamp("scheduled_at") != null
+                                    ? rs.getTimestamp("scheduled_at").toLocalDateTime() : null)
+                            .room(rs.getString("room"))
+                            .build());
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error finding bookings for reminder: {}", e.getMessage());
+            throw new RuntimeException("Failed to find bookings for reminder", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return list;
+    }
+
     private Booking mapRow(ResultSet rs) throws SQLException {
         return Booking.builder()
                 .id(rs.getLong("id"))

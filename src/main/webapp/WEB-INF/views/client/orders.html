@@ -34,10 +34,10 @@
 
       <!-- Order info -->
       <div class="order-info">
-        <div class="order-title" th:text="${order.cycleTitle}">Programme</div>
+        <div class="order-title" th:text="${order.getLocalizedCycleTitle(#locale.language)}">Programme</div>
         <div class="order-meta">
           <span class="order-date"
-                th:text="${#temporals.format(order.createdAt,'dd MMM yyyy')}">Date</span>
+                th:text="${@dateFormatter.format(order.createdAt)}">Date</span>
           <span th:class="'order-status status-' + ${order.status.toLowerCase()}"
                 th:text="${order.status}">Status</span>
         </div>

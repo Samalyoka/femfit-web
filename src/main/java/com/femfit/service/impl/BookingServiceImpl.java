@@ -1,6 +1,8 @@
 package com.femfit.service.impl;
 
 import com.femfit.dao.BookingDao;
+import com.femfit.dto.BookingReminderDto;
+import java.time.LocalDateTime;
 import com.femfit.model.Booking;
 import com.femfit.service.BookingService;
 import org.slf4j.Logger;
@@ -25,10 +27,15 @@ public class BookingServiceImpl implements BookingService {
     private static final Logger log = LoggerFactory.getLogger(BookingServiceImpl.class);
 
     private final BookingDao bookingDao;
+    private final EmailService emailService;
+
+    @org.springframework.beans.factory.annotation.Value("${mail.reminder.hours.before:24}")
+    private int reminderHoursBefore;
 
     @Autowired
-    public BookingServiceImpl(BookingDao bookingDao) {
+    public BookingServiceImpl(BookingDao bookingDao, EmailService emailService) {
         this.bookingDao = bookingDao;
+        this.emailService = emailService;
     }
 
     @Override
@@ -53,5 +60,15 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public int countVisitsThisMonth(Long userId) {
         return bookingDao.findUpcomingByUserId(userId).size();
+    }
+
+    @Override
+    public int sendUpcomingClassReminders() {
+        LocalDateTime windowStart = LocalDateTime.now().plusHours(reminderHoursBefore - 1L);
+        LocalDateTime windowEnd   = LocalDateTime.now().plusHours(reminderHoursBefore);
+        java.util.List<BookingReminderDto> due = bookingDao.findBookingsForReminder(windowStart, windowEnd);
+        log.info("Reminder sweep: {} booking(s) due", due.size());
+        for (BookingReminderDto b : due) emailService.sendClassReminder(b);
+        return due.size();
     }
 }

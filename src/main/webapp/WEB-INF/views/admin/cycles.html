@@ -9,10 +9,10 @@
 <div class="page-wrap">
 
     <div class="page-header">
-        <a th:href="@{/admin/dashboard}" class="back-link">← Dashboard</a>
+        <a th:href="@{/admin/dashboard}" class="back-link" th:text="#{admin.dashboard.back}">← Dashboard</a>
         <div style="display: flex; align-items: center; justify-content: space-between;">
-            <h1 class="section-title" style="margin-bottom: 0;">Training Cycles</h1>
-            <a th:href="@{/admin/cycles/new}" class="btn btn--primary">+ New Cycle</a>
+            <h1 class="section-title" style="margin-bottom: 0;" th:text="#{admin.cycles}">Training Cycles</h1>
+            <a th:href="@{/admin/cycles/new}" class="btn btn--primary" th:text="#{admin.cycles.new}">+ New Cycle</a>
         </div>
     </div>
 
@@ -24,18 +24,18 @@
         <table class="data-table">
             <thead>
             <tr>
-                <th>Title</th>
-                <th>Duration</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
+                <th th:text="#{table.title}">Title</th>
+                <th th:text="#{table.duration}">Duration</th>
+                <th th:text="#{table.price}">Price</th>
+                <th th:text="#{table.status}">Status</th>
+                <th th:text="#{table.created}">Created</th>
+                <th th:text="#{table.actions}">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr th:if="${#lists.isEmpty(cycles)}">
                 <td colspan="6" style="text-align:center; padding: 32px; color: var(--muted);">
-                    No training cycles yet.
+                    [[#{admin.cycles.empty}]]
                 </td>
             </tr>
             <tr th:each="cycle : ${cycles}">
@@ -44,16 +44,16 @@
                     <div class="data-table__meta"
                          th:text="${#strings.abbreviate(cycle.description, 60)}">Description</div>
                 </td>
-                <td th:text="${cycle.durationWeeks} + ' weeks'">8 weeks</td>
+                <td th:text="#{common.weeks(${cycle.durationWeeks})}">8 weeks</td>
                 <td th:text="${#numbers.formatDecimal(cycle.price, 0, 'COMMA', 0, 'POINT')} + ' ₸'">
                     49,900 ₸
                 </td>
                 <td>
-                    <span th:if="${cycle.active}" class="badge badge--active">Active</span>
-                    <span th:unless="${cycle.active}" class="badge badge--inactive">Inactive</span>
+                    <span th:if="${cycle.active}" class="badge badge--active" th:text="#{admin.status.active}">Active</span>
+                    <span th:unless="${cycle.active}" class="badge badge--inactive" th:text="#{admin.status.inactive}">Inactive</span>
                 </td>
                 <td th:text="${cycle.createdAt != null}
-              ? ${#temporals.format(cycle.createdAt, 'd MMM yyyy')}
+              ? ${@dateFormatter.format(cycle.createdAt)}
               : '—'">Date</td>
                 <td>
                     <div class="action-row">
@@ -67,7 +67,7 @@
                               method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
                             <button type="submit" class="btn btn--danger btn--sm"
-                                    onclick="return confirm('Deactivate this cycle? Clients will no longer see it.')">
+                                    th:data-confirm="#{cycle.deactivate.confirm}" onclick="return confirm(this.dataset.confirm)">
                                 Deactivate
                             </button>
                         </form>
@@ -76,7 +76,7 @@
                               th:action="@{/admin/cycles/{id}/activate(id=${cycle.id})}"
                               method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-                            <button type="submit" class="btn btn--primary btn--sm">Activate</button>
+                            <button type="submit" class="btn btn--primary btn--sm" th:text="#{admin.cycle.activate}" th:text="#{admin.cycle.activate}">Activate</button>
                         </form>
                     </div>
                 </td>
