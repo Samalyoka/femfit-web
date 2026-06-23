@@ -103,6 +103,83 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
             ORDER BY scheduled_at ASC
             """;
 
+
+    private static final String SELECT_UPCOMING_PAGED = """
+            SELECT co.id, cs.class_id, cs.trainer_id,
+                   (co.occurrence_date + cs.start_time) AS scheduled_at,
+                   cs.room, co.is_cancelled,
+                   fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
+                   fc.capacity, fc.duration_minutes,
+                   u.first_name || ' ' || u.last_name AS trainer_name,
+                   fc.category, fc.difficulty_level,
+                   fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
+            FROM class_occurrences co
+            JOIN class_schedules cs ON co.schedule_id = cs.id
+            JOIN fitness_classes fc ON cs.class_id = fc.id
+            JOIN members u ON cs.trainer_id = u.id
+            LEFT JOIN bookings b ON co.id = b.schedule_id
+            WHERE (co.occurrence_date + cs.start_time) BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+              AND co.is_cancelled = FALSE
+              AND cs.is_active = TRUE
+            GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
+                     fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
+                     u.first_name, u.last_name, fc.category, fc.difficulty_level
+            ORDER BY scheduled_at ASC
+            LIMIT ? OFFSET ?
+            """;
+
+    private static final String COUNT_UPCOMING = """
+            SELECT COUNT(*) FROM (
+                SELECT co.id
+                FROM class_occurrences co
+                JOIN class_schedules cs ON co.schedule_id = cs.id
+                JOIN fitness_classes fc ON cs.class_id = fc.id
+                WHERE (co.occurrence_date + cs.start_time) BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+                  AND co.is_cancelled = FALSE
+                  AND cs.is_active = TRUE
+                GROUP BY co.id
+            ) sub
+            """;
+
+    private static final String SELECT_UPCOMING_BY_CATEGORY_PAGED = """
+            SELECT co.id, cs.class_id, cs.trainer_id,
+                   (co.occurrence_date + cs.start_time) AS scheduled_at,
+                   cs.room, co.is_cancelled,
+                   fc.name AS class_name, fc.name_ru AS class_name_ru, fc.name_kz AS class_name_kz,
+                   fc.capacity, fc.duration_minutes,
+                   u.first_name || ' ' || u.last_name AS trainer_name,
+                   fc.category, fc.difficulty_level,
+                   fc.capacity - COUNT(b.id) FILTER (WHERE b.status = 'CONFIRMED') AS spots_left
+            FROM class_occurrences co
+            JOIN class_schedules cs ON co.schedule_id = cs.id
+            JOIN fitness_classes fc ON cs.class_id = fc.id
+            JOIN members u ON cs.trainer_id = u.id
+            LEFT JOIN bookings b ON co.id = b.schedule_id
+            WHERE (co.occurrence_date + cs.start_time) BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+              AND co.is_cancelled = FALSE
+              AND cs.is_active = TRUE
+              AND fc.category = ?
+            GROUP BY co.id, cs.class_id, cs.trainer_id, cs.start_time, cs.room,
+                     fc.name, fc.name_ru, fc.name_kz, fc.capacity, fc.duration_minutes,
+                     u.first_name, u.last_name, fc.category, fc.difficulty_level
+            ORDER BY scheduled_at ASC
+            LIMIT ? OFFSET ?
+            """;
+
+    private static final String COUNT_UPCOMING_BY_CATEGORY = """
+            SELECT COUNT(*) FROM (
+                SELECT co.id
+                FROM class_occurrences co
+                JOIN class_schedules cs ON co.schedule_id = cs.id
+                JOIN fitness_classes fc ON cs.class_id = fc.id
+                WHERE (co.occurrence_date + cs.start_time) BETWEEN NOW() AND NOW() + INTERVAL '7 days'
+                  AND co.is_cancelled = FALSE
+                  AND cs.is_active = TRUE
+                  AND fc.category = ?
+                GROUP BY co.id
+            ) sub
+            """;
+
     /**
      * Generates occurrences for the next N weeks from today, for every
      * active recurring template. Idempotent — relies on the (schedule_id,
@@ -169,6 +246,76 @@ public class ClassScheduleDaoImpl implements ClassScheduleDao {
             pool.releaseConnection(conn);
         }
         return list;
+    }
+
+
+    @Override
+    public List<ClassSchedule> findUpcoming(int offset, int limit) {
+        Connection conn = pool.getConnection();
+        List<ClassSchedule> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_UPCOMING_PAGED)) {
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Error finding upcoming schedules (paged): {}", e.getMessage());
+            throw new RuntimeException("Failed to find schedules", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return list;
+    }
+
+    @Override
+    public int countUpcoming() {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(COUNT_UPCOMING);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            log.error("Error counting upcoming schedules: {}", e.getMessage());
+            throw new RuntimeException("Failed to count schedules", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
+    @Override
+    public List<ClassSchedule> findUpcomingByCategory(String category, int offset, int limit) {
+        Connection conn = pool.getConnection();
+        List<ClassSchedule> list = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(SELECT_UPCOMING_BY_CATEGORY_PAGED)) {
+            ps.setString(1, category.toUpperCase());
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) list.add(mapRow(rs));
+            }
+        } catch (SQLException e) {
+            log.error("Error finding schedules by category {} (paged): {}", category, e.getMessage());
+            throw new RuntimeException("Failed to find schedules", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+        return list;
+    }
+
+    @Override
+    public int countUpcomingByCategory(String category) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(COUNT_UPCOMING_BY_CATEGORY)) {
+            ps.setString(1, category.toUpperCase());
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (SQLException e) {
+            log.error("Error counting schedules by category {}: {}", category, e.getMessage());
+            throw new RuntimeException("Failed to count schedules", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
     }
 
     /**

@@ -27,10 +27,73 @@
       </div>
     </div>
     <div class="hero-visual">
-      <div class="hero-image-container">
-        <img th:src="@{/static/img/home/hero-community.jpg}" alt="FemFit community">
+      <div class="hero-slider" id="heroSlider">
+        <div class="hero-slide active">
+          <img th:src="@{/static/img/home/hero-community.jpg}" alt="FemFit community">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-1.png}" alt="FemFit community">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-2.png}" alt="FemFit women walking together">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-3.png}" alt="FemFit sunset cliff">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-4.png}" alt="FemFit women outdoors">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-5.png}" alt="FemFit sisterhood">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-6.png}" alt="FemFit movement">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-7.png}" alt="FemFit group silhouette">
+        </div>
+        <div class="hero-slide">
+          <img th:src="@{/static/img/home/slider-8.png}" alt="FemFit strength">
+        </div>
+        <div class="hero-slider-dots">
+          <span class="hero-dot active" onclick="goToSlide(0)"></span>
+          <span class="hero-dot" onclick="goToSlide(1)"></span>
+          <span class="hero-dot" onclick="goToSlide(2)"></span>
+          <span class="hero-dot" onclick="goToSlide(3)"></span>
+          <span class="hero-dot" onclick="goToSlide(4)"></span>
+          <span class="hero-dot" onclick="goToSlide(5)"></span>
+          <span class="hero-dot" onclick="goToSlide(6)"></span>
+          <span class="hero-dot" onclick="goToSlide(7)"></span>
+          <span class="hero-dot" onclick="goToSlide(8)"></span>
+        </div>
       </div>
     </div>
+
+    <script>
+      (function() {
+        var current = 0;
+        var slides = document.querySelectorAll('.hero-slide');
+        var dots = document.querySelectorAll('.hero-dot');
+        var total = slides.length;
+        var timer;
+
+        function showSlide(n) {
+          slides[current].classList.remove('active');
+          dots[current].classList.remove('active');
+          current = (n + total) % total;
+          slides[current].classList.add('active');
+          dots[current].classList.add('active');
+        }
+
+        window.goToSlide = function(n) {
+          clearInterval(timer);
+          showSlide(n);
+          timer = setInterval(function() { showSlide(current + 1); }, 5000);
+        };
+
+        timer = setInterval(function() { showSlide(current + 1); }, 5000);
+      })();
+    </script>
   </div>
 
   <!-- OUR CLASSES -->

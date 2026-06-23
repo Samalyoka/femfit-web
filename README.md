@@ -56,12 +56,17 @@ com.femfit
 │   ├── ChangePasswordDto.java
 │   ├── PageDto.java
 │   ├── TrainerDto.java
-│   └── ClientOrderDto.java
+│   ├── TrainerProfileDto.java
+│   ├── ClientOrderDto.java
+│   └── BookingReminderDto.java
 ├── exception/
 │   └── GlobalExceptionHandler.java
 ├── filter/
 │   ├── EncodingFilter.java
 │   └── LoggingFilter.java
+├── service/
+│   ├── EmailService.java
+│   └── ReminderScheduler.java
 └── datasource/
     └── ConnectionPool.java
 ```
@@ -136,6 +141,8 @@ http://localhost:8080/femfit
 - View orders and assignments from trainer
 - Request revision on assignment
 - Change password from profile page
+- View completed orders archive
+- Leave reviews on completed orders
 - Switch interface language (EN / RU / KZ)
 
 ### Trainer
@@ -145,9 +152,12 @@ http://localhost:8080/femfit
 
 ### Admin
 - View all clients and trainers with pagination
+- Browse training programs with pagination
+- Class schedule with pagination and category filters
 - Activate and deactivate member accounts
 - Set discount percentage for clients
-- View and manage all orders (complete / cancel) with pagination
+- View and manage all orders (complete / cancel / reassign trainer) with pagination
+- View and manage training cycles (create, edit, activate/deactivate)
 
 ---
 
@@ -155,11 +165,12 @@ http://localhost:8080/femfit
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | admin@femfit.kz | *(set during registration)* |
+| Admin | admin@femfit.kz | Admin123! |
 | Trainer | elena@femfit.kz | Trainer123! |
 | Trainer | sofia@femfit.kz | Trainer123! |
 | Trainer | maria@femfit.kz | Trainer123! |
-| Client | anna@mail.kz | client123 |
+| Client | anna@mail.kz | 12345678 |
+| Client | samal@gmail.com | 12345678 |
 
 ---
 
@@ -180,7 +191,7 @@ members           — id, first_name, last_name, email, password_hash, role_id, 
 roles             — id, name (CLIENT | TRAINER | ADMIN)
 trainers          — id (FK → members.id), bio, experience_years, certification
 fitness_classes   — id, name, category, capacity
-class_schedules   — id, class_id, trainer_id, scheduled_at, room, is_cancelled
+class_schedules   — id, class_id, trainer_id, start_time, room, is_active, is_cancelled
 bookings          — id, member_id, schedule_id, booked_at, status
 training_cycles   — id, title, description, duration_weeks, price, is_active
 orders            — id, member_id, cycle_id, trainer_id, status, paid_amount, created_at, completed_at
@@ -246,19 +257,69 @@ navigation rendering) instead of duplicating `model.addAttribute(...)` calls in 
 controller. `common/layout.html :: nav` reads these attributes to show or hide
 Login / Logout / Admin Panel links for the current user.
 
+### 3. Object Pool Pattern (`ConnectionPool`)
+
+`ConnectionPool` (`datasource/ConnectionPool.java`) pre-creates a fixed set of JDBC
+connections at startup and manages them via a `BlockingQueue<Connection>`. Callers
+acquire a connection with `getConnection()` and return it with `releaseConnection()`.
+
+**Rationale**: creating a new `Connection` per request is expensive (TCP handshake,
+authentication, memory allocation). A pool reuses existing connections, bounding
+resource usage and enabling safe concurrent access from multiple threads.
+
+---
+
+## SOLID Principles
+
+### Single Responsibility Principle (SRP)
+Every class has exactly one reason to change:
+- `MemberServiceImpl` — member business logic only (registration, password, discount)
+- `EmailService` — email sending only; called by `ReminderScheduler`, not by Services
+- `LocalizedDateFormatter` — date formatting for Kazakh/Russian/English only
+- `AuthInterceptor` — injecting auth model attributes only; no business logic
+- `GlobalExceptionHandler` — HTTP error rendering only
+
+### Open/Closed Principle (OCP)
+All DAO and Service classes are accessed through interfaces (`MemberDao`, `OrderService`,
+etc.). Adding a new implementation (e.g. a caching DAO) requires no changes to the
+controllers or services that consume them — only a new class implementing the interface.
+
+### Liskov Substitution Principle (LSP)
+Every `*Impl` class fully honours its interface contract. Example: any code using
+`MemberDao` can be given `MemberDaoImpl` without behaviour changes — all methods
+return the same types, throw only documented exceptions, and never weaken preconditions.
+
+### Interface Segregation Principle (ISP)
+Each DAO interface exposes only the operations its clients need:
+- `ReviewDao` — `save`, `findByOrderId`, `findByMemberId`, `findRecentForDisplay`, `existsByOrderId`
+- `ClassScheduleDao` — schedule-specific queries; clients never see unrelated booking SQL
+- No "fat" interfaces that force implementors to stub unused methods.
+
+### Dependency Inversion Principle (DIP)
+High-level modules depend on abstractions, not concretions:
+- `AdminController` depends on `MemberService`, `OrderService`, `TrainerService` (interfaces)
+- `MemberServiceImpl` depends on `MemberDao` (interface) and `PasswordEncoder` (interface)
+- Spring wires the concrete implementations at runtime via `@Autowired` constructor injection
+
 ---
 
 ## Testing
 
-Unit tests (JUnit 5 + Mockito + AssertJ) cover the service layer, isolating business
-logic from JDBC/DAO implementations:
+Unit tests (JUnit 5 + Mockito + AssertJ) cover both the **Service** and **DAO** layers,
+with 138+ `@Test` methods across 8 test classes. All tests run automatically via `mvn test`.
+JaCoCo is configured to enforce ≥ 50% line coverage on `service.impl.*` and `dao.impl.*`.
 
-- `MemberServiceImplTest` — registration, password change, discount validation
-  (including boundary values), role-based queries
-- `BookingServiceImplTest` — booking, capacity limits (including the
-  last-available-slot boundary), cancellation, upcoming bookings, visit counts
-- `TrainerServiceImplTest` — trainer listing (DTO projection), client assignment
-  management
+**Service layer** — business logic isolated from JDBC with Mockito:
+- `MemberServiceImplTest` (31) — registration, password change, discount validation (boundary values), role queries
+- `OrderServiceImplTest` (28) — order placement, trainer assignment, status transitions
+- `TrainerServiceImplTest` (16) — trainer listing, client assignment management
+- `TrainingCycleServiceImplTest` (16) — cycle CRUD, activate/deactivate
+- `ReviewServiceImplTest` (12) — review submission, duplicate detection
+- `BookingServiceImplTest` (9) — booking delegation, exception propagation
+
+**DAO layer** — JDBC mocked at `ConnectionPool / Connection / PreparedStatement / ResultSet`:
+- `TrainingCycleDaoImplTest` (14) — findAll, findById, save (RETURNING mapping), setActive, update, exception wrapping, connection release
+- `ReviewDaoImplTest` (11) — save (null trainerId → setNull), findByOrderId, findByMemberId, existsByOrderId, exception propagation
 
 ---
 

@@ -20,7 +20,7 @@
         <div class="about-block">
             <h2 class="about-block__title" th:text="#{about.trainers.gallery.title}">Meet our trainers</h2>
             <div class="trainer-gallery">
-                <div th:each="trainer : ${trainerProfiles}" class="trainer-card">
+                <div th:each="trainer : ${trainerPage.content}" class="trainer-card">
                     <div class="trainer-card__photo">
                         <img th:if="${trainer.photoUrl}" th:src="@{${trainer.photoUrl}}" th:alt="${trainer.fullName}">
                     </div>
@@ -39,6 +39,22 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div th:if="${totalPages > 1}" class="pagination">
+                <a class="pagination__btn"
+                   th:if="${currentPage > 1}"
+                   th:href="@{/about/trainers(page=${currentPage - 1})}"
+                   th:text="#{pagination.prev}">Previous</a>
+                <span class="pagination__info">
+                    <th:block th:text="${currentPage}">1</th:block>
+                    /
+                    <th:block th:text="${totalPages}">1</th:block>
+                </span>
+                <a class="pagination__btn"
+                   th:if="${currentPage < totalPages}"
+                   th:href="@{/about/trainers(page=${currentPage + 1})}"
+                   th:text="#{pagination.next}">Next</a>
             </div>
         </div>
 

@@ -94,6 +94,23 @@
                 </th:block>
             </div>
         </div>
+
+        <div th:if="${totalPages > 1}" class="pagination">
+            <a class="pagination__btn"
+               th:if="${currentPage > 1}"
+               th:href="@{/schedule(page=${currentPage - 1}, category=${activeCategory != 'ALL' ? activeCategory : null})}"
+               th:text="#{pagination.prev}">Previous</a>
+            <span class="pagination__info">
+                <th:block th:text="${currentPage}">1</th:block>
+                /
+                <th:block th:text="${totalPages}">1</th:block>
+            </span>
+            <a class="pagination__btn"
+               th:if="${currentPage < totalPages}"
+               th:href="@{/schedule(page=${currentPage + 1}, category=${activeCategory != 'ALL' ? activeCategory : null})}"
+               th:text="#{pagination.next}">Next</a>
+        </div>
+
     </div>
 </div>
 

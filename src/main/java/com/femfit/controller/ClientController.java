@@ -32,6 +32,11 @@ public class ClientController {
 
     private static final Logger log = LoggerFactory.getLogger(ClientController.class);
 
+    /** Number of orders shown per page on the client orders list. */
+    private static final int PAGE_SIZE_ORDERS = 10;
+    /** Number of training cycle cards shown per page on the client programmes page. */
+    private static final int PAGE_SIZE_CYCLES = 9;
+
     private final MemberService userService;
     private final BookingService bookingService;
     private final OrderService orderService;
@@ -122,9 +127,8 @@ public class ClientController {
                           @RequestParam(defaultValue = "1") int page,
                           Model model) {
         Member member = getUser(userDetails);
-        int pageSize = 10;
-        int offset = (page - 1) * pageSize;
-        List<Order> orders = orderService.findByUserId(member.getId(), offset, pageSize);
+        int offset = (page - 1) * PAGE_SIZE_ORDERS;
+        List<Order> orders = orderService.findByUserId(member.getId(), offset, PAGE_SIZE_ORDERS);
 
         List<Long> reviewedOrderIds = orders.stream()
                 .map(Order::getId)
@@ -136,7 +140,7 @@ public class ClientController {
         model.addAttribute("orders", orders);
         model.addAttribute("reviewedOrderIds", reviewedOrderIds);
         model.addAttribute("member", member);
-        model.addAttribute("totalPages", (int) Math.ceil(totalOrders / (double) pageSize));
+        model.addAttribute("totalPages", (int) Math.ceil(totalOrders / (double) PAGE_SIZE_ORDERS));
         model.addAttribute("currentPage", page);
         return "client/orders";
     }
@@ -207,9 +211,8 @@ public class ClientController {
                           @RequestParam(defaultValue = "1") int page,
                           Model model) {
         Member member = getUser(userDetails);
-        int pageSize = 9;
-        int offset = (page - 1) * pageSize;
-        List<TrainingCycle> cycles = trainingCycleService.findAllActive(offset, pageSize);
+        int offset = (page - 1) * PAGE_SIZE_CYCLES;
+        List<TrainingCycle> cycles = trainingCycleService.findAllActive(offset, PAGE_SIZE_CYCLES);
         List<Order> myOrders = orderService.findByUserId(member.getId());
         List<Integer> purchasedCycleIds = myOrders.stream()
                 .map(Order::getCycleId)
@@ -217,7 +220,7 @@ public class ClientController {
         int totalActive = trainingCycleService.countActive();
         model.addAttribute("cycles", cycles);
         model.addAttribute("purchasedCycleIds", purchasedCycleIds);
-        model.addAttribute("totalPages", (int) Math.ceil(totalActive / (double) pageSize));
+        model.addAttribute("totalPages", (int) Math.ceil(totalActive / (double) PAGE_SIZE_CYCLES));
         model.addAttribute("currentPage", page);
         return "client/cycles";
     }

@@ -15,30 +15,30 @@
 
     <!-- Key metrics inline summary -->
     <div class="profile-section-card" style="margin-bottom: 28px;">
-        <h2 class="profile-section-title" th:text="#{admin.stats.overview}" th:text="#{admin.stats.overview}">Overview</h2>
+        <h2 class="profile-section-title" th:text="#{admin.stats.overview}">Overview</h2>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 16px;">
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${totalClients}">0</div>
-                <div class="stat-label" th:text="#{admin.stats.total.clients}" th:text="#{admin.stats.total.clients}">Total Clients</div>
+                <div class="stat-label" th:text="#{admin.stats.total.clients}">Total Clients</div>
             </div>
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${totalTrainers}">0</div>
-                <div class="stat-label" th:text="#{admin.stats.total.trainers}" th:text="#{admin.stats.total.trainers}">Total Trainers</div>
+                <div class="stat-label" th:text="#{admin.stats.total.trainers}">Total Trainers</div>
             </div>
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${totalOrders}">0</div>
-                <div class="stat-label" th:text="#{admin.stats.total.orders}" th:text="#{admin.stats.total.orders}">Total Orders</div>
+                <div class="stat-label" th:text="#{admin.stats.total.orders}">Total Orders</div>
             </div>
             <div style="text-align: center;">
                 <div class="stat-num" th:text="${activeCycles}">0</div>
-                <div class="stat-label" th:text="#{admin.stats.active.cycles}" th:text="#{admin.stats.active.cycles}">Active Cycles</div>
+                <div class="stat-label" th:text="#{admin.stats.active.cycles}">Active Cycles</div>
             </div>
         </div>
     </div>
 
     <!-- Recent reviews -->
     <div class="profile-section-card">
-        <h2 class="profile-section-title" th:text="#{admin.stats.recent.reviews}" th:text="#{admin.stats.recent.reviews}">Recent Reviews</h2>
+        <h2 class="profile-section-title" th:text="#{admin.stats.recent.reviews}">Recent Reviews</h2>
 
         <div th:if="${#lists.isEmpty(recentReviews)}" class="profile-empty">
             [[#{admin.stats.no.reviews}]]

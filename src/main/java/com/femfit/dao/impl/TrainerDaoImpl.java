@@ -149,6 +149,37 @@ public class TrainerDaoImpl implements TrainerDao {
         ORDER BY u.first_name
         """;
 
+    private static final String FIND_ALL_TRAINER_PROFILES_PAGED = """
+        SELECT u.id, u.first_name, u.last_name,
+               t.photo_url, t.specialization, t.bio,
+               t.experience_years, t.certification,
+               t.specialization_ru, t.specialization_kz, t.bio_ru, t.bio_kz,
+               ROUND(AVG(rv.rating)::numeric, 1) AS avg_rating,
+               COUNT(rv.id) AS review_count
+        FROM members u
+        JOIN roles r ON r.id = u.role_id
+        JOIN trainers t ON t.id = u.id
+        LEFT JOIN orders o ON o.trainer_id = u.id
+        LEFT JOIN reviews rv ON rv.order_id = o.id
+        WHERE r.name = 'TRAINER'
+          AND u.is_active = true
+        GROUP BY u.id, u.first_name, u.last_name,
+                 t.photo_url, t.specialization, t.bio,
+                 t.experience_years, t.certification,
+                 t.specialization_ru, t.specialization_kz, t.bio_ru, t.bio_kz
+        ORDER BY u.first_name
+        LIMIT ? OFFSET ?
+        """;
+
+    private static final String COUNT_TRAINER_PROFILES = """
+        SELECT COUNT(*)
+        FROM members u
+        JOIN roles r ON r.id = u.role_id
+        JOIN trainers t ON t.id = u.id
+        WHERE r.name = 'TRAINER'
+          AND u.is_active = true
+        """;
+
     /**
      * Finds the trainer ID for a given user ID.
      * Used to resolve the trainer record from the user/member record.
@@ -303,6 +334,52 @@ public class TrainerDaoImpl implements TrainerDao {
             pool.releaseConnection(con);
         }
         return profiles;
+    }
+
+    /**
+     * Returns a paginated page of active trainer profiles.
+     *
+     * @param offset SQL OFFSET (rows to skip)
+     * @param limit  SQL LIMIT (rows to return)
+     * @return list of trainer profiles for this page, possibly empty
+     * @throws RuntimeException if the query fails
+     */
+    @Override
+    public List<TrainerProfileDto> findAllTrainerProfiles(int offset, int limit) {
+        List<TrainerProfileDto> profiles = new ArrayList<>();
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(FIND_ALL_TRAINER_PROFILES_PAGED)) {
+            ps.setInt(1, limit);
+            ps.setInt(2, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) profiles.add(mapTrainerProfile(rs));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("TrainerDao.findAllTrainerProfiles(paged) failed", e);
+        } finally {
+            pool.releaseConnection(con);
+        }
+        return profiles;
+    }
+
+    /**
+     * Returns the total count of active trainers.
+     * Used to compute total pages for the public trainer list.
+     *
+     * @return total number of active trainers
+     * @throws RuntimeException if the query fails
+     */
+    @Override
+    public int countTrainerProfiles() {
+        Connection con = pool.getConnection();
+        try (PreparedStatement ps = con.prepareStatement(COUNT_TRAINER_PROFILES);
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            throw new RuntimeException("TrainerDao.countTrainerProfiles failed", e);
+        } finally {
+            pool.releaseConnection(con);
+        }
     }
 
     /**

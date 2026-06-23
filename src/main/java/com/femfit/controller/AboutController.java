@@ -1,5 +1,6 @@
 package com.femfit.controller;
 
+import com.femfit.dto.PageDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.service.TrainerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Serves static informational pages about FemFit programmes and club features.
@@ -28,6 +28,9 @@ import java.util.List;
 @RequestMapping("/about")
 public class AboutController {
 
+    /** Number of trainer cards shown per page on the "Our Trainers" gallery. */
+    private static final int PAGE_SIZE_TRAINERS = 6;
+
     private final TrainerService trainerService;
 
     @Autowired
@@ -43,9 +46,11 @@ public class AboutController {
      * generic informational content.
      */
     @GetMapping("/trainers")
-    public String trainers(Model model) {
-        List<TrainerProfileDto> trainerProfiles = trainerService.getAllTrainerProfiles();
-        model.addAttribute("trainerProfiles", trainerProfiles);
+    public String trainers(@RequestParam(defaultValue = "1") int page, Model model) {
+        PageDto<TrainerProfileDto> trainerPage = trainerService.getTrainerProfilesPage(page, PAGE_SIZE_TRAINERS);
+        model.addAttribute("trainerPage", trainerPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", trainerPage.getTotalPages());
         return "about/trainers";
     }
 

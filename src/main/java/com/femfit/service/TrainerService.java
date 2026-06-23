@@ -1,6 +1,7 @@
 package com.femfit.service;
 
 import com.femfit.dto.ClientOrderDto;
+import com.femfit.dto.PageDto;
 import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Assignment;
@@ -53,6 +54,24 @@ public interface TrainerService {
      * @return list of trainer profiles, possibly empty
      */
     List<TrainerProfileDto> getAllTrainerProfiles();
+
+    /**
+     * Returns a paginated page of active trainer profiles for the public
+     * "Our Trainers" page.
+     *
+     * @param page     1-based page number
+     * @param pageSize number of trainers per page
+     * @return {@link PageDto} wrapping the current page of trainer profiles
+     */
+    PageDto<TrainerProfileDto> getTrainerProfilesPage(int page, int pageSize);
+
+    /**
+     * Returns the total number of active trainer profiles.
+     * Used by {@link #getTrainerProfilesPage} to compute totalPages.
+     *
+     * @return total count of active trainers
+     */
+    int countTrainerProfiles();
 
     /**
      * @deprecated This returns the most recently updated assignment across

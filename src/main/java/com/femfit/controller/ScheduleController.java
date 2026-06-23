@@ -26,6 +26,9 @@ public class ScheduleController {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleController.class);
 
+    /** Number of class schedule rows shown per page on the schedule page. */
+    private static final int PAGE_SIZE_SCHEDULE = 10;
+
     private final ClassScheduleDao scheduleDao;
     private final BookingDao bookingDao;
 
@@ -47,19 +50,30 @@ public class ScheduleController {
      */
     @GetMapping("/schedule")
     public String showSchedule(@RequestParam(name = "category", required = false) String category,
+                               @RequestParam(defaultValue = "1") int page,
                                Model model,
                                Principal principal) {
-        log.info("Schedule page requested. Filter category: {}, Authenticated user: {}",
-                category, (principal != null ? principal.getName() : "GUEST"));
+        log.info("Schedule page requested. Filter category: {}, page: {}, user: {}",
+                category, page, (principal != null ? principal.getName() : "GUEST"));
 
         List<ClassSchedule> schedules;
+        int total;
+        int offset = (page - 1) * PAGE_SIZE_SCHEDULE;
+
         if (category != null && !category.isBlank() && !category.equalsIgnoreCase("ALL")) {
-            schedules = scheduleDao.findUpcomingByCategory(category.toUpperCase());
-            model.addAttribute("activeCategory", category.toUpperCase());
+            String cat = category.toUpperCase();
+            schedules = scheduleDao.findUpcomingByCategory(cat, offset, PAGE_SIZE_SCHEDULE);
+            total = scheduleDao.countUpcomingByCategory(cat);
+            model.addAttribute("activeCategory", cat);
         } else {
-            schedules = scheduleDao.findUpcoming();
+            schedules = scheduleDao.findUpcoming(offset, PAGE_SIZE_SCHEDULE);
+            total = scheduleDao.countUpcoming();
             model.addAttribute("activeCategory", "ALL");
         }
+
+        int totalPages = (int) Math.ceil(total / (double) PAGE_SIZE_SCHEDULE);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
 
         boolean isAuthenticated = (principal != null);
         model.addAttribute("isAuthenticated", isAuthenticated);

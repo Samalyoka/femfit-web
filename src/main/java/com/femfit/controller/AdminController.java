@@ -40,6 +40,11 @@ public class AdminController {
 
     private static final Logger log = LoggerFactory.getLogger(AdminController.class);
 
+    /** Number of orders shown per page on the admin orders list. */
+    private static final int PAGE_SIZE_ORDERS = 10;
+    /** Number of members shown per page on the admin members list. */
+    private static final int PAGE_SIZE_MEMBERS = 10;
+
     private static final Set<String> ALLOWED_REDIRECTS =
             Set.of("/admin/clients", "/admin/trainers");
     private static final String DEFAULT_REDIRECT = "/admin/clients";
@@ -87,7 +92,7 @@ public class AdminController {
     @GetMapping("/clients")
     public String clients(@RequestParam(name = "page", defaultValue = "1") int page,
                           Model model) {
-        PageDto<Member> pageDto = userService.findByRole(Role.CLIENT, page, 10);
+        PageDto<Member> pageDto = userService.findByRole(Role.CLIENT, page, PAGE_SIZE_MEMBERS);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "CLIENT");
         return "admin/members";
@@ -99,7 +104,7 @@ public class AdminController {
     @GetMapping("/trainers")
     public String trainers(@RequestParam(name = "page", defaultValue = "1") int page,
                            Model model) {
-        PageDto<Member> pageDto = userService.findByRole(Role.TRAINER, page, 10);
+        PageDto<Member> pageDto = userService.findByRole(Role.TRAINER, page, PAGE_SIZE_MEMBERS);
         model.addAttribute("page", pageDto);
         model.addAttribute("role", "TRAINER");
         // Availability lives in the trainers table, not members — fetch
@@ -191,10 +196,10 @@ public class AdminController {
      */
     @GetMapping("/orders")
     public String orders(@RequestParam(defaultValue = "1") int page, Model model) {
-        int offset = (page - 1) * 10;
-        model.addAttribute("orders", orderService.findAll(offset, 10));
+        int offset = (page - 1) * PAGE_SIZE_ORDERS;
+        model.addAttribute("orders", orderService.findAll(offset, PAGE_SIZE_ORDERS));
         model.addAttribute("totalPages",
-                (int) Math.ceil(orderService.countAll() / 10.0));
+                (int) Math.ceil(orderService.countAll() / (double) PAGE_SIZE_ORDERS));
         model.addAttribute("currentPage", page);
         // For the trainer-reassignment dropdown — only trainers who can
         // currently take on a reassigned order.

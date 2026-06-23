@@ -98,4 +98,24 @@ public interface TrainerDao {
      * @return list of trainer profiles, possibly empty
      */
     List<TrainerProfileDto> findAllTrainerProfiles();
+
+    /**
+     * Returns a paginated page of active trainer profiles for the public
+     * "Our Trainers" page. Enables the page to stay fast as the trainer
+     * roster grows without loading all rows on every request.
+     *
+     * @param offset SQL OFFSET (number of rows to skip)
+     * @param limit  SQL LIMIT (maximum rows to return)
+     * @return list of trainer profiles for this page, possibly empty
+     */
+    List<TrainerProfileDto> findAllTrainerProfiles(int offset, int limit);
+
+    /**
+     * Returns the total count of active trainer profiles.
+     * Used together with {@link #findAllTrainerProfiles(int, int)} to
+     * compute the total number of pages.
+     *
+     * @return total number of active trainers
+     */
+    int countTrainerProfiles();
 }

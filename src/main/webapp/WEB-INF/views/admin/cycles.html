@@ -76,7 +76,7 @@
                               th:action="@{/admin/cycles/{id}/activate(id=${cycle.id})}"
                               method="post" style="display:inline;">
                             <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
-                            <button type="submit" class="btn btn--primary btn--sm" th:text="#{admin.cycle.activate}" th:text="#{admin.cycle.activate}">Activate</button>
+                            <button type="submit" class="btn btn--primary btn--sm" th:text="#{admin.cycle.activate}">Activate</button>
                         </form>
                     </div>
                 </td>

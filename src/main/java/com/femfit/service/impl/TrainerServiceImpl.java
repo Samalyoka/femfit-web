@@ -3,6 +3,7 @@ package com.femfit.service.impl;
 import com.femfit.dao.AssignmentDao;
 import com.femfit.dao.TrainerDao;
 import com.femfit.dto.ClientOrderDto;
+import com.femfit.dto.PageDto;
 import com.femfit.dto.TrainerDto;
 import com.femfit.dto.TrainerProfileDto;
 import com.femfit.model.Assignment;
@@ -99,6 +100,20 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public List<TrainerProfileDto> getAllTrainerProfiles() {
         return trainerDao.findAllTrainerProfiles();
+    }
+
+    @Override
+    public PageDto<TrainerProfileDto> getTrainerProfilesPage(int page, int pageSize) {
+        int offset = (page - 1) * pageSize;
+        List<TrainerProfileDto> items = trainerDao.findAllTrainerProfiles(offset, pageSize);
+        int total = trainerDao.countTrainerProfiles();
+        int totalPages = (int) Math.ceil(total / (double) pageSize);
+        return new PageDto<>(items, page, pageSize, total);
+    }
+
+    @Override
+    public int countTrainerProfiles() {
+        return trainerDao.countTrainerProfiles();
     }
 
     @Override

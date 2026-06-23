@@ -270,36 +270,28 @@
             <configuration>
               <rules>
                 <!--
-                  Project requirement: "Test coverage >= 50% for Service/DAO".
+                  Project requirement: "Test coverage >= 50% for Service/DAO layers".
 
-                  Scope: com.femfit.service.impl only (interfaces in
-                  com.femfit.service have no executable lines and would
-                  always show 0%; com.femfit.dao is excluded — see below).
+                  Scope: both com.femfit.service.impl and com.femfit.dao.impl.
+                  Interfaces (com.femfit.service, com.femfit.dao) have no
+                  executable lines and are excluded from the rule.
 
-                  Why DAO is excluded from this automated rule:
-                  DAO classes are plain JDBC (Connection/PreparedStatement/
-                  ResultSet), not business logic. Per the testing
-                  requirements ("...verify the business logic and the
-                  correct behavior of individual components in isolation"),
-                  Mockito-based isolation testing is the intended approach
-                  for SERVICE logic. Mocking the raw JDBC API for every DAO
-                  method tests "did I call the mock correctly" rather than
-                  "does the SQL work" — low signal for the effort involved.
-                  DAO correctness is instead exercised end-to-end through
-                  the running application against the real PostgreSQL
-                  database (see README — manual + browser-driven testing
-                  covering all CRUD paths).
+                  DAO layer is tested with Mockito-mocked JDBC objects
+                  (ConnectionPool → Connection → PreparedStatement → ResultSet),
+                  which verifies:
+                    - Correct SQL parameter binding (setLong, setString, etc.)
+                    - ResultSet-to-model mapping (mapRow logic)
+                    - Exception wrapping (SQLException → RuntimeException)
+                    - Connection release (pool.releaseConnection always called)
 
-                  TODO (confirm with reviewer, target: before June 26
-                  defense): add integration tests for dao.impl against a
-                  dedicated test database (not the demo data used for
-                  manual review), then fold dao.impl back into this rule's
-                  <includes> once that harness exists.
+                  See TrainingCycleDaoImplTest and ReviewDaoImplTest under
+                  src/test/java/com/femfit/dao/.
                 -->
                 <rule>
                   <element>BUNDLE</element>
                   <includes>
                     <include>com.femfit.service.impl.*</include>
+                    <include>com.femfit.dao.impl.*</include>
                   </includes>
                   <limits>
                     <limit>

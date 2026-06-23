@@ -21,6 +21,9 @@ public class HomeController {
 
     private static final Logger log = LoggerFactory.getLogger(HomeController.class);
 
+    /** Number of recent reviews shown on the home page. */
+    private static final int HOME_REVIEWS_COUNT = 3;
+
     private final ClassScheduleDao scheduleDao;
     private final ReviewService reviewService;
 
@@ -52,7 +55,7 @@ public class HomeController {
             model.addAttribute("flashError", flashError);
             session.removeAttribute("flashError");
         }
-        model.addAttribute("recentReviews", reviewService.getRecentReviews(3));
+        model.addAttribute("recentReviews", reviewService.getRecentReviews(HOME_REVIEWS_COUNT));
         return "home";
     }
 

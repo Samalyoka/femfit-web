@@ -167,7 +167,7 @@
                    th:href="@{/admin/clients(page=${page.currentPage - 1})}"
                    th:text="#{pagination.prev}">← Prev</a>
                 <span th:unless="${page.currentPage > 1}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.prev}" th:text="#{pagination.prev}">← Prev</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.prev}">← Prev</span>
 
                 <span class="pagination__info"
                       th:text="#{pagination.page(${page.currentPage}, ${page.totalPages})}">
@@ -179,7 +179,7 @@
                    th:href="@{/admin/clients(page=${page.currentPage + 1})}"
                    th:text="#{pagination.next}">Next →</a>
                 <span th:unless="${page.currentPage < page.totalPages}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.next}" th:text="#{pagination.next}">Next →</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.next}">Next →</span>
             </th:block>
 
             <!-- Trainers pagination -->
@@ -189,7 +189,7 @@
                    th:href="@{/admin/trainers(page=${page.currentPage - 1})}"
                    th:text="#{pagination.prev}">← Prev</a>
                 <span th:unless="${page.currentPage > 1}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.prev}" th:text="#{pagination.prev}">← Prev</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.prev}">← Prev</span>
 
                 <span class="pagination__info"
                       th:text="#{pagination.page(${page.currentPage}, ${page.totalPages})}">
@@ -201,7 +201,7 @@
                    th:href="@{/admin/trainers(page=${page.currentPage + 1})}"
                    th:text="#{pagination.next}">Next →</a>
                 <span th:unless="${page.currentPage < page.totalPages}"
-                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.next}" th:text="#{pagination.next}">Next →</span>
+                      class="pagination__btn" style="opacity:0.3; cursor:default;" th:text="#{pagination.next}">Next →</span>
             </th:block>
 
         </div>
