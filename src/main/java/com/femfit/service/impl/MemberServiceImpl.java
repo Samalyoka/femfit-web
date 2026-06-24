@@ -178,7 +178,7 @@ public class MemberServiceImpl implements MemberService {
             Path dest = avatarDir.resolve(filename);
             file.transferTo(dest.toFile());
 
-            String relUrl = "/static/img/avatars/" + filename;
+            String relUrl = "/femfit/static/img/avatars/" + filename;
             memberDao.updateAvatarUrl(memberId, relUrl);
             log.info("Avatar saved: memberId={}, path={}", memberId, dest);
             return relUrl;

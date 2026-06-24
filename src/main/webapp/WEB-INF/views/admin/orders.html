@@ -75,49 +75,45 @@
           </td>
 
           <!-- Status actions -->
+          <!-- Status actions -->
           <td>
-            <div class="action-row">
+            <div class="order-actions">
+
+              <!-- Complete -->
               <form th:if="${order.status == 'ACTIVE'}"
                     th:action="@{/admin/order/complete/{id}(id=${order.id})}"
                     method="post">
-                <input type="hidden"
-                       th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"/>
-                <button class="btn btn--outline btn--sm" type="submit">
-                  Complete
-                </button>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn btn--outline btn--sm" type="submit"
+                        th:text="#{admin.orders.complete}">Complete</button>
               </form>
-              <form th:if="${order.status == 'ACTIVE' or order.status == 'PENDING'}"
-                    th:action="@{/admin/order/cancel/{id}(id=${order.id})}"
-                    method="post">
-                <input type="hidden"
-                       th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"/>
-                <button class="btn btn--danger btn--sm" type="submit">
-                  Cancel
-                </button>
-              </form>
-              <!-- Reassign trainer — e.g. when the current trainer is
-                   unavailable (vacation, sick leave). Only offered for
-                   orders that are still in progress, and only available
-                   trainers are listed as targets. -->
+
+              <!-- Reassign trainer -->
               <form th:if="${order.status == 'ACTIVE' or order.status == 'PENDING'}"
                     th:action="@{/admin/order/reassign-trainer/{id}(id=${order.id})}"
-                    method="post"
-                    class="discount-form">
-                <input type="hidden"
-                       th:name="${_csrf.parameterName}"
-                       th:value="${_csrf.token}"/>
-                <select class="form-select" name="trainerId">
+                    method="post" class="reassign-form">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <select class="form-select form-select--sm" name="trainerId">
                   <option th:each="t : ${availableTrainers}"
                           th:value="${t.id}"
                           th:text="${t.fullName}"
                           th:selected="${order.trainerId != null and order.trainerId == t.id}">Trainer</option>
                 </select>
-                <button class="btn btn--outline btn--sm" type="submit">
-                  Reassign
-                </button>
+                <button class="btn btn--outline btn--sm" type="submit"
+                        th:text="#{admin.orders.reassign}">Reassign</button>
               </form>
+
+              <!-- Cancel — опасное действие, отдельной строкой -->
+              <form th:if="${order.status == 'ACTIVE' or order.status == 'PENDING'}"
+                    th:action="@{/admin/order/cancel/{id}(id=${order.id})}"
+                    method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button class="btn btn--danger btn--sm js-confirm"
+                        th:attr="data-confirm=#{admin.orders.cancel.confirm}"
+                        type="submit"
+                        th:text="#{admin.orders.cancel}">Cancel</button>
+              </form>
+
             </div>
           </td>
 

@@ -87,7 +87,7 @@ com.femfit
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/femfit-web.git
+git clone https://github.com/Samalyoka/femfit-web.git
 cd femfit-web
 ```
 
@@ -100,8 +100,9 @@ CREATE DATABASE femfit;
 ### 3. Run the schema and seed data
 
 ```bash
-psql -U postgres -d femfit -f src/main/resources/schema.sql
-psql -U postgres -d femfit -f src/main/resources/data.sql
+psql -U postgres -d femfit -f src/main/resources/db/schema.sql
+psql -U postgres -d femfit -f src/main/resources/db/data.sql
+psql -U postgres -d femfit -f src/main/resources/db/migration_v7_avatar_and_seed.sql
 ```
 
 ### 4. Configure database connection
@@ -112,6 +113,7 @@ Edit `src/main/resources/application.properties`:
 db.url=jdbc:postgresql://localhost:5432/femfit
 db.username=postgres
 db.password=your_password
+app.upload.base-path=/path/to/tomcat/webapps/femfit
 ```
 
 ### 5. Build and deploy
@@ -134,12 +136,13 @@ http://localhost:8080/femfit
 
 ### Client
 - Register and log in
+- Upload and update profile avatar photo
 - View class schedule with category filters (Yoga, Cardio, Strength, Pilates, Dance)
 - Book and cancel classes
 - Browse training programs
 - Choose a trainer when purchasing a program
 - View orders and assignments from trainer
-- Request revision on assignment
+- Request revision on assignment (exercises / equipment / nutrition / schedule)
 - Change password from profile page
 - View completed orders archive
 - Leave reviews on completed orders
@@ -147,6 +150,7 @@ http://localhost:8080/femfit
 
 ### Trainer
 - View assigned clients dashboard
+- Upload and update profile avatar photo
 - Create, edit, and delete training assignments
 - Set assignment status (Active / Completed / Revision Requested)
 
@@ -163,14 +167,20 @@ http://localhost:8080/femfit
 
 ## Roles & Test Credentials
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@femfit.kz | Admin123! |
-| Trainer | elena@femfit.kz | Trainer123! |
-| Trainer | sofia@femfit.kz | Trainer123! |
-| Trainer | maria@femfit.kz | Trainer123! |
-| Client | anna@mail.kz | 12345678 |
-| Client | samal@gmail.com | 12345678 |
+| Role | Email | Password | Specialization |
+|---|---|---|---|
+| Admin | admin@femfit.kz | Admin123! | — |
+| Trainer | elena@femfit.kz | Trainer123! | Yoga & Post-Natal |
+| Trainer | sofia@femfit.kz | Trainer123! | HIIT & Cardio |
+| Trainer | maria@femfit.kz | Trainer123! | Strength & Nutrition |
+| Trainer | aizhan@femfit.kz | Trainer123! | Pilates & Barre |
+| Trainer | dina@femfit.kz | Trainer123! | Dance & Cardio |
+| Trainer | karina@femfit.kz | Trainer123! | Post-Natal Recovery |
+| Trainer | saltanat@femfit.kz | Trainer123! | Beginner Coaching & Weight Loss |
+| Trainer | zarina@femfit.kz | Trainer123! | Stretching & Mobility |
+| Client | dana@mail.com | 12345678 | — |
+| Client | sammy@mail.ru | 12345678 | — |
+| Client | assem@mail.ru | 12345678 | — |
 
 ---
 
@@ -178,24 +188,26 @@ http://localhost:8080/femfit
 
 The application supports three languages switchable from the navigation bar:
 
-- 🇬🇧 English (`messages.properties`)
+- 🇬🇧 English (`messages_en.properties`)
 - 🇷🇺 Russian (`messages_ru.properties`)
 - 🇰🇿 Kazakh (`messages_kz.properties`)
+
+All 29+ Thymeleaf templates are fully localised including flash messages, pagination labels, date formatting, and confirmation dialogs.
 
 ---
 
 ## Database Schema (key tables)
 
 ```
-members           — id, first_name, last_name, email, password_hash, role_id, is_active, discount_percent
+members           — id, first_name, last_name, email, password_hash, role_id, is_active, discount_percent, account_type, avatar_url
 roles             — id, name (CLIENT | TRAINER | ADMIN)
-trainers          — id (FK → members.id), bio, experience_years, certification
+trainers          — id (FK → members.id), bio, bio_ru, bio_kz, specialization, specialization_ru, specialization_kz, experience_years, certification, photo_url, availability_status
 fitness_classes   — id, name, category, capacity
 class_schedules   — id, class_id, trainer_id, start_time, room, is_active, is_cancelled
 bookings          — id, member_id, schedule_id, booked_at, status
-training_cycles   — id, title, description, duration_weeks, price, is_active
+training_cycles   — id, title, title_ru, title_kz, description, duration_weeks, price, is_active, photo_url
 orders            — id, member_id, cycle_id, trainer_id, status, paid_amount, created_at, completed_at
-assignments       — id, order_id, exercises, equipment, nutrition_plan, schedule_info, status
+assignments       — id, order_id, exercises, equipment, nutrition_plan, schedule_info, status, revision_comment
 reviews           — id, order_id, member_id, trainer_id, rating, comment, created_at
 ```
 
@@ -208,6 +220,7 @@ reviews           — id, order_id, member_id, trainer_id, rating, comment, crea
 - CSRF protection on all POST requests
 - Custom 403 Access Denied and 500 Internal Server Error pages
 - Session invalidation on logout
+- Multipart file upload validation (type + size checks)
 
 ---
 
@@ -219,6 +232,7 @@ reviews           — id, order_id, member_id, trainer_id, rating, comment, crea
 - **Thymeleaf fragments** — shared `nav` and `footer` via `common/layout.html`
 - **Filters** — `EncodingFilter` (UTF-8), `LoggingFilter` (request/response logging)
 - **Global exception handling** — `GlobalExceptionHandler` (`@ControllerAdvice`) renders a custom 500 page for unexpected errors; 403 is handled by Spring Security's `accessDeniedPage`
+- **Avatar upload** — files saved to `static/img/avatars/{memberId}.{ext}`, path stored in `members.avatar_url`
 
 ---
 
@@ -249,13 +263,13 @@ code in DAOs concise and readable.
 ### 2. Interceptor Pattern (`AuthInterceptor`, Spring `HandlerInterceptor`)
 
 Registered in `WebMvcConfig.addInterceptors()`. Its `postHandle()` runs after every
-controller method but before the view is rendered, injecting `isAuthenticated` and
-`userRole` into the model.
+controller method but before the view is rendered, injecting `isAuthenticated`,
+`userRole`, `currentUserName`, `currentUserInitials`, and `currentUserAvatar` into the model.
 
 **Rationale**: centralizes a cross-cutting concern (authentication status for
 navigation rendering) instead of duplicating `model.addAttribute(...)` calls in every
 controller. `common/layout.html :: nav` reads these attributes to show or hide
-Login / Logout / Admin Panel links for the current user.
+Login / Logout / Admin Panel links and the user avatar for the current user.
 
 ### 3. Object Pool Pattern (`ConnectionPool`)
 
@@ -273,7 +287,7 @@ resource usage and enabling safe concurrent access from multiple threads.
 
 ### Single Responsibility Principle (SRP)
 Every class has exactly one reason to change:
-- `MemberServiceImpl` — member business logic only (registration, password, discount)
+- `MemberServiceImpl` — member business logic only (registration, password, discount, avatar upload)
 - `EmailService` — email sending only; called by `ReminderScheduler`, not by Services
 - `LocalizedDateFormatter` — date formatting for Kazakh/Russian/English only
 - `AuthInterceptor` — injecting auth model attributes only; no business logic

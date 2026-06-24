@@ -11,6 +11,7 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.filter.DelegatingFilterProxy;
 import org.springframework.web.servlet.DispatcherServlet;
+import jakarta.servlet.MultipartConfigElement;
 
 /**
  * Replaces web.xml entirely.
@@ -36,6 +37,12 @@ public class WebAppInitializer implements WebApplicationInitializer {
                 servletContext.addServlet("dispatcher", new DispatcherServlet(webContext));
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
+        dispatcher.setMultipartConfig(new MultipartConfigElement(
+                System.getProperty("java.io.tmpdir"),
+                5 * 1024 * 1024,  // maxFileSize: 5MB
+                10 * 1024 * 1024, // maxRequestSize: 10MB
+                1024 * 1024       // fileSizeThreshold: 1MB
+        ));
 
         FilterRegistration.Dynamic securityFilter = servletContext.addFilter(
                 "springSecurityFilterChain",

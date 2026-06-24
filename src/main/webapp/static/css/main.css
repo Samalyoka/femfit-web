@@ -576,3 +576,41 @@ input[type="checkbox"]:disabled { accent-color: var(--rose-mid); cursor: not-all
   border-radius: 50%;
   display: block;
 }
+
+/* Admin orders actions */
+.order-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+}
+.order-actions .reassign-form {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.form-select--sm {
+    padding: 4px 8px;
+    font-size: 12px;
+    height: 32px;
+}
+.btn--danger {
+    border-color: #c0392b;
+    color: #c0392b;
+}
+.btn--danger:hover {
+    background: #c0392b;
+    color: #fff;
+}
+/* Cancel button fix */
+.btn--danger {
+    background: #c0392b;
+    color: #fff !important;
+    border-color: #c0392b;
+    min-width: 80px;
+    padding: 6px 14px;
+}
+.btn--danger:hover {
+    background: #a93226;
+    border-color: #a93226;
+}

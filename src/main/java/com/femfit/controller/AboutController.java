@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class AboutController {
 
     /** Number of trainer cards shown per page on the "Our Trainers" gallery. */
-    private static final int PAGE_SIZE_TRAINERS = 6;
+    private static final int PAGE_SIZE_TRAINERS = 8;
 
     private final TrainerService trainerService;
 

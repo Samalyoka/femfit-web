@@ -79,7 +79,15 @@ public class OrderDaoImpl implements OrderDao {
             JOIN training_cycles tc ON o.cycle_id = tc.id
             LEFT JOIN members t ON o.trainer_id = t.id
             WHERE o.member_id = ?
-            ORDER BY o.created_at DESC
+            ORDER BY
+              CASE o.status
+                WHEN 'PENDING'   THEN 1
+                WHEN 'ACTIVE'    THEN 2
+                WHEN 'COMPLETED' THEN 3
+                WHEN 'CANCELLED' THEN 4
+                ELSE 5
+              END,
+              o.created_at DESC
             LIMIT ? OFFSET ?
             """;
 
@@ -116,7 +124,15 @@ public class OrderDaoImpl implements OrderDao {
             JOIN members u ON o.member_id = u.id
             JOIN training_cycles tc ON o.cycle_id = tc.id
             LEFT JOIN members t ON o.trainer_id = t.id
-            ORDER BY o.created_at DESC
+            ORDER BY
+            CASE o.status
+            WHEN 'PENDING'   THEN 1
+            WHEN 'ACTIVE'    THEN 2
+            WHEN 'COMPLETED' THEN 3
+            WHEN 'CANCELLED' THEN 4
+            ELSE 5
+            END,
+            o.created_at DESC
             LIMIT ? OFFSET ?
             """;
 

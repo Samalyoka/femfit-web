@@ -93,18 +93,23 @@
     <a class="pagination__btn"
        th:if="${currentPage > 1}"
        th:href="@{/client/orders(page=${currentPage - 1})}"
-       th:text="#{pagination.prev}">Previous</a>
+       th:text="#{pagination.prev}">← Prev</a>
+    <span th:unless="${currentPage > 1}"
+          class="pagination__btn" style="opacity:0.3; cursor:default;"
+          th:text="#{pagination.prev}">← Prev</span>
 
-    <span class="pagination__info">
-      <th:block th:text="${currentPage}">1</th:block>
-      /
-      <th:block th:text="${totalPages}">1</th:block>
-    </span>
+    <span class="pagination__info"
+          th:text="#{pagination.page(${currentPage}, ${totalPages})}">
+    Page 1 of 2
+  </span>
 
     <a class="pagination__btn"
        th:if="${currentPage < totalPages}"
        th:href="@{/client/orders(page=${currentPage + 1})}"
-       th:text="#{pagination.next}">Next</a>
+       th:text="#{pagination.next}">Next →</a>
+    <span th:unless="${currentPage < totalPages}"
+          class="pagination__btn" style="opacity:0.3; cursor:default;"
+          th:text="#{pagination.next}">Next →</span>
   </div>
 
   <!-- Browse more -->
