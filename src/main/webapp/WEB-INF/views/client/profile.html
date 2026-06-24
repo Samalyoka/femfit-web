@@ -22,7 +22,40 @@
 
     <!-- Left: member card -->
     <aside class="profile-card">
-      <div class="profile-avatar" th:text="${member.initials}"></div>
+      <div class="profile-avatar-wrap">
+        <div class="profile-avatar"
+             th:style="${member.avatarUrl != null} ? 'background-image:url(' + ${member.avatarUrl} + ');background-size:cover;background-position:center;color:transparent;' : ''">
+          <img th:if="${member.avatarUrl != null}" th:src="${member.avatarUrl}"
+               class="profile-avatar__img" th:alt="${member.initials}" aria-hidden="true"/>
+          <span th:if="${member.avatarUrl == null}" th:text="${member.initials}">AK</span>
+        </div>
+        <label class="profile-avatar-edit" title="Upload photo">
+          <input type="file" name="avatarFile" accept="image/jpeg,image/png,image/webp"
+                 class="profile-avatar-input" id="avatarInput"/>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 20H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v3"
+                  stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="12" cy="13" r="3" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M18 14v6M15 17h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </label>
+      </div>
+      <form id="avatarForm" th:action="@{/client/profile/avatar}" method="post"
+            enctype="multipart/form-data" style="display:none;">
+        <input type="hidden" th:name="${_csrf?.parameterName}" th:value="${_csrf?.token}"/>
+        <input type="file" name="avatarFile" id="avatarInputHidden" accept="image/jpeg,image/png,image/webp"/>
+      </form>
+      <script>
+        document.getElementById('avatarInput').addEventListener('change', function() {
+          if (this.files.length) {
+            var hidden = document.getElementById('avatarInputHidden');
+            var dt = new DataTransfer();
+            dt.items.add(this.files[0]);
+            hidden.files = dt.files;
+            document.getElementById('avatarForm').submit();
+          }
+        });
+      </script>
       <div class="profile-name" th:text="${member.fullName}"></div>
       <div class="profile-badge" th:text="#{profile.badge}">Premium member</div>
       <div class="profile-divider"></div>

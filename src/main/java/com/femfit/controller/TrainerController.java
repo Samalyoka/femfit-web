@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -183,6 +184,22 @@ public class TrainerController {
         log.info("Assignment deleted: orderId={}", orderId);
 
         ra.addFlashAttribute("successMsg", "assignment.deleted");
+        return "redirect:/trainer/dashboard";
+    }
+
+
+    /** Upload avatar for TRAINER */
+    @PostMapping("/profile/avatar")
+    public String uploadAvatar(@RequestParam("avatarFile") MultipartFile file,
+                               @AuthenticationPrincipal UserDetails principal,
+                               RedirectAttributes ra) {
+        Member trainer = resolveCurrentUser(principal);
+        try {
+            userService.uploadAvatar(trainer.getId(), file);
+            ra.addFlashAttribute("successMsg", "msg.success.avatar.updated");
+        } catch (IllegalArgumentException e) {
+            ra.addFlashAttribute("errorMsg", "msg.error.avatar.invalid");
+        }
         return "redirect:/trainer/dashboard";
     }
 

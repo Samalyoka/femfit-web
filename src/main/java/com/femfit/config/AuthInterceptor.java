@@ -10,16 +10,10 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
- * Adds isAuthenticated and userRole attributes to every model so Thymeleaf
- * templates (e.g. {@code common/layout :: nav}) can show or hide navigation
- * links without relying on the {@code sec:authorize} dialect in every fragment.
+ * Adds isAuthenticated, userRole, currentUserName, currentUserInitials,
+ * and currentUserAvatar to every model — used by Thymeleaf nav fragment.
  *
- * @implNote This is an application of the <b>Interceptor pattern</b>
- * (Spring MVC {@link HandlerInterceptor}). It centralises a cross-cutting
- * concern — authentication status used purely for view rendering — in one
- * place, registered once in {@code WebMvcConfig.addInterceptors()}, instead
- * of duplicating {@code model.addAttribute("isAuthenticated", ...)} calls in
- * every controller method.
+ * @implNote Interceptor pattern — registered once in WebMvcConfig.
  */
 public class AuthInterceptor implements HandlerInterceptor {
 
@@ -45,11 +39,14 @@ public class AuthInterceptor implements HandlerInterceptor {
                                 a.getAuthority().replace("ROLE_", "")));
                 if (auth.getPrincipal() instanceof UserDetails ud) {
                     memberService.findByEmail(ud.getUsername()).ifPresentOrElse(m -> {
-                        modelAndView.addObject("currentUserName", m.getFirstName() + " " + m.getLastName());
+                        modelAndView.addObject("currentUserName",
+                                m.getFirstName() + " " + m.getLastName());
                         modelAndView.addObject("currentUserInitials", m.getInitials());
+                        modelAndView.addObject("currentUserAvatar", m.getAvatarUrl());
                     }, () -> {
                         modelAndView.addObject("currentUserName", ud.getUsername());
                         modelAndView.addObject("currentUserInitials", "?");
+                        modelAndView.addObject("currentUserAvatar", null);
                     });
                 }
             }

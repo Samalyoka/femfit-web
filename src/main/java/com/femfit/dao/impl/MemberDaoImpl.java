@@ -17,17 +17,11 @@ import java.util.Optional;
 
 /**
  * JDBC implementation of {@link MemberDao}.
- *
- * <p>All queries use {@link PreparedStatement} to prevent SQL injection.
- * String concatenation in SQL is strictly prohibited.</p>
- *
- * <p>Design pattern: <strong>DAO (Data Access Object)</strong></p>
  */
 @Repository
 public class MemberDaoImpl implements MemberDao {
 
     private static final Logger log = LoggerFactory.getLogger(MemberDaoImpl.class);
-
     private final ConnectionPool pool;
 
     @Autowired
@@ -46,7 +40,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_BY_ID = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent, u.account_type
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type, u.avatar_url
             FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE u.id = ?
@@ -55,7 +49,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_BY_EMAIL = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent, u.account_type
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type, u.avatar_url
             FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE u.email = ?
@@ -64,7 +58,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_ALL = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent, u.account_type
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type, u.avatar_url
             FROM members u
             JOIN roles r ON u.role_id = r.id
             ORDER BY u.registration_date DESC
@@ -73,7 +67,7 @@ public class MemberDaoImpl implements MemberDao {
     private static final String SELECT_BY_ROLE = """
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone,
                    u.password_hash, u.birth_date, r.name AS role,
-                   u.is_active, u.registration_date, u.discount_percent, u.account_type
+                   u.is_active, u.registration_date, u.discount_percent, u.account_type, u.avatar_url
             FROM members u
             JOIN roles r ON u.role_id = r.id
             WHERE r.name = ?
@@ -112,6 +106,10 @@ public class MemberDaoImpl implements MemberDao {
             SELECT EXISTS(SELECT 1 FROM members WHERE email = ?)
             """;
 
+    private static final String UPDATE_AVATAR_URL = """
+            UPDATE members SET avatar_url = ? WHERE id = ?
+            """;
+
     @Override
     public Member save(Member member) {
         Connection conn = pool.getConnection();
@@ -123,16 +121,11 @@ public class MemberDaoImpl implements MemberDao {
             ps.setString(5, member.getPasswordHash());
             ps.setObject(6, member.getBirthDate());
             ps.setString(7, member.getRole().name());
-
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    member.setId(rs.getLong("id"));
-                }
+                if (rs.next()) member.setId(rs.getLong("id"));
             }
-            log.debug("User saved: id={}, email={}", member.getId(), member.getEmail());
             return member;
         } catch (SQLException e) {
-            log.error("Error saving user: {}", e.getMessage());
             throw new RuntimeException("Failed to save user", e);
         } finally {
             pool.releaseConnection(conn);
@@ -145,12 +138,9 @@ public class MemberDaoImpl implements MemberDao {
         try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_ID)) {
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapRow(rs));
-                }
+                if (rs.next()) return Optional.of(mapRow(rs));
             }
         } catch (SQLException e) {
-            log.error("Error finding user by id {}: {}", id, e.getMessage());
             throw new RuntimeException("Failed to find user by id", e);
         } finally {
             pool.releaseConnection(conn);
@@ -164,12 +154,9 @@ public class MemberDaoImpl implements MemberDao {
         try (PreparedStatement ps = conn.prepareStatement(SELECT_BY_EMAIL)) {
             ps.setString(1, email);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return Optional.of(mapRow(rs));
-                }
+                if (rs.next()) return Optional.of(mapRow(rs));
             }
         } catch (SQLException e) {
-            log.error("Error finding user by email: {}", e.getMessage());
             throw new RuntimeException("Failed to find user by email", e);
         } finally {
             pool.releaseConnection(conn);
@@ -183,11 +170,8 @@ public class MemberDaoImpl implements MemberDao {
         List<Member> members = new ArrayList<>();
         try (PreparedStatement ps = conn.prepareStatement(SELECT_ALL);
              ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                members.add(mapRow(rs));
-            }
+            while (rs.next()) members.add(mapRow(rs));
         } catch (SQLException e) {
-            log.error("Error fetching all members: {}", e.getMessage());
             throw new RuntimeException("Failed to fetch members", e);
         } finally {
             pool.releaseConnection(conn);
@@ -204,12 +188,9 @@ public class MemberDaoImpl implements MemberDao {
             ps.setInt(2, limit);
             ps.setInt(3, offset);
             try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    members.add(mapRow(rs));
-                }
+                while (rs.next()) members.add(mapRow(rs));
             }
         } catch (SQLException e) {
-            log.error("Error finding members by role {}: {}", role, e.getMessage());
             throw new RuntimeException("Failed to find members by role", e);
         } finally {
             pool.releaseConnection(conn);
@@ -226,7 +207,6 @@ public class MemberDaoImpl implements MemberDao {
                 if (rs.next()) return rs.getInt(1);
             }
         } catch (SQLException e) {
-            log.error("Error counting members by role: {}", e.getMessage());
             throw new RuntimeException("Failed to count members", e);
         } finally {
             pool.releaseConnection(conn);
@@ -244,9 +224,7 @@ public class MemberDaoImpl implements MemberDao {
             ps.setObject(4, member.getBirthDate());
             ps.setLong(5, member.getId());
             ps.executeUpdate();
-            log.debug("User updated: id={}", member.getId());
         } catch (SQLException e) {
-            log.error("Error updating user {}: {}", member.getId(), e.getMessage());
             throw new RuntimeException("Failed to update user", e);
         } finally {
             pool.releaseConnection(conn);
@@ -261,7 +239,6 @@ public class MemberDaoImpl implements MemberDao {
             ps.setLong(2, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            log.error("Error updating password for user {}: {}", userId, e.getMessage());
             throw new RuntimeException("Failed to update password", e);
         } finally {
             pool.releaseConnection(conn);
@@ -276,7 +253,6 @@ public class MemberDaoImpl implements MemberDao {
             ps.setLong(2, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            log.error("Error setting active={} for user {}: {}", isActive, userId, e.getMessage());
             throw new RuntimeException("Failed to update user status", e);
         } finally {
             pool.releaseConnection(conn);
@@ -291,7 +267,6 @@ public class MemberDaoImpl implements MemberDao {
             ps.setLong(2, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            log.error("Error setting discount for user {}: {}", userId, e.getMessage());
             throw new RuntimeException("Failed to set discount", e);
         } finally {
             pool.releaseConnection(conn);
@@ -306,7 +281,6 @@ public class MemberDaoImpl implements MemberDao {
             ps.setLong(2, userId);
             ps.executeUpdate();
         } catch (SQLException e) {
-            log.error("Error setting account type for user {}: {}", userId, e.getMessage());
             throw new RuntimeException("Failed to set account type", e);
         } finally {
             pool.releaseConnection(conn);
@@ -322,23 +296,31 @@ public class MemberDaoImpl implements MemberDao {
                 return rs.next() && rs.getBoolean(1);
             }
         } catch (SQLException e) {
-            log.error("Error checking email existence: {}", e.getMessage());
             throw new RuntimeException("Failed to check email", e);
         } finally {
             pool.releaseConnection(conn);
         }
     }
 
-    /**
-     * Maps a ResultSet row to a {@link Member} object.
-     *
-     * @param rs the result set positioned at the current row
-     * @return a populated User object
-     * @throws SQLException if a column cannot be read
-     */
+    @Override
+    public void updateAvatarUrl(Long memberId, String avatarUrl) {
+        Connection conn = pool.getConnection();
+        try (PreparedStatement ps = conn.prepareStatement(UPDATE_AVATAR_URL)) {
+            ps.setString(1, avatarUrl);
+            ps.setLong(2, memberId);
+            ps.executeUpdate();
+            log.info("Avatar updated for member id={}: {}", memberId, avatarUrl);
+        } catch (SQLException e) {
+            log.error("Error updating avatar for member {}: {}", memberId, e.getMessage());
+            throw new RuntimeException("Failed to update avatar", e);
+        } finally {
+            pool.releaseConnection(conn);
+        }
+    }
+
     private Member mapRow(ResultSet rs) throws SQLException {
         String accountTypeRaw = rs.getString("account_type");
-        return Member.builder()
+        Member member = Member.builder()
                 .id(rs.getLong("id"))
                 .firstName(rs.getString("first_name"))
                 .lastName(rs.getString("last_name"))
@@ -354,5 +336,7 @@ public class MemberDaoImpl implements MemberDao {
                 .discountPercent(rs.getInt("discount_percent"))
                 .accountType(accountTypeRaw != null ? AccountType.valueOf(accountTypeRaw) : AccountType.REGULAR)
                 .build();
+        member.setAvatarUrl(rs.getString("avatar_url"));
+        return member;
     }
 }

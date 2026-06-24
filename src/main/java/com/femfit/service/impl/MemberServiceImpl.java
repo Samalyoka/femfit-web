@@ -13,48 +13,59 @@ import com.femfit.service.MemberService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Implementation of {@link MemberService}.
  *
- * <p>Design patterns applied:
+ * <p>Design patterns:
  * <ul>
- *   <li><strong>Strategy</strong> — PasswordEncoder is injected and can be
- *       swapped (BCrypt, SHA-256, etc.) without changing this class.</li>
- *   <li><strong>DAO</strong> — delegates all DB access to {@link MemberDao}.</li>
+ *   <li><strong>Strategy</strong> — PasswordEncoder injected and swappable.</li>
+ *   <li><strong>DAO</strong> — delegates DB access to {@link MemberDao}.</li>
  * </ul>
- * </p>
  */
 @Service
 public class MemberServiceImpl implements MemberService {
 
     private static final Logger log = LoggerFactory.getLogger(MemberServiceImpl.class);
 
+    private static final long   MAX_AVATAR_SIZE  = 5 * 1024 * 1024; // 5 MB
+    private static final Set<String> ALLOWED_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp");
+
     private final MemberDao memberDao;
-    private final OrderDao orderDao;
+    private final OrderDao  orderDao;
     private final PasswordEncoder passwordEncoder;
 
+    /** Absolute path to Tomcat webapps/femfit — injected from application.properties */
+    @Value("${app.upload.base-path:#{null}}")
+    private String uploadBasePath;
+
     @Autowired
-    public MemberServiceImpl(MemberDao memberDao, OrderDao orderDao, PasswordEncoder passwordEncoder) {
-        this.memberDao = memberDao;
-        this.orderDao = orderDao;
+    public MemberServiceImpl(MemberDao memberDao, OrderDao orderDao,
+                             PasswordEncoder passwordEncoder) {
+        this.memberDao       = memberDao;
+        this.orderDao        = orderDao;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Member register(RegisterDto dto) {
         log.info("Registering new user: {}", dto.getEmail());
-
         if (memberDao.existsByEmail(dto.getEmail())) {
-            log.warn("Registration failed — email already taken: {}", dto.getEmail());
             throw new EmailAlreadyTakenException("Email already registered: " + dto.getEmail());
         }
-
         Member member = Member.builder()
                 .firstName(dto.getFirstName())
                 .lastName(dto.getLastName())
@@ -66,21 +77,13 @@ public class MemberServiceImpl implements MemberService {
                 .active(true)
                 .accountType(AccountType.REGULAR)
                 .build();
-
         Member saved = memberDao.save(member);
-        log.info("User registered successfully: id={}", saved.getId());
+        log.info("User registered: id={}", saved.getId());
         return saved;
     }
 
-    @Override
-    public Optional<Member> findById(Long id) {
-        return memberDao.findById(id);
-    }
-
-    @Override
-    public Optional<Member> findByEmail(String email) {
-        return memberDao.findByEmail(email);
-    }
+    @Override public Optional<Member> findById(Long id)            { return memberDao.findById(id); }
+    @Override public Optional<Member> findByEmail(String email)    { return memberDao.findByEmail(email); }
 
     @Override
     public PageDto<Member> findByRole(Role role, int page, int size) {
@@ -90,57 +93,39 @@ public class MemberServiceImpl implements MemberService {
         return new PageDto<>(members, page, size, total);
     }
 
-    @Override
-    public void updateProfile(Member member) {
-        log.info("Updating profile for user id={}", member.getId());
-        memberDao.update(member);
-    }
+    @Override public void updateProfile(Member member) { memberDao.update(member); }
 
     @Override
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         Member member = memberDao.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
-
         if (!passwordEncoder.matches(oldPassword, member.getPasswordHash())) {
-            log.warn("Password change failed for user id={} — wrong old password", userId);
             throw new InvalidPasswordException("Current password is incorrect");
         }
-
         memberDao.updatePassword(userId, passwordEncoder.encode(newPassword));
-        log.info("Password changed for user id={}", userId);
     }
 
-    @Override
-    public void setActive(Long userId, boolean isActive) {
-        log.info("Setting active={} for user id={}", isActive, userId);
-        memberDao.setActive(userId, isActive);
-    }
+    @Override public void setActive(Long userId, boolean isActive) { memberDao.setActive(userId, isActive); }
 
     @Override
     public void setDiscount(Long userId, int discountPercent) {
-        if (discountPercent < 0 || discountPercent > 100) {
-            throw new IllegalArgumentException("Discount must be between 0 and 100");
-        }
-        log.info("Setting discount={}% for user id={}", discountPercent, userId);
+        if (discountPercent < 0 || discountPercent > 100)
+            throw new IllegalArgumentException("Discount must be 0-100");
         memberDao.setDiscount(userId, discountPercent);
     }
 
     @Override
     public void setAccountType(Long userId, AccountType accountType) {
-        log.info("Setting accountType={} for user id={}", accountType, userId);
         memberDao.setAccountType(userId, accountType);
         recalculateDiscount(userId);
     }
 
     @Override
     public int calculateAutoDiscount(Member member, int completedCycles) {
-        if (member.getAccountType() == AccountType.CORPORATE) {
-            return 10;
-        }
-        // REGULAR — tiered by loyalty (number of completed training cycles)
+        if (member.getAccountType() == AccountType.CORPORATE) return 10;
         if (completedCycles >= 10) return 15;
-        if (completedCycles >= 6) return 10;
-        if (completedCycles >= 3) return 5;
+        if (completedCycles >= 6)  return 10;
+        if (completedCycles >= 3)  return 5;
         return 0;
     }
 
@@ -150,8 +135,57 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new RuntimeException("User not found: " + userId));
         int completedCycles = orderDao.countCompletedByUserId(userId);
         int newDiscount = calculateAutoDiscount(member, completedCycles);
-        log.info("Recalculated discount for user id={}: accountType={}, completedCycles={}, discount={}%",
-                userId, member.getAccountType(), completedCycles, newDiscount);
         memberDao.setDiscount(userId, newDiscount);
+    }
+
+    // ── Avatar upload ──────────────────────────────────────────────────────
+
+    @Override
+    public String uploadAvatar(Long memberId, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Avatar file is empty");
+        }
+        String contentType = file.getContentType();
+        if (contentType == null || !ALLOWED_TYPES.contains(contentType)) {
+            throw new IllegalArgumentException("Avatar must be JPEG, PNG or WEBP");
+        }
+        if (file.getSize() > MAX_AVATAR_SIZE) {
+            throw new IllegalArgumentException("Avatar file must be under 5 MB");
+        }
+
+        // Determine save directory.
+        // Priority: app.upload.base-path property (set in application.properties)
+        // Fallback: servlet context real path via System property set by WebAppInitializer
+        String basePath = uploadBasePath;
+        if (basePath == null || basePath.isBlank()) {
+            basePath = System.getProperty("app.webapp.path", "");
+        }
+        if (basePath == null || basePath.isBlank()) {
+            throw new RuntimeException(
+                "Upload path not configured. Set app.upload.base-path in application.properties.");
+        }
+
+        try {
+            Path avatarDir = Paths.get(basePath, "static", "img", "avatars");
+            Files.createDirectories(avatarDir);
+
+            String ext = switch (contentType) {
+                case "image/png"  -> ".png";
+                case "image/webp" -> ".webp";
+                default           -> ".jpg";
+            };
+            String filename = memberId + ext;
+            Path dest = avatarDir.resolve(filename);
+            file.transferTo(dest.toFile());
+
+            String relUrl = "/static/img/avatars/" + filename;
+            memberDao.updateAvatarUrl(memberId, relUrl);
+            log.info("Avatar saved: memberId={}, path={}", memberId, dest);
+            return relUrl;
+
+        } catch (IOException e) {
+            log.error("Failed to save avatar for member {}: {}", memberId, e.getMessage());
+            throw new RuntimeException("Failed to save avatar file", e);
+        }
     }
 }

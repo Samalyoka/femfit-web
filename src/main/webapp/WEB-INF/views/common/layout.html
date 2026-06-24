@@ -33,12 +33,22 @@
 
   <a th:if="${isAuthenticated != null and isAuthenticated and userRole == 'CLIENT'}"
      class="user-badge" th:href="@{/client/profile}">
-    <span class="user-badge__avatar" th:text="${currentUserInitials}">AK</span>
+    <span class="user-badge__avatar"
+          th:style="${currentUserAvatar != null} ? 'background-image:url(' + ${currentUserAvatar} + ');background-size:cover;background-position:center;color:transparent;' : ''">
+      <img th:if="${currentUserAvatar != null}" th:src="${currentUserAvatar}"
+           th:alt="${currentUserInitials}" class="user-badge__img" aria-hidden="true"/>
+      <span th:if="${currentUserAvatar == null}" th:text="${currentUserInitials}">AK</span>
+    </span>
     <span class="user-badge__name" th:text="${currentUserName}">Anna Kim</span>
   </a>
   <a th:if="${isAuthenticated != null and isAuthenticated and userRole == 'TRAINER'}"
      class="user-badge" th:href="@{/trainer/dashboard}">
-    <span class="user-badge__avatar" th:text="${currentUserInitials}">EM</span>
+    <span class="user-badge__avatar"
+          th:style="${currentUserAvatar != null} ? 'background-image:url(' + ${currentUserAvatar} + ');background-size:cover;background-position:center;color:transparent;' : ''">
+      <img th:if="${currentUserAvatar != null}" th:src="${currentUserAvatar}"
+           th:alt="${currentUserInitials}" class="user-badge__img" aria-hidden="true"/>
+      <span th:if="${currentUserAvatar == null}" th:text="${currentUserInitials}">EM</span>
+    </span>
     <span class="user-badge__name" th:text="${currentUserName}">Elena Morozova</span>
   </a>
   <a th:if="${isAuthenticated != null and isAuthenticated and userRole == 'ADMIN'}"
